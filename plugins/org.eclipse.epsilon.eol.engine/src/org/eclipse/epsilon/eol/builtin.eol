@@ -121,7 +121,7 @@ operation Any print (prefix: Object) : Object {
 operation Any print () : Object {
 }
 
-operation Any println (prefix: Object, suffix: Object) : Object {
+/*operation Any println (prefix: Object, suffix: Object) : Object {
 }
 
 operation Any println (prefix: Object) : Object {
@@ -129,7 +129,7 @@ operation Any println (prefix: Object) : Object {
 
 operation Any println () : Object {
 }
-
+*/
 operation Any ifUndefined (alternative: Object) : Object {
 }
 

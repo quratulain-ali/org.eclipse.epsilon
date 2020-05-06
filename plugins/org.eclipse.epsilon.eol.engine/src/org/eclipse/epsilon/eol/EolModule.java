@@ -9,6 +9,7 @@
  ******************************************************************************/
 package org.eclipse.epsilon.eol;
 
+import java.net.URISyntaxException;
 import java.util.*;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.Lexer;
@@ -371,6 +372,27 @@ public class EolModule extends AbstractModule implements IEolModule {
 			}
 			imports.add(import_);
 		}
+		
+		if (!(this instanceof BuiltinEolModule)) {
+			Import builtinImport = new Import() {
+				@Override
+				public String getPath() {
+					return "builtin.eol";
+				}
+			};
+			BuiltinEolModule builtinModule = new BuiltinEolModule();
+			builtinModule.setParentModule(this);
+			builtinImport.setImportedModule(builtinModule);
+
+			try {
+				builtinImport.load(EolModule.class.getResource(".").toURI());
+			} catch (URISyntaxException e) {
+				throw new RuntimeException(e);
+			}
+
+			imports.add(builtinImport);
+		}
+
 		return imports;
 	}
 	
