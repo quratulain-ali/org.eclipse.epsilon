@@ -9,10 +9,11 @@
  ******************************************************************************/
 package org.eclipse.epsilon.egx.engine.test.acceptance;
 
+import org.eclipse.epsilon.egx.engine.test.acceptance.contributors.OperationContributorTests;
 import org.eclipse.epsilon.egx.engine.test.acceptance.equivalence.EgxModuleEquivalenceTests;
+import org.eclipse.epsilon.egx.engine.test.acceptance.hutn.EgxHutnTestSuite;
 import org.eclipse.epsilon.egx.engine.test.acceptance.operations.*;
 import org.eclipse.epsilon.egx.engine.test.acceptance.parse.GenerationRuleConstructsTests;
-import org.eclipse.epsilon.egx.engine.test.acceptance.rules.EgxHutnTestSuite;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -23,6 +24,7 @@ import junit.framework.Test;
 @RunWith(Suite.class)
 @SuiteClasses({
 	//EgxHutnTestSuite.class,
+	OperationContributorTests.class,
 	IncludeTests.class,
 	PrintTests.class,
 	GenerationRuleConstructsTests.class,
