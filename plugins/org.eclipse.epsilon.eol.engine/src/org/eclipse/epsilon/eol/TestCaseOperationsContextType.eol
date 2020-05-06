@@ -1,0 +1,51 @@
+var a : Collection<Integer> = Collection {0..9};
+var e : Collection<String> = Collection {a,b,c,d};
+var b : Sequence<String> = Sequence {a..n};
+var f : Sequence<Integer> = Sequence {0..9};
+var c : Collection<Any> = Collection {a,c,7,9};
+var d : Collection <Sequence<Integer>> = Collection {f};
+/**/
+"q".HelloWorld();
+/*HelloWorld can not be invoked on Integer*/
+9.HelloWorld();
+/*HelloWorl can not be invoked on Boolean*/
+true.HelloWorld();
+/*HelloCol can not be invoked on String*/
+"a".HelloWorld().HelloCol();
+/**/
+"a".HelloWorld().HelloAny();
+/**/
+3.HelloAny();
+
+/**/
+a.collect(n | n<4).HelloCol();
+/*Hello can not be invoked on Collection<Boolean>*/
+a.collect(n | n>4).Hello();
+/**/
+a.HelloCol();
+/**/
+b.HelloCol();
+/**/
+d.HelloCol();
+
+/*Hello can not be invoked on Collection<Integer>*/
+a.Hello();
+/**/
+b.Hello();
+/*Hello can not be invoked on Collection<Any>*/
+c.Hello();
+/**/
+e.Hello();
+
+operation String HelloWorld(): String{
+		return "Hello "+ self;
+}
+operation Any HelloAny(): String{
+		return "Hello "+ self;
+}
+operation Collection<Any> HelloCol(): String{
+		return "Hello "+ self;
+}
+operation Collection<String> Hello(): String{
+		return "Hello "+ self;
+}

@@ -1,0 +1,33 @@
+
+operation Hello(): String{
+	var a : Collection<Integer> = Collection {0..9};
+	/*Return type should be String instead of Collection<Boolean>*/
+	return a.collect(n | n < 5);
+}
+/*This operation should return String*/
+operation Hello(): String{
+
+}
+
+operation Hello(): Integer{
+/*Return type shpuld be Integer instead of String*/
+	return "Hello "+ self;
+}
+
+operation Hello(): Collection<String>{
+var aCol : Collection<Integer> = Collection {0..9};
+/*Return type should be Collection<String> instead of Collection<Integer>*/
+	return aCol;
+}
+
+operation Hello(): Collection<Any>{
+var a : Collection<Integer> = Collection {0..9};
+/**/
+	return a;
+}
+
+operation Hello(): Collection<Integer>{
+var a : Collection<Integer> = Collection {0..9};
+/**/
+	return a;
+}

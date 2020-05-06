@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.epsilon.common.module.IModule;
 import org.eclipse.epsilon.common.parse.AST;
+import org.eclipse.epsilon.eol.EolModule;
 import org.eclipse.epsilon.eol.IEolModule;
 import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
 import org.eclipse.epsilon.eol.exceptions.EolIllegalOperationException;
@@ -26,13 +27,34 @@ import org.eclipse.epsilon.eol.execute.operations.contributors.IOperationContrib
 import org.eclipse.epsilon.eol.execute.operations.contributors.OperationContributor;
 import org.eclipse.epsilon.eol.execute.operations.simple.SimpleOperation;
 import org.eclipse.epsilon.eol.models.IModel;
+import org.eclipse.epsilon.eol.types.EolAnyType;
+import org.eclipse.epsilon.eol.types.EolCollectionType;
+import org.eclipse.epsilon.eol.types.EolModelElementType;
 import org.eclipse.epsilon.eol.types.EolNoType;
+import org.eclipse.epsilon.eol.types.EolPrimitiveType;
+import org.eclipse.epsilon.eol.types.EolType;
 import org.eclipse.epsilon.eol.types.EolUndefined;
 
 public class OperationCallExpression extends FeatureCallExpression {
 	
 	protected final ArrayList<Expression> parameterExpressions = new ArrayList<>(0);
+	public ArrayList<Operation> operations = new ArrayList<Operation>(0); // for combining user-operations and built-in
+	// operations
+	public ArrayList<Operation> matchedoperations = new ArrayList<Operation>(0); // keeping all the matched functions
+			// for using in hyperlink
+	public ArrayList<EolType> matchedReturnType = new ArrayList<EolType>(); // keeping return type of matched functions
+	// using when the function is a target
+	// expression
+	//public ArrayList<BuiltinOperations> builtin = new ArrayList<BuiltinOperations>(0); // Importing from eol file
+	boolean success = false; // for find at least one perfect match/ It doesn't change for every mismatch
+	// because one match is enough
 	protected boolean contextless;
+	protected int count = 0;
+	protected EolType contextType = EolAnyType.Instance;
+
+int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=parameters type
+// mismatch 4 =undefined Operation // 5 = No-type as target // 6 = No-type as
+// parameter
 	
 	public OperationCallExpression() {
 		this(false);
@@ -191,10 +213,261 @@ public class OperationCallExpression extends FeatureCallExpression {
 	
 	@Override
 	public void compile(EolCompilationContext context) {
-		if (targetExpression != null) targetExpression.compile(context);
+		OperationList allOperations = ((EolModule) module).getOperations();
+		
+		if (targetExpression != null) {
+			targetExpression.compile(context);
+			this.contextless = false;
+		} else
+			this.contextless = true;
+
 		for (Expression parameterExpression : parameterExpressions) {
 			parameterExpression.compile(context);
 		}
+		boolean operations_contextless;
+		boolean successMatch = false; // for a perfect match -> we should keep it for every closest matched
+										// possibility as true
+		boolean goForward = false; // for keep checking forward
+
+		for (int i = 0; i < allOperations.size(); i++) {
+
+			if (allOperations.get(i).getContextTypeExpression() != null) {
+				operations_contextless = false;
+			} else {
+				operations_contextless = true;
+			}
+			if (nameExpression.getName().equals(allOperations.get(i).getName())
+					&& (contextless == operations_contextless)) {
+				operations.add(allOperations.get(i));
+			}
+
+		}
+		if (operations.size() == 0) {
+			errorCode = 4;
+		}
+
+		List<Parameter> reqParams = null;
+		EolType contentType, collectionType, expType;
+
+		for (Operation op : operations) {
+			
+			/*if (op.getName().equals("getAllSuitableContainmentReferences"))
+				op.compile(context);
+			else if (op.getName().equals("getNodes"))
+				op.compile(context);
+				else if (op.getName().equals("getLinks"))
+					op.compile(context);*/
+			successMatch = false;
+
+			reqParams = op.getFormalParameters();
+			if (op.getReturnTypeExpression() != null) {
+				op.getReturnTypeExpression().compile(context);
+
+				if (op.getReturnTypeExpression().getResolvedType().toString().equals("EolSelf")) {
+					op.getReturnTypeExpression().resolvedType = targetExpression.getResolvedType();
+				}
+
+				if (op.getReturnTypeExpression().getResolvedType().toString().equals("EolSelfContentType")) {
+					contentType = ((EolCollectionType) targetExpression.getResolvedType()).getContentType();
+
+					while (!(contentType instanceof EolPrimitiveType))
+						contentType = ((EolCollectionType) contentType).getContentType();
+					op.getReturnTypeExpression().resolvedType = contentType;
+				}
+
+				if (op.getReturnTypeExpression().getResolvedType().toString().equals("EolSelfCollectionType")) {
+					collectionType = targetExpression.getResolvedType();
+					op.getReturnTypeExpression().resolvedType = collectionType;
+				}
+
+				if (op.getReturnTypeExpression().getResolvedType().toString().equals("EolSelfExpressionType")) {
+					expType = parameterExpressions.get(0).getResolvedType();
+					op.getReturnTypeExpression().resolvedType = expType;
+				}
+			}
+
+			
+				//
+			if (!contextless && !success) {
+
+				contextType = targetExpression.getResolvedType();
+				op.contextTypeExpression.compile(context);
+
+				EolType reqContextType = op.contextTypeExpression.getResolvedType();
+				//System.out.println(isCompatible(reqContextType, contextType));
+				
+				if(reqContextType instanceof EolModelElementType && ((EolModelElementType)reqContextType).getMetaClass()!=null)
+					reqContextType=new EolModelElementType(((EolModelElementType)reqContextType).getMetaClass());
+				if(contextType instanceof EolModelElementType && ((EolModelElementType)contextType).getMetaClass()!=null)
+					contextType=new EolModelElementType(((EolModelElementType)contextType).getMetaClass());
+				
+				
+				if (isCompatible(reqContextType, contextType)) {
+
+					errorCode = 0;
+					goForward = true;
+
+				} else if (canBeCompatible(reqContextType, contextType)) {
+
+					context.addWarningMarker(targetExpression, nameExpression.getName() + " may not be invoked on "
+							+ targetExpression.getResolvedType() + ", as it requires " + reqContextType);
+
+				} else if (targetExpression instanceof OperationCallExpression) {
+					if (!((OperationCallExpression) targetExpression).matchedReturnType.isEmpty()) 
+					{
+						for (int i = 0; i < ((OperationCallExpression) targetExpression).matchedReturnType.size(); i++) {
+							contextType = ((OperationCallExpression) targetExpression).matchedReturnType.get(i);
+
+							if (isCompatible(op.contextTypeExpression.getResolvedType(), contextType)) {
+								errorCode = 0;
+								goForward = true;
+								break;
+							} else {
+								errorCode = 1;
+								goForward = false;
+							}
+						}
+					}
+
+					else {
+						success = false;
+						errorCode = 5;
+						goForward = false;
+						break;
+					}
+				}
+
+				else {
+				
+					success = false;
+					errorCode = 1;
+					goForward = false;
+				}
+
+			} else
+				goForward = true;
+
+			if (goForward) {
+
+				if (goForward && reqParams.size() > 0) {
+
+					if (reqParams.size() == parameterExpressions.size()) {
+
+						int index = 0;
+						errorCode = 0;
+
+						for (Parameter parameterExpression : reqParams) {
+
+							parameterExpression.getTypeExpression().compile(context);
+							if (parameterExpressions.get(index) instanceof OperationCallExpression
+									&& ((OperationCallExpression) parameterExpressions.get(index)).success) {
+
+								ArrayList<EolType> matchTypes = new ArrayList<EolType>();
+								matchTypes = ((OperationCallExpression) parameterExpressions
+										.get(index)).matchedReturnType;
+
+								if (!(matchTypes.isEmpty()))
+
+									for (EolType m : matchTypes) {
+										if (parameterExpression.getTypeExpression().getResolvedType().equals(m)) {
+											parameterExpressions.get(index).resolvedType = m;
+											break;
+										} else
+											parameterExpressions.get(index).resolvedType = m;
+
+									}
+								else {
+									errorCode = 6;
+									goForward = false;
+									break;
+								}
+							}
+
+							EolType reqParameter = parameterExpression.getTypeExpression().getResolvedType();
+							EolType provPrameter = parameterExpressions.get(index).getResolvedType();
+
+							if (isCompatible(reqParameter, provPrameter)) {
+								success = true;
+								successMatch = true;
+								errorCode = 0;
+
+							} else if (canBeCompatible(reqParameter, provPrameter)) {
+								success = true;
+								successMatch = true;
+								context.addWarningMarker(nameExpression, " Parameter (" + provPrameter
+										+ ") might not match, as it requires " + reqParameter);
+							} else if (matchedReturnType.isEmpty()) {
+								// Bcz if we found the perfect match before, no need to make success false at
+								// the end
+								errorCode = 3;
+								success = false;
+								break;
+							}
+
+							index++;
+						}
+
+						if (success) {
+							if (!(op.returnFlag))
+								resolvedType = EolNoType.Instance;
+							else {
+								resolvedType = op.getReturnTypeExpression().getResolvedType();
+								matchedReturnType.add(resolvedType);
+							}
+						}
+					} else {
+						errorCode = 2;
+
+					}
+				} else if (parameterExpressions.size() == 0 && errorCode == 0) {
+					success = true;
+					successMatch = true;
+					
+					if (successMatch) {
+						if (!(op.returnFlag))
+							resolvedType = EolNoType.Instance;
+						else {
+							resolvedType = op.getReturnTypeExpression().getResolvedType();
+							matchedReturnType.add(resolvedType);
+						}
+					}
+
+				} else if (parameterExpressions.size() != 0) {
+
+					errorCode = 2;
+				}
+			}
+
+			if (successMatch)
+				matchedoperations.add(op);
+		}
+
+		if (!success || operations.size() == 0)
+			switch (errorCode) {
+			case 1:
+				context.addErrorMarker(targetExpression,
+						nameExpression.getName() + " can not be invoked on " + targetExpression.getResolvedType());
+				break;
+			case 2:
+				context.addErrorMarker(nameExpression, "Number of parameters doesn't match, as "
+						+ nameExpression.getName() + " requires " + reqParams.size() + " parameters");
+				break;
+			case 3:
+				context.addErrorMarker(nameExpression, "Parameters type mismatch");
+				break;
+			case 4:
+				context.addErrorMarker(nameExpression, "Undefined operation");
+				break;
+			case 5:
+				context.addErrorMarker(nameExpression,
+						nameExpression.getName() + " can not be invoked on "
+								+ ((OperationCallExpression) targetExpression).getNameExpression().getName()
+								+ ", as it's void");
+				break;
+			case 6:
+				context.addErrorMarker(nameExpression, "Parameters type mismatch, as it's void");
+				break;
+			}
 	}
 	
 	public String getOperationName() {
@@ -211,5 +484,110 @@ public class OperationCallExpression extends FeatureCallExpression {
 	
 	public List<Expression> getParameterExpressions() {
 		return parameterExpressions;
+	}
+	public boolean isCompatible(EolType targetType, EolType valueType) {
+
+		boolean ok = false;
+		
+
+		if (targetType.equals(EolNoType.Instance) || valueType.equals(EolNoType.Instance))
+			return false;
+		else
+
+			while (!ok) {
+				if (!(targetType.equals(valueType)) && !(targetType instanceof EolAnyType)) {
+
+					valueType = valueType.getParentType();
+
+					if (valueType instanceof EolAnyType) {
+						return false;
+					}
+
+				} else if (targetType instanceof EolAnyType) {
+					return true;
+				} else if (valueType instanceof EolCollectionType
+						&& !((((EolCollectionType) targetType).getContentType()) instanceof EolAnyType)) {
+
+					EolType valueContentType = ((EolCollectionType) valueType).getContentType();
+					EolType targetContentType = ((EolCollectionType) targetType).getContentType();
+
+					while (targetContentType instanceof EolCollectionType
+							&& valueContentType instanceof EolCollectionType) {
+						if (targetContentType.equals(valueContentType)) {
+							return isCompatible(((EolCollectionType) targetContentType).getContentType(),
+									((EolCollectionType) valueContentType).getContentType());
+						} else {
+							valueContentType = valueContentType.getParentType();
+							return isCompatible(targetContentType, valueContentType);
+
+						}
+					}
+					while (!ok) {
+						if (valueContentType instanceof EolAnyType) {
+							return false;
+						}
+						if (!valueContentType.equals(targetContentType)) {
+							valueContentType = valueContentType.getParentType();
+						} else {
+							return true;
+						}
+					}
+				} else
+					return true;
+			}
+		return false;
+	}
+
+	public boolean canBeCompatible(EolType targetType, EolType valueType) {
+
+		boolean ok = false;
+		if (targetType == null || valueType == null)
+			return false;
+		else
+			while (!ok) {
+
+				if (!(targetType.equals(valueType)) && !(valueType instanceof EolAnyType)) {
+
+					targetType = targetType.getParentType();
+
+					if (targetType instanceof EolAnyType) {
+						return false;
+					}
+
+				} else if (valueType instanceof EolAnyType) {
+					return true;
+				} else if (targetType instanceof EolCollectionType
+						&& !((((EolCollectionType) valueType).getContentType()) instanceof EolAnyType)) {
+
+					EolType valueContentType = ((EolCollectionType) valueType).getContentType();
+					EolType targetContentType = ((EolCollectionType) targetType).getContentType();
+
+					while (targetContentType instanceof EolCollectionType
+							&& valueContentType instanceof EolCollectionType) {
+						if (targetContentType.equals(valueContentType)) {
+							return canBeCompatible(((EolCollectionType) targetContentType).getContentType(),
+									((EolCollectionType) valueContentType).getContentType());
+						} else {
+							valueContentType = valueContentType.getParentType();
+							return canBeCompatible(targetContentType, valueContentType);
+
+						}
+					}
+					while (!ok) {
+						if (valueContentType instanceof EolAnyType || targetContentType instanceof EolAnyType) {
+							return true;
+						}
+						if (!valueContentType.equals(targetContentType)) {
+							targetContentType = targetContentType.getParentType();
+							if (targetContentType instanceof EolAnyType)
+								return false;
+						} else {
+							return true;
+						}
+					}
+				} else
+					return true;
+			}
+		return false;
 	}
 }

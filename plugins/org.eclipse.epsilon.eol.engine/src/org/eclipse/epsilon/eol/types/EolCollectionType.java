@@ -223,4 +223,17 @@ public class EolCollectionType extends EolType {
 	public String toString() {
 		return this.getName() + "<" + this.getContentType() + ">";
 	}	
+	
+	@Override
+	public EolType getParentType() {
+		if(this.isBag() || this.isSet() || this.isOrderedSet() || this.isSequence())
+			return new EolCollectionType("Collection", this.getContentType());
+		else
+		{
+			if(!(this.getContentType() instanceof EolAnyType))
+				return new EolCollectionType("Collection", EolAnyType.Instance);
+			else
+				return EolAnyType.Instance;
+		}
+	}
 }

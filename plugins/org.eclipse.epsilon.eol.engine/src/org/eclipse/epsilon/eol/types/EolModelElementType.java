@@ -258,4 +258,14 @@ public class EolModelElementType extends EolType {
 		
 		return eq;
 	}
+	
+	@Override
+	public EolType getParentType() {
+		if(this.metaClass!=null && !this.metaClass.getSuperTypes().isEmpty() ) {
+			EolModelElementType emet=new EolModelElementType(this.metaClass.getSuperTypes().get(0));
+			return emet;
+		}
+		else 
+			return EolAnyType.Instance;
+	}
 }

@@ -96,3 +96,4 @@ target
 # Backup files from Emacs
 *~
 performance/
+/.metadata/

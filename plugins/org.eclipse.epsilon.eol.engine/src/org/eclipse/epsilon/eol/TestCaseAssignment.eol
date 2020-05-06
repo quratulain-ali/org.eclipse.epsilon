@@ -1,0 +1,103 @@
+model flowchart driver EMF {
+nsuri = "flowchart" 
+};
+
+var first : Integer = 4;
+var second : String = "Qurat";
+
+/*String cannot be assigned to Integer*/
+first = second;
+/*Integer cannot be assigned to String*/
+second= first;
+
+var data : Collection<Integer> = Collection{0..9};
+var bar : Sequence<Integer> = Sequence{0..9};
+var bared : Bag<Integer> = Bag{0..9};
+
+/*Collection<Integer> cannot be assigned to Bag<Integer>*/
+bared=data;
+/**/
+data=bar;
+
+var action: Action;
+var node: Node;
+/*Node cannot be assigned to Action*/
+action = node;
+/**/
+node = action;
+
+var colAction : Collection<Action>;
+/*Collection<Action> cannot be assigned to Collection<Integer>*/
+data= colAction;
+
+/*Sequence<Integer> cannot be assigned to Action*/
+action= bar;
+
+var third = 5;
+/**/
+third = "five";
+/**/
+third=data;
+var firstCollection : Sequence<Integer> = Sequence{0..9};
+var secondCollection : Sequence<String> = Sequence{"A","B"};
+
+/*Sequence<String> cannot be assigned to Sequence<Integer>*/
+firstCollection = secondCollection;
+
+var aCollection : Collection<Integer> = Collection{0..9};
+var bCollection : Sequence<String> = Sequence{"A","B"};
+
+/*Sequence<String> cannot be assigned to Collection<Integer>*/
+aCollection = bCollection;
+/*Collection<String> cannot be assigned to Collection<Integer>*/
+bCollection = aCollection;
+
+var cCollection : Sequence = Sequence{0..9};
+var dCollection : Collection = Collection{1..9};
+
+/*Collection<Action> cannot be assigned to Sequence<Any>*/
+cCollection = colAction;
+
+/**/
+dCollection = cCollection;
+/*Collection<Any> cannot be assigned to Sequence<Any>*/
+cCollection = dCollection;
+
+var test : Integer= 4;
+var testResult : Integer;
+/*Boolean cannot be assigned to Integer*/
+testResult= test < 4;
+
+var testString : String= "4";
+var integerResult : Integer;
+/*String cannot be assigned to Integer*/
+integerResult= testString + 4;
+
+var stringResult : String;
+/**/
+stringResult= testString + 4;
+
+var a: Collection <Integer> =Collection{0..9};
+var b: Sequence <String> =Collection{"a","c"};
+var c: Sequence <Integer> =Collection{0..9};
+var d: Collection <Sequence<Integer>> =Collection{c};
+var e: Collection <Collection<Integer>> =Collection{a};
+var f: Collection <Collection<Collection<Integer>>> =Collection{d};
+var g: Collection <Bag<Collection<Integer>>> =Collection{e};
+
+/*Sequence<String> cannot be assigned to Collection<Integer>*/
+a=b;
+/*Collection<Bag<Collection<Integer>>> cannot be assigned to Collection<Integer>*/
+a=g;
+/**/
+a=c;
+
+/*Collection<Collection<Integer>> cannot be assigned to Collection<Sequence<Integer>>*/
+d=e;
+/**/
+e=d;
+
+/**/
+f=g;
+/*Collection<Collection<Collection<Integer>>> cannot be assigned to Collection<Bag<Collection<Integer>>>*/
+g=f;

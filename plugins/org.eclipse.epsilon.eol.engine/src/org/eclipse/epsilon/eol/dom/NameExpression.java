@@ -98,18 +98,21 @@ public class NameExpression extends Expression {
 	
 	@Override
 	public void compile(EolCompilationContext context) {
+		EolModelElementType modelElementType;
 		Variable variable = context.getFrameStack().get(name);
 		if (variable != null) {
 			resolvedType = variable.getType();
+//			modelElementType = context.getModelElementType(name);
 		}
 		else {
-			EolModelElementType modelElementType = context.getModelElementType(name);
+			modelElementType = context.getModelElementType(name);
 			if (modelElementType != null) {
 				resolvedType = modelElementType;
 				isTypeName = true;
 				if (modelElementType.getMetaClass() == null && !context.getModelDeclarations().isEmpty()) {
 					context.addErrorMarker(this, "Unknown type " + name);
 				}
+				
 			}
 			else {
 				context.addErrorMarker(this, "Undefined variable or type " + name);

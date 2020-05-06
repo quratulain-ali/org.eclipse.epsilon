@@ -16,6 +16,7 @@ import org.eclipse.epsilon.common.module.IModule;
 import org.eclipse.epsilon.common.parse.AST;
 import org.eclipse.epsilon.common.util.StringUtil;
 import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
+import org.eclipse.epsilon.eol.types.EolAnyType;
 import org.eclipse.epsilon.eol.types.EolPrimitiveType;
 
 public abstract class OperatorExpression extends Expression {
@@ -53,20 +54,59 @@ public abstract class OperatorExpression extends Expression {
 			resolvedType = EolPrimitiveType.Boolean;
 		}
 		
+		
+//		if (StringUtil.isOneOf(operator, "<", ">", ">=", "<=", "*", "/", "-")) {
+//			for (Expression operand : getOperands()) {
+//				if (operand.hasResolvedType() && 
+//						operand.getResolvedType() != EolPrimitiveType.Integer 
+//						&& operand.getResolvedType() != EolPrimitiveType.Real) {
+//					
+//					context.addErrorMarker(operand, "Number expected instead of " + operand.getResolvedType());
+//				}
+//			}
+//		}
+//		
+//		if (StringUtil.isOneOf(operator, "==", "=", "<>", "<", ">", ">=", "<=")) {
+//			resolvedType = EolPrimitiveType.Boolean;
+//		}
+		
+		
 		if (StringUtil.isOneOf(operator, "<", ">", ">=", "<=", "*", "/", "-")) {
 			for (Expression operand : getOperands()) {
 				if (operand.hasResolvedType() && 
 						operand.getResolvedType() != EolPrimitiveType.Integer 
 						&& operand.getResolvedType() != EolPrimitiveType.Real) {
-					
+					resolvedType=EolAnyType.Instance;
 					context.addErrorMarker(operand, "Number expected instead of " + operand.getResolvedType());
+				}
+				else if(StringUtil.isOneOf(operator, "*", "/", "-")) {
+					if(operand.getResolvedType()== EolPrimitiveType.Real)
+					resolvedType= EolPrimitiveType.Real;
+				else
+					resolvedType=EolPrimitiveType.Integer;
 				}
 			}
 		}
 		
 		if (StringUtil.isOneOf(operator, "==", "=", "<>", "<", ">", ">=", "<=")) {
 			resolvedType = EolPrimitiveType.Boolean;
-		}	
+		}
+		
+		if(StringUtil.isOneOf(operator, "+")) {
+			for (Expression operand : getOperands()) {
+				 if(operand.getResolvedType() == EolPrimitiveType.String) {
+					 resolvedType=EolPrimitiveType.String;
+					 break;
+				 }
+				 
+				 if(operand.getResolvedType() == EolPrimitiveType.Integer)
+					 resolvedType=EolPrimitiveType.Integer;
+				 
+				 if(operand.getResolvedType() == EolPrimitiveType.Real)
+					 resolvedType=EolPrimitiveType.Real;
+			}
+			
+		}
 	}
 	
 	public List<Expression> getOperands() {

@@ -1,0 +1,21 @@
+@builtin
+operation Collection<Any> select (a : Any) : Collection<EolSelfExpressionType> {
+}
+
+// Remove it after testing _ 31Jan2020
+operation Collection<Any> testCol () : EolSelf {
+}
+
+// Remove it after testing _ 31Jan2020
+operation Collection<Any> testContent () : EolSelfContentType {
+}
+
+// Remove it after testing _ 25Feb2020
+operation Collection<Any> collect(a: Any) : Collection<EolSelfExpressionType> {
+}
+
+operation Collection<Any> testSelfCollection() : EolSelfCollectionType{
+}
+
+operation String split(ab: String) : Collection<String> {
+}

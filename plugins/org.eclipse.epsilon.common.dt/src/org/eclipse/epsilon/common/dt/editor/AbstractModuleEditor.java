@@ -172,7 +172,9 @@ public abstract class AbstractModuleEditor extends AbstractDecoratedTextEditor {
 			"String", "Boolean", "Integer", "Real",
 			"Any", "Map", "Collection", "Bag", "Sequence",
 			"Set", "OrderedSet", "Native", "List",
-			"ConcurrentSet", "ConcurrentBag", "ConcurrentMap")
+			"ConcurrentSet", "ConcurrentBag", "ConcurrentMap",
+			"EolSelf", "EolSelfContentType",
+			"EolfExpressionType","EolSelfCollectionType")
 		);
 	}
 	

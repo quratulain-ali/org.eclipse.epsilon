@@ -27,6 +27,10 @@ import org.eclipse.epsilon.eol.types.EolModelElementType;
 import org.eclipse.epsilon.eol.types.EolNativeType;
 import org.eclipse.epsilon.eol.types.EolNoType;
 import org.eclipse.epsilon.eol.types.EolPrimitiveType;
+import org.eclipse.epsilon.eol.types.EolSelf;
+import org.eclipse.epsilon.eol.types.EolSelfCollectionType;
+import org.eclipse.epsilon.eol.types.EolSelfContentType;
+import org.eclipse.epsilon.eol.types.EolSelfExpressionType;
 import org.eclipse.epsilon.eol.types.EolType;
 
 public class TypeExpression extends Expression {
@@ -82,7 +86,16 @@ public class TypeExpression extends Expression {
 			typeExpression.compile(context);
 		}
 		
+		if (type instanceof EolPrimitiveType ||
+				type instanceof EolSelf || 
+				type instanceof EolSelfContentType ||
+				type instanceof EolSelfExpressionType ||
+				type instanceof EolSelfCollectionType) {
+			resolvedType=type;
+		}
+		
 		if (type instanceof EolCollectionType) {
+			resolvedType=type;
 			if (parameterTypeExpressions.size() == 1) {
 				((EolCollectionType) type).setContentType(parameterTypeExpressions.get(0).getCompilationType());
 			}
@@ -106,6 +119,7 @@ public class TypeExpression extends Expression {
 			EolModelElementType modelElementType = context.getModelElementType(name);
 			if (modelElementType != null) {
 				type = modelElementType;
+				//System.out.println("Printing:"+modelElementType.getMetaClass().getSuperTypes().get(0).getName());
 				if (modelElementType.getMetaClass() == null && !context.getModelDeclarations().isEmpty()) {
 					context.addErrorMarker(this, "Unknown type " + name);
 				}
@@ -114,6 +128,8 @@ public class TypeExpression extends Expression {
 				context.addErrorMarker(this, "Undefined variable or type " + name);
 			}
 		}
+		if (type instanceof EolModelElementType)
+			resolvedType=type;
 	}
 	
 	public String getName() {
@@ -148,6 +164,18 @@ public class TypeExpression extends Expression {
 				break;
 			case "Nothing":
 				type = EolNoType.Instance;
+				break;
+			case "EolSelf":
+				type = new EolSelf();
+				break;
+			case "EolSelfContentType":
+				type = new EolSelfContentType();
+				break;
+			case "EolSelfExpressionType":
+				type = new EolSelfExpressionType();
+				break;
+			case "EolSelfCollectionType":
+				type = new EolSelfCollectionType();
 				break;
 			default:
 				type = null;

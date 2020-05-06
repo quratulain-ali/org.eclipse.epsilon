@@ -12,10 +12,13 @@ package org.eclipse.epsilon.eol.compile.m3;
 import java.util.ArrayList;
 import java.util.List;
 
+//import org.eclipse.emf.ecore.EClass;
+
 public class Metamodel extends Package {
 
 	protected List<String> warnings = new ArrayList<>();
 	protected List<String> errors = new ArrayList<>();
+	protected List<MetaClass> metaclass = new ArrayList<>();
 	
 	public List<String> getWarnings() {
 		return warnings;
@@ -32,6 +35,10 @@ public class Metamodel extends Package {
 			}
 		}
 		return null;
+	}
+	
+	public void setMetaClass(MetaClass metaClass) {
+		metaTypes.add(metaClass);
 	}
 	
 }

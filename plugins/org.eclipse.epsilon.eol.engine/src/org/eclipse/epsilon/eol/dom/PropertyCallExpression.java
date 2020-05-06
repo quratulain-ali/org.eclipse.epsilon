@@ -12,6 +12,7 @@ package org.eclipse.epsilon.eol.dom;
 import java.util.Collection;
 
 import org.eclipse.epsilon.common.module.IModule;
+import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.common.parse.AST;
 import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
 import org.eclipse.epsilon.eol.compile.m3.MetaClass;
@@ -77,6 +78,7 @@ public class PropertyCallExpression extends FeatureCallExpression {
 	
 	@Override
 	public void compile(EolCompilationContext context) {
+
 		targetExpression.compile(context);
 		
 		// Extended properties
@@ -88,6 +90,61 @@ public class PropertyCallExpression extends FeatureCallExpression {
 			if (((NameExpression) targetExpression).getResolvedType() instanceof EolModelElementType) {
 				if (nameExpression.getName().equals("all") || nameExpression.getName().equals("allInstances")) {
 					resolvedType = new EolCollectionType("Sequence", targetExpression.getResolvedType());
+					
+//					ModuleElement e=targetExpression.getParent();
+//					while (!(e instanceof Statement))
+//					e=e.getParent();
+//					
+//					Statement parentStatement = (Statement)e;
+//					String tablename= ((EolModelElementType)targetExpression.getResolvedType()).getTypeName();
+//					parentStatement.translatedQueryParams.put("table",tablename);
+//					parentStatement.translatedQueryParams.put("feature","*");
+				}
+				else {
+					EolType type = targetExpression.getResolvedType();
+					
+					boolean many = false;
+					MetaClass metaClass = null;
+					if (type instanceof EolModelElementType && ((EolModelElementType) type).getMetaClass() != null) {
+						metaClass = (MetaClass) ((EolModelElementType) type).getMetaClass();
+					}
+					else if (type instanceof EolCollectionType && ((EolCollectionType) type).getContentType() instanceof EolModelElementType) {
+						metaClass = ((EolModelElementType)((EolCollectionType) type).getContentType()).getMetaClass();
+						many = true;
+					}
+					
+					if (metaClass != null) {
+						StructuralFeature structuralFeature = metaClass.getStructuralFeature(nameExpression.getName());
+						if (structuralFeature != null) {
+							if (structuralFeature.isMany()) {
+								EolCollectionType collectionType = null;
+								if (structuralFeature.isOrdered()) {
+									if (structuralFeature.isUnique())
+										collectionType = new EolCollectionType("OrderedSet");
+									else
+										collectionType = new EolCollectionType("Sequence");
+								}
+								else {
+									if (structuralFeature.isUnique())
+										collectionType = new EolCollectionType("Set");
+									else
+										collectionType = new EolCollectionType("Bag");
+								}
+								collectionType.setContentType(structuralFeature.getType());
+								resolvedType = collectionType;
+							}
+							else {
+								resolvedType = structuralFeature.getType();
+							}
+							if (many) {
+								resolvedType = new EolCollectionType("Sequence", resolvedType);
+							}
+						}
+						else {
+							context.addWarningMarker(nameExpression, "Structural feature " + nameExpression.getName() + " not found in type " + metaClass.getName());
+						}
+					}
+					
 				}
 			}
 		}
@@ -98,7 +155,7 @@ public class PropertyCallExpression extends FeatureCallExpression {
 			boolean many = false;
 			MetaClass metaClass = null;
 			if (type instanceof EolModelElementType && ((EolModelElementType) type).getMetaClass() != null) {
-				metaClass = ((EolModelElementType) type).getMetaClass();
+				metaClass = (MetaClass) ((EolModelElementType) type).getMetaClass();
 			}
 			else if (type instanceof EolCollectionType && ((EolCollectionType) type).getContentType() instanceof EolModelElementType) {
 				metaClass = ((EolModelElementType)((EolCollectionType) type).getContentType()).getMetaClass();
@@ -131,6 +188,16 @@ public class PropertyCallExpression extends FeatureCallExpression {
 					if (many) {
 						resolvedType = new EolCollectionType("Sequence", resolvedType);
 					}
+					
+//					ModuleElement e=targetExpression.getParent();
+//					while (!(e instanceof Statement))
+//					e=e.getParent();
+//					
+//					Statement parentStatement = (Statement)e;
+//				//	String tablename= ((EolModelElementType)targetExpression.getResolvedType()).getTypeName();
+//					//parentStatement.translatedQueryParams.put("table",tablename);
+//					parentStatement.translatedQueryParams.put("feature",propertyNameExpression.getName());
+//					
 				}
 				else {
 					context.addWarningMarker(nameExpression, "Structural feature " + nameExpression.getName() + " not found in type " + metaClass.getName());

@@ -48,4 +48,10 @@ public class EolModelType extends EolType {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public EolType getParentType() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -6,7 +6,8 @@ Bundle-SymbolicName: org.eclipse.epsilon.eol.engine;singleton:=true
 Bundle-Version: 1.6.0.qualifier
 Bundle-Vendor: Eclipse Modeling Project
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Require-Bundle: org.eclipse.epsilon.common;visibility:=reexport
+Require-Bundle: org.eclipse.epsilon.common;visibility:=reexport,
+ org.junit
 Export-Package: org.eclipse.epsilon.eol,
  org.eclipse.epsilon.eol.compile.context,
  org.eclipse.epsilon.eol.compile.m3,

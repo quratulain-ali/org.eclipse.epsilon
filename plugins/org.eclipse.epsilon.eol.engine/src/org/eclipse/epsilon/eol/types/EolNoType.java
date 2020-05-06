@@ -45,5 +45,11 @@ public class EolNoType extends EolType {
 	}
 	
 	public static class EolNoTypeInstance{}
+
+	@Override
+	public EolType getParentType() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 }

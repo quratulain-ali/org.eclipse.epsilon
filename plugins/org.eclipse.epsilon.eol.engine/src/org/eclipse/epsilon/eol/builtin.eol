@@ -1,0 +1,201 @@
+@builtin
+operation String firstToLowerCase () : String {
+}
+// Added for Eugenia _ 25March2020
+@firstorder
+operation Collection<Any> sortBy(a : Any) : Collection <Any>{
+}
+// Remove it after testing _ 25Feb2020
+@firstorder
+operation Collection<Any> collect(a: Any) : Collection<EolSelfExpressionType> {
+}
+operation String toCharSequence() : List<String> {
+}
+
+operation String pad(a: Integer, b: String, c: Boolean) : String {
+}
+
+operation String isSubstringOf (a: String) : Boolean {
+}
+
+operation String store(where: String) {
+}
+
+operation String firstToUpperCase() :String {
+}
+
+operation String ftuc() : String {
+}
+operation String trim() : String {
+}
+operation String ftlc () : String {
+}
+
+operation String characterAt(index: Integer): String {
+}
+
+operation String escapeXml() : String {
+}
+
+operation String setTarget(target: Object) {
+}
+
+operation String toEnum() : Object {
+}
+
+operation String contributesTo(target : Object) : Boolean {
+} 
+
+operation Integer mod(other: Integer) : Integer {
+}
+
+operation Integer toHex() : String {
+}
+
+operation Integer toBinary() : String {
+}
+
+operation Integer iota (i: Integer, step: Integer) : Sequence <Integer> {
+}
+
+operation Integer to (end: Integer) : Sequence<Integer> {
+}
+
+operation Any asDate (format: String) : Date {
+}
+
+operation Any asUnicode () : String {
+}
+
+operation Any asBoolean () : Boolean{
+}
+
+operation Any asLong () : Integer {
+}
+
+operation Any asFloat () : Real {
+}
+
+operation Any asDouble () : Real {
+}
+
+operation Any asReal () : Real {
+}
+
+operation Any isReal () : Boolean {
+}
+
+operation Any isInteger () : Boolean {
+}
+
+operation Any asInteger () : Integer {
+}
+
+operation Any format () : String {
+}
+
+operation Any errln (prefix: Object, suffix: Object) : Object {
+}
+
+operation Any errln (prefix: Object) : Object {
+}
+
+operation Any errln () : Object {
+}
+
+operation Any err (prefix: Object, suffix: Object) : Object {
+}
+
+operation Any err (prefix: Object) : Object {
+}
+
+operation Any err () : Object {
+}
+
+operation Any print (prefix: Object, suffix: Object) : Object {
+}
+
+operation Any print (prefix: Object) : Object {
+}
+
+operation Any print () : Object {
+}
+
+operation Any println (prefix: Object, suffix: Object) : Object {
+}
+
+operation Any println (prefix: Object) : Object {
+}
+
+operation Any println () : Object {
+}
+
+operation Any ifUndefined (alternative: Object) : Object {
+}
+
+operation Any isUndefined () : Boolean {
+}
+operation String split(ab: String) : Collection<String> {
+}
+
+// Remove it after testing _ 31Jan2020
+operation Collection<Any> testCol () : EolSelf {
+}
+
+// Remove it after testing _ 31Jan2020
+operation Collection<Any> testContent () : EolSelfContentType {
+}
+// Added for Eugenia _ 17March2020
+operation Collection<Any> first() : Any {
+}
+// Added for Eugenia _ 17March2020
+operation Collection<Any> isEmpty() : Boolean {
+}
+// Added for Eugenia _ 17March2020
+operation Any isDefined() : Boolean {
+}
+// Added for Eugenia _ 17March2020
+operation Collection<Any> add(item : Any) : Boolean{
+}
+// Added for Eugenia _ 17March2020
+operation Collection<Any> addAll(col : Collection) : Boolean{
+}
+// Added for Eugenia _ 17March2020
+operation Collection<Any> clone() : Collection <Any>{
+}
+// Added for Eugenia _ 17March2020
+operation Collection<Any> size() : Integer{
+}
+// Added for Eugenia _ 17March2020
+operation Any asSequence() : Sequence{
+}
+// Added for Eugenia _ 17March2020
+operation Collection<Any> asSequence() : Sequence{
+}
+// Added for Eugenia _ 18March2020
+operation Collection<Any> at(index : Integer) : Any{
+}
+// Added for Eugenia _ 17March2020
+operation Any isKindOf(type : Any) : Boolean{
+}
+operation Any allOfKind() : Collection <Any>{
+}
+// Added for Eugenia _ 17March2020
+operation Collection<Any> includes(item : Any) : Boolean{
+}
+// Added for Eugenia _ 18March2020
+operation Collection<Any> excludes(item : Any) : Boolean{
+}
+// Added for Eugenia _ 18March2020
+operation Any isTypeOf(type : Any) : Boolean{
+}
+// Added for Eugenia _ 18March2020
+operation Any get(key : Any) : Any{
+}
+
+// Remove it after testing _ 25Feb2020
+operation Collection<Any> testSelfCollection() : EolSelfCollectionType{
+}
+
+operation Any asSet(): Set {
+}

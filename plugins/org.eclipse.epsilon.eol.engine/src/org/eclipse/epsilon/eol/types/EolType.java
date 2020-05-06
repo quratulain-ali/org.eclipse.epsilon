@@ -19,6 +19,8 @@ public abstract class EolType {
 	
 	public abstract boolean isType(Object o);
 	
+	public abstract EolType getParentType();
+	
 	public abstract boolean isKind(Object o);
 	
 	public abstract Object createInstance() throws EolRuntimeException;

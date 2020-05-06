@@ -1,0 +1,49 @@
+model flowchart driver EMF {
+nsuri = "flowchart" 
+};
+
+var a : Collection<String> = Collection {"d","a"};
+var b : Sequence<String> = Sequence {"a","c"};
+var c : String = "e";
+var d : Sequence<Integer> = Sequence {1,2,3};
+var ac : Action;
+
+"P".HelloParameters(ac,"5");
+
+c.HelloParameters(10 , "h".HelloParameters(9,"d"));
+/*Parameters type mismatch*/
+"y".HelloParameters(9,"d").HelloParameters(10,"a");
+"r".HelloParameters("y".HelloParameters(9,"d"),"a");
+/**/
+c.HelloParametersCol(d);
+/**/
+/*Parameters type mismatch*/
+c.HelloParametersCol(a);
+/*Parameters type mismatch*/
+c.HelloParametersCol(b);
+/*Parameters type mismatch*/
+c.HelloParameters(4,5);
+
+
+/*Parameters type mismatch*/
+c.HelloParameters(a,"i");
+/*Parameters type mismatch*/
+"a".HelloParameters("s".HelloParameters(9,"d"),"a");
+
+/*Number of parameters does not match*/
+c.HelloParameters(4);
+/*Number of parameters does not match*/
+c.HelloParameters(4,"s",8);
+/*Parameters type mismatch*/
+c.HelloParameters("a" , 9);
+
+
+operation String HelloParameters(a: Action , b: String) : Boolean{
+	return true;
+}
+operation String HelloParameters(c: Integer , d: String) : Integer{
+	return 1;
+}
+operation String HelloParametersCol(a: Collection<Integer>) : String{
+	return "OK";
+}

@@ -1,0 +1,40 @@
+var col : Collection;
+/*Parameters type mismatch*/ getSequence(col); 
+/*Parameters type mismatch*/ getSet(col);	
+/*Parameters type mismatch*/ getOrderedSet(col);	
+/*Parameters type mismatch*/ getBag(col);	
+ /**/   getCollection(col);
+
+var bag : Bag;
+/*Parameters type mismatch*/ getSequence(bag); 
+/*Parameters type mismatch*/ getSet(bag);	
+/*Parameters type mismatch*/ getOrderedSet(bag);	
+/**/                         getBag(bag); 
+/*Parameters type mismatch*/ getCollection(bag); 
+
+var ordered : OrderedSet;
+/*Parameters type mismatch*/ getSequence(ordered); 
+/*Parameters type mismatch*/ getSet(ordered);	
+/*Parameters type mismatch*/ getBag(ordered);	
+/*Parameters type mismatch*/ getCollection(ordered); 
+/**/                         getOrderedSet(ordered); 
+
+var set : Set;
+/*Parameters type mismatch*/ getSequence(set); 
+/*Parameters type mismatch*/ getOrderedSet(set);	
+/*Parameters type mismatch*/ getBag(set);
+/*Parameters type mismatch*/ getCollection(set); 
+/**/						 getSet(set);
+
+var seq : Sequence;
+/*Parameters type mismatch*/ getSet(seq);	
+/*Parameters type mismatch*/ getOrderedSet(seq);	
+/*Parameters type mismatch*/ getBag(seq);	
+/*Parameters type mismatch*/ getCollection(set); 
+/**/						 getSequence(seq); 
+
+operation getSequence ( c : Sequence ) : Integer{return 1;}
+operation getSet ( c : Set ) : Integer{return 2;}
+operation getOrderedSet ( c : OrderedSet) : Integer{return 3;}
+operation getBag( c : Bag) : Integer{return 4;}
+operation getCollection ( c : Collection) : Integer{return 5;}

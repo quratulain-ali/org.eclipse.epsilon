@@ -84,4 +84,9 @@ public class EolPrimitiveType extends EolType {
 	public String toString() {
 		return getName();
 	}
+	
+	@Override
+	public EolType getParentType() {
+		return EolAnyType.Instance;
+	}
 }

@@ -16,6 +16,7 @@ import java.util.WeakHashMap;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.epsilon.common.module.IModule;
+import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.common.parse.AST;
 import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
 import org.eclipse.epsilon.eol.exceptions.EolIllegalReturnException;
@@ -44,6 +45,7 @@ public class Operation extends AnnotatableModuleElement implements ICompilableMo
 	// If this operation cannot be cached, it will stay null, to save some memory.
 	// Note that this cache needs to be thread-safe!
 	protected Map<Object, Object> cache;
+	public boolean returnFlag=false; // true if there is a return statement {default = false}
 	
 	//TODO: Add guards to helpers
 	public Operation() {
@@ -113,17 +115,38 @@ public class Operation extends AnnotatableModuleElement implements ICompilableMo
 	@Override
 	public void compile(EolCompilationContext context) {
 		EolType contextType = EolNoType.Instance;
+		
 		if (contextTypeExpression != null) {
 			contextTypeExpression.compile(context);
 			contextType = contextTypeExpression.getCompilationType();
 		}
-		
+
 		context.getFrameStack().enterLocal(FrameType.PROTECTED, this, new Variable("self", contextType));
 		for (Parameter parameter : formalParameters) {
 			parameter.compile(context);
 		}
 		body.compile(context);
+		
+		if (returnFlag == false && returnTypeExpression != null)
+			context.addErrorMarker(returnTypeExpression, "This operation should return "+ returnTypeExpression.getName());
 		context.getFrameStack().leaveLocal(this);
+	}
+	
+	public boolean hasReturnStatement()
+	{
+		ArrayList<ModuleElement> statements = new ArrayList<ModuleElement>();
+		statements.addAll(body.getChildren());
+		
+			while(! (statements.isEmpty())) 
+			{	
+				ModuleElement st = statements.get(0);
+				statements.remove(st);
+				if (!(st.getChildren().isEmpty()))
+					statements.addAll(st.getChildren());
+				if (st instanceof ReturnStatement)
+					return true;
+			}
+		return false;
 	}
 	
 	public void clearCache() {

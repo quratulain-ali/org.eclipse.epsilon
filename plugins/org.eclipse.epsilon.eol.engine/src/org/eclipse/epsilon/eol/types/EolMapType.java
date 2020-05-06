@@ -107,4 +107,10 @@ public class EolMapType extends EolType {
 	public String toString() {
 		return getName()+"<" + keyType + ", " + valueType + ">";
 	}
+
+	@Override
+	public EolType getParentType() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
