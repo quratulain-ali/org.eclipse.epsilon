@@ -1,3 +1,4 @@
+
 @builtin
 operation String firstToLowerCase () : String {
 }
@@ -9,6 +10,7 @@ operation Collection<Any> sortBy(a : Any) : Collection <Any>{
 @firstorder
 operation Collection<Any> collect(a: Any) : Collection<EolSelfExpressionType> {
 }
+@builtin
 operation String toCharSequence() : List<String> {
 }
 
@@ -120,14 +122,15 @@ operation Any print (prefix: Object) : Object {
 
 operation Any print () : Object {
 }
-
-/*operation Any println (prefix: Object, suffix: Object) : Object {
+/*
+operation Any println (prefix: Object, suffix: Object) : Object {
 }
 
 operation Any println (prefix: Object) : Object {
 }
 
 operation Any println () : Object {
+
 }
 */
 operation Any ifUndefined (alternative: Object) : Object {
@@ -163,8 +166,10 @@ operation Collection<Any> addAll(col : Collection) : Boolean{
 // Added for Eugenia _ 17March2020
 operation Collection<Any> clone() : Collection <Any>{
 }
+@builtin
 // Added for Eugenia _ 17March2020
 operation Collection<Any> size() : Integer{
+1.println();
 }
 // Added for Eugenia _ 17March2020
 operation Any asSequence() : Sequence{

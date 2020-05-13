@@ -470,10 +470,6 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 			}
 	}
 	
-	public String getOperationName() {
-		return nameExpression.getName();
-	}
-	
 	public void setContextless(boolean contextless) {
 		this.contextless = contextless;
 	}

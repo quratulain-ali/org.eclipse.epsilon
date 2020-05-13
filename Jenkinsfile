@@ -21,7 +21,7 @@ pipeline {
     }
     options {
       disableConcurrentBuilds()
-      buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '28', numToKeepStr: ''))
+      buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '14', numToKeepStr: ''))
     }
     environment {
       KEYRING = credentials('secret-subkeys.asc')
@@ -38,9 +38,9 @@ pipeline {
           when { allOf { branch 'master'; changeset comparator: 'REGEXP', pattern: '(Jenkinsfile)|(features\\/.*)|(plugins\\/.*)|(releng\\/.*)|(pom\\.xml)|(standalone\\/.*)' } }
           steps {
             wrap([$class: 'Xvnc', takeScreenshot: false, useXauthority: false]) {
-              sh 'mvn -T 1C -B --quiet clean javadoc:aggregate install -P eclipse-sign'
-              sh 'mvn -B --quiet -f standalone/pom.xml process-resources install'
-              sh 'mvn --quiet -f tests/org.eclipse.epsilon.test/pom.xml surefire:test'
+              sh 'mvn -U -B -T 1C clean install javadoc:aggregate -P eclipse-sign'
+              //sh 'mvn -B -f tests/org.eclipse.epsilon.test/pom.xml surefire:test -P ci,-plugged'
+              sh 'mvn -B --quiet -f standalone/pom.xml install'
             }
             sh 'cd standalone/org.eclipse.epsilon.standalone && bash build-javadoc-jar.sh'
           }

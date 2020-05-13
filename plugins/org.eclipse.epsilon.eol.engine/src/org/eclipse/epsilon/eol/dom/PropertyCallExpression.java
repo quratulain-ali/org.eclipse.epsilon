@@ -206,8 +206,4 @@ public class PropertyCallExpression extends FeatureCallExpression {
 			
 		}
 	}
-	
-	public NameExpression getPropertyNameExpression() {
-		return getNameExpression();
-	}
 }

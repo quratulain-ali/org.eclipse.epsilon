@@ -9,6 +9,7 @@
  ******************************************************************************/
 package org.eclipse.epsilon.eol;
 
+import java.io.File;
 import java.net.URISyntaxException;
 import java.util.*;
 import org.antlr.runtime.ANTLRInputStream;
@@ -29,6 +30,7 @@ import org.eclipse.epsilon.eol.execute.Return;
 import org.eclipse.epsilon.eol.execute.context.EolContext;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
+import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.eol.parse.EolLexer;
 import org.eclipse.epsilon.eol.parse.EolParser;
 import org.eclipse.epsilon.eol.tools.EolSystem;
@@ -372,7 +374,7 @@ public class EolModule extends AbstractModule implements IEolModule {
 			}
 			imports.add(import_);
 		}
-		
+	try {	
 		if (!(this instanceof BuiltinEolModule)) {
 			Import builtinImport = new Import() {
 				@Override
@@ -386,12 +388,17 @@ public class EolModule extends AbstractModule implements IEolModule {
 
 			try {
 				builtinImport.load(EolModule.class.getResource(".").toURI());
+			
 			} catch (URISyntaxException e) {
 				throw new RuntimeException(e);
 			}
-
 			imports.add(builtinImport);
 		}
+	}
+	catch (Exception e)
+	{
+		e.printStackTrace();
+	}
 
 		return imports;
 	}
@@ -445,15 +452,47 @@ public class EolModule extends AbstractModule implements IEolModule {
 	@Override
 	public List<ModuleMarker> compile() {
 		EolCompilationContext context = getCompilationContext();
+		
 		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
 			modelDeclaration.compile(context);
 		}
+		
+		//Check the signature of functions
+		for (Operation operation : getOperations()) {
+			
+			if (operation.getReturnTypeExpression() == null) {
+				
+				if (operation.hasReturnStatement())
+				{
+					operation.returnFlag = true;
+					operation.setReturnTypeExpression(new TypeExpression("Any"));
+				}
+				
+			}
+			// when returnType is not null
+			else
+				operation.returnFlag = true;
+		}
+		
+				
+		
+		
+		if (main != null) {
+ 			main.compile(context);
+		}	
+		
 		for (Operation operation : getDeclaredOperations()) {
 			operation.compile(context);
 		}
-		if (main != null) {
-			main.compile(context);
+		
+		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
+			
+			IModel model=context.getModelFactory().createModel(modelDeclaration.getDriverNameExpression().getName());
+			model.reWrite(this);
 		}
+		
+		//imports.remove(imports.size()-1);
+		
 		return context.getMarkers();
 	}
 	
@@ -502,5 +541,19 @@ public class EolModule extends AbstractModule implements IEolModule {
 			op.clearCache();
 		}
 		getContext().getExtendedProperties().clear();
+	}
+	
+	public static void main(String[] args) {
+		EolModule module = new EolModule();
+		
+		try {
+			module.parse("1.println();");
+		//	module.compile();
+			module.execute();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		
 	}
 }
