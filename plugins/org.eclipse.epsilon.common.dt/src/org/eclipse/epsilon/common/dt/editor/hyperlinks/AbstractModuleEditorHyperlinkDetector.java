@@ -49,7 +49,7 @@ public class AbstractModuleEditorHyperlinkDetector implements IHyperlinkDetector
 		for (Object op : ast.matchedoperations) {
 				Operation operation = (Operation) op;
 				
-			if (operation.getName().equals(ast.getOperationName()) && operation.getFormalParameters().size() == ast.getParameterExpressions().size())	
+			if (operation.getName().equals(ast.getName()) && operation.getFormalParameters().size() == ast.getParameterExpressions().size())	
 			{
 				int index =0;
 				ok = false;
