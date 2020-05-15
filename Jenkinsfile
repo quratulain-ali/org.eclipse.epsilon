@@ -16,12 +16,12 @@ def getSlackMessage() {
 pipeline {
     agent {
       kubernetes {
-        label 'ui-test'
+        label 'ui-tests'
       }
     }
     options {
       disableConcurrentBuilds()
-      buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '14', numToKeepStr: ''))
+      buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '10', numToKeepStr: ''))
     }
     environment {
       KEYRING = credentials('secret-subkeys.asc')
@@ -35,18 +35,28 @@ pipeline {
     }
     stages {
         stage('Build') {
-          when { allOf { branch 'master'; changeset comparator: 'REGEXP', pattern: '(Jenkinsfile)|(features\\/.*)|(plugins\\/.*)|(releng\\/.*)|(pom\\.xml)|(standalone\\/.*)' } }
+          when { allOf { branch 'master'; changeset comparator: 'REGEXP', pattern: '(Jenkinsfile)|(pom\\.xml)|(features\\/.*)|(plugins\\/.*)|(tests\\/.*)|(releng\\/.*target.*)' } }
           steps {
             wrap([$class: 'Xvnc', takeScreenshot: false, useXauthority: false]) {
-              sh 'mvn -U -B -T 1C clean install javadoc:aggregate -P eclipse-sign'
-              //sh 'mvn -B -f tests/org.eclipse.epsilon.test/pom.xml surefire:test -P ci,-plugged'
-              sh 'mvn -B --quiet -f standalone/pom.xml install'
+              sh 'mvn -B clean install javadoc:aggregate -P eclipse-sign'
             }
+          }
+        }
+        stage('Test') {
+          when { allOf { branch 'master'; changeset comparator: 'REGEXP', pattern: '(Jenkinsfile)|(pom\\.xml)|(plugins\\/.*)|(tests\\/.*)' } }
+          steps {
+            sh 'mvn -B -f tests/org.eclipse.epsilon.test surefire:test -P ci'
+          }
+        }
+        stage('Build JARs') {
+          when { allOf { branch 'master'; changeset comparator: 'REGEXP', pattern: '(Jenkinsfile)|(pom\\.xml)|(plugins\\/.*)|(standalone\\/.*)' } }
+          steps {
+            sh 'mvn -B -f standalone install'
             sh 'cd standalone/org.eclipse.epsilon.standalone && bash build-javadoc-jar.sh'
           }
         }
         stage('Update website') {
-          when { allOf { branch 'master'; changeset comparator: 'REGEXP', pattern: '(Jenkinsfile)|(features\\/.*)|(plugins\\/.*)|(releng\\/.*interim\\/.*)|(pom\\.xml)|(standalone\\/.*)' } }
+          when { allOf { branch 'master'; changeset comparator: 'REGEXP', pattern: '(Jenkinsfile)|(pom\\.xml)|(features\\/.*)|(plugins\\/.*)|(releng\\/.*interim.*)|(standalone\\/.*)' } }
           steps {
             lock('download-area') {
               sshagent (['projects-storage.eclipse.org-bot-ssh']) {
@@ -88,7 +98,7 @@ pipeline {
               done
             '''
             lock('ossrh') {
-              sh 'mvn -B --quiet -f standalone/org.eclipse.epsilon.standalone/pom.xml -P ossrh org.eclipse.epsilon:eutils-maven-plugin:deploy'
+              sh 'mvn -B -f standalone/org.eclipse.epsilon.standalone -P ossrh org.eclipse.epsilon:eutils-maven-plugin:deploy'
             }
           }
         }

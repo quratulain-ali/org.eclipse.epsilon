@@ -22,6 +22,7 @@ import org.eclipse.epsilon.egl.engine.traceability.fine.test.unit.*;
 import org.eclipse.epsilon.egl.test.acceptance.*;
 import org.eclipse.epsilon.egl.test.unit.EglUnitTestSuite;
 import org.eclipse.epsilon.egx.engine.test.acceptance.*;
+import org.eclipse.epsilon.egx.engine.test.acceptance.hutn.EgxHutnTestSuite;
 import org.eclipse.epsilon.emc.bibtex.*;
 import org.eclipse.epsilon.emc.csv.test.*;
 import org.eclipse.epsilon.emc.emf.test.*;
@@ -38,7 +39,6 @@ import org.eclipse.epsilon.evl.engine.test.acceptance.*;
 import org.eclipse.epsilon.ewl.engine.test.acceptance.*;
 import org.eclipse.epsilon.flexmi.test.FlexmiTestSuite;
 import org.eclipse.epsilon.flock.engine.test.acceptance.FlockEngineAcceptanceTestSuite;
-import org.eclipse.epsilon.flock.test.*;
 import org.eclipse.epsilon.flock.test.unit.FlockEngineUnitTestSuite;
 import org.eclipse.epsilon.hutn.test.*;
 import org.eclipse.epsilon.hutn.unparser.*;
@@ -54,19 +54,28 @@ import junit.framework.Test;
  * Test suite to be run on CI server:
  * <code>mvn -f tests/org.eclipse.epsilon.test surefire:test -P ci,-plugged</code>
  * 
- * FIXME: The commented out tests
+ * FIXME: The commented out tests. These have no excuse not to be working.
  * 
  * @author Sina Madani
  * @since 1.6
  */
 @RunWith(Suite.class)
 @SuiteClasses({
-	/*HutnTestSuite.class,
+	HutnTestSuite.class,
 	HutnUnparserUnitTestSuite.class,
 	HutnXmiTestSuite.class,
 	HutnEmcDriverTestSuite.class,
+	EgxHutnTestSuite.class,
 	FlockEngineAcceptanceTestSuite.class,
-	FlockEngineUnitTestSuite.class,*/
+	/*FlockEngineUnitTestSuite.class,
+	EglTraceabilityEditorTestSuite.class,
+	EglFineGrainedTraceabilityUnitTestSuite.class,*/
+	EglAcceptanceTestSuite.class,
+	EglUnitTestSuite.class,
+	EglDevelopmentToolsTestSuite.class,
+	EglFineGrainedTraceabilityAcceptanceTestSuite.class,
+	EgxAcceptanceTestSuite.class,
+	WorkflowTestSuite.class,
 	CommonsTestSuite.class,
 	EolUnitTestSuite.class, 
 	EolAcceptanceTestSuite.class,
@@ -76,14 +85,6 @@ import junit.framework.Test;
 	EmlAcceptanceTestSuite.class,
 	EwlAcceptanceTestSuite.class,
 	EplAcceptanceTestSuite.class,
-	EglAcceptanceTestSuite.class,
-	EglUnitTestSuite.class,
-	EglDevelopmentToolsTestSuite.class,
-	EglTraceabilityEditorTestSuite.class,
-	EglFineGrainedTraceabilityAcceptanceTestSuite.class,
-	EglFineGrainedTraceabilityUnitTestSuite.class,
-	EgxAcceptanceTestSuite.class,
-	WorkflowTestSuite.class,
 	PlainXmlTestSuite.class,
 	BibtexModelTestSuite.class,
 	GraphmlTestSuite.class,
