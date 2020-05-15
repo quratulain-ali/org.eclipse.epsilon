@@ -21,7 +21,7 @@ pipeline {
     }
     options {
       disableConcurrentBuilds()
-      buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '10', numToKeepStr: ''))
+      buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '14', numToKeepStr: ''))
     }
     environment {
       KEYRING = credentials('secret-subkeys.asc')
@@ -37,18 +37,19 @@ pipeline {
         stage('Build') {
           when { allOf { branch 'master'; changeset comparator: 'REGEXP', pattern: '(Jenkinsfile)|(pom\\.xml)|(features\\/.*)|(plugins\\/.*)|(tests\\/.*)|(releng\\/.*target.*)' } }
           steps {
-            wrap([$class: 'Xvnc', takeScreenshot: false, useXauthority: false]) {
-              sh 'mvn -B clean install javadoc:aggregate -P eclipse-sign'
-            }
+            sh 'mvn -T 1C -B clean install javadoc:aggregate -P eclipse-sign'
           }
         }
         stage('Test') {
           when { allOf { branch 'master'; changeset comparator: 'REGEXP', pattern: '(Jenkinsfile)|(pom\\.xml)|(plugins\\/.*)|(tests\\/.*)' } }
           steps {
+            wrap([$class: 'Xvnc', takeScreenshot: false, useXauthority: false]) {
+              sh 'mvn -B -f tests/org.eclipse.epsilon.test install -P plugged'
+            }
             sh 'mvn -B -f tests/org.eclipse.epsilon.test surefire:test -P ci'
           }
         }
-        stage('Build JARs') {
+        stage('Standalone JARs') {
           when { allOf { branch 'master'; changeset comparator: 'REGEXP', pattern: '(Jenkinsfile)|(pom\\.xml)|(plugins\\/.*)|(standalone\\/.*)' } }
           steps {
             sh 'mvn -B -f standalone install'

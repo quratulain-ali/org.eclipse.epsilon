@@ -17,10 +17,6 @@
 		<testOutputDirectory>${project.basedir}/target/classes</testOutputDirectory>
 	</build>
 
-	<properties>
-    	<os-jvm-flags/>
-  	</properties>
-
 	<dependencies>
 		<dependency>
 		  <groupId>junit</groupId>
@@ -32,9 +28,18 @@
 
 	<profiles>
 		<profile>
+			<id>plugin-build</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<packaging.type>eclipse-plugin</packaging.type>
+			</properties>
+		</profile>
+		<profile>
 			<id>plugged</id>
 			<activation>
-                <activeByDefault>true</activeByDefault>
+				<activeByDefault>false</activeByDefault>
             </activation>
 			<build>
 				<plugins>
@@ -47,7 +52,7 @@
 							<useUIThread>true</useUIThread>
 							<useUIHarness>true</useUIHarness>
 							<includes>
-								<include>**/*EpsilonPluggedInTest*.class</include>
+								<include>**/*EpsilonPluggedInTest*</include>
 							</includes>
 							<dependencies>
 								<dependency>
@@ -72,7 +77,7 @@
 			</build>
 			<properties>
 				<packaging.type>eclipse-test-plugin</packaging.type>
-				<argLine>-ea -Xmx2g ${os-jvm-flags}</argLine>
+				<argLine>-ea -Xmx2g</argLine>
 				<tests.skip.tests>false</tests.skip.tests>
 				<skipTests>${tests.skip.tests}</skipTests>
 			</properties>
@@ -90,7 +95,7 @@
 						<version>3.0.0-M4</version>
 						<configuration>
 							<includes>
-								<include>**/*EpsilonJenkinsTest*.java</include>
+								<include>**/*EpsilonJenkinsTest*</include>
 							</includes>
 							<reuseForks>true</reuseForks>
 							<forkCount>1</forkCount>
@@ -106,7 +111,7 @@
 			</build>
 			<properties>
 				<packaging.type>eclipse-plugin</packaging.type>
-				<argLine>-ea -Xmx3g ${os-jvm-flags}</argLine>
+				<argLine>-ea -Xmx3g</argLine>
 			</properties>
 		</profile>
 		<profile>
@@ -114,6 +119,13 @@
 			<activation>
                 <activeByDefault>false</activeByDefault>
 			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>org.eclipse.epsilon</groupId>
+					<artifactId>org.eclipse.epsilon.evl.engine.test.acceptance</artifactId>
+					<version>${project.version}</version>
+				</dependency>
+			</dependencies>
 			<build>
 				<plugins>
 					<plugin>
@@ -122,11 +134,13 @@
 						<version>3.0.0-M4</version>
 						<configuration>
 							<includes>
-								<include>**/*EpsilonSurefireTest*.java</include>
-								<include>**/*EvlAdvancedTest*.java</include>
+								<include>**/*EpsilonSurefireTest*</include>
+								<include>**/*EvlAdvancedTest*</include>
 							</includes>
+							<dependenciesToScan>
+								<dependency>org.eclipse.epsilon:org.eclipse.epsilon.evl.engine.test.acceptance</dependency>
+							</dependenciesToScan>
 							<additionalClasspathElements>
-								<additionalClasspathElement>${basedir}/../org.eclipse.epsilon.evl.engine.test.acceptance</additionalClasspathElement>
 								<additionalClasspathElement>${basedir}/../../plugins/org.eclipse.epsilon.workflow/lib/org.eclipse.epsilon.workflow.jar</additionalClasspathElement>
 								<additionalClasspathElement>${basedir}/../../plugins/org.eclipse.epsilon.workflow.emf/lib/org.eclipse.epsilon.workflow.emf.jar</additionalClasspathElement>
 							</additionalClasspathElements>
@@ -136,17 +150,8 @@
 			</build>
 			<properties>
 				<packaging.type>eclipse-plugin</packaging.type>
-				<argLine>-ea -Xms2g -Xmx8g ${os-jvm-flags}</argLine>
+				<argLine>-ea -Xms2g -Xmx6g</argLine>
 			</properties>
 		</profile>
-		<profile>
-    		<id>macosx-jvm-flags</id>
-    		<activation>
-        		<os><family>mac</family></os>
-			</activation>
-    		<properties>
-        		<os-jvm-flags>-XstartOnFirstThread</os-jvm-flags>
-      		</properties>
-    	</profile>
 	</profiles>
 </project>
