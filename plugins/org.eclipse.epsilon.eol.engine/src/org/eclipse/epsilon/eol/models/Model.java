@@ -201,7 +201,7 @@ public abstract class Model implements IModel{
 	}
 	
 	@Override
-	public EolModule reWrite(EolModule module) {
+	public EolModule rewrite(EolModule module) {
 		return null;
 	}
 

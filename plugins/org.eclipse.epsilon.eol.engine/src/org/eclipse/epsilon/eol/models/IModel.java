@@ -150,7 +150,7 @@ public interface IModel extends AutoCloseable {
 	
 	Metamodel getMetamodel(StringProperties properties, IRelativePathResolver resolver);
 	
-	EolModule reWrite(EolModule module);
+	EolModule rewrite(EolModule module);
 	
 	/**
 	 * @since 1.6

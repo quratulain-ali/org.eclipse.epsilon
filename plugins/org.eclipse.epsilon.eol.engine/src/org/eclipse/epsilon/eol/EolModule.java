@@ -11,6 +11,7 @@ package org.eclipse.epsilon.eol;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.*;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.Lexer;
@@ -374,31 +375,31 @@ public class EolModule extends AbstractModule implements IEolModule {
 			}
 			imports.add(import_);
 		}
-	try {	
-		if (!(this instanceof BuiltinEolModule)) {
-			Import builtinImport = new Import() {
-				@Override
-				public String getPath() {
-					return "builtin.eol";
-				}
-			};
-			BuiltinEolModule builtinModule = new BuiltinEolModule();
-			builtinModule.setParentModule(this);
-			builtinImport.setImportedModule(builtinModule);
-
-			try {
-				builtinImport.load(EolModule.class.getResource(".").toURI());
-			
-			} catch (URISyntaxException e) {
-				throw new RuntimeException(e);
-			}
-			imports.add(builtinImport);
-		}
-	}
-	catch (Exception e)
-	{
-		e.printStackTrace();
-	}
+//	try {	
+//		if (!(this instanceof BuiltinEolModule)) {
+//			Import builtinImport = new Import() {
+//				@Override
+//				public String getPath() {
+//					return "builtin.eol";
+//				}
+//			};
+//			BuiltinEolModule builtinModule = new BuiltinEolModule();
+//			builtinModule.setParentModule(this);
+//			builtinImport.setImportedModule(builtinModule);
+//
+//			try {
+//				builtinImport.load(EolModule.class.getResource(".").toURI());
+//			
+//			} catch (URISyntaxException e) {
+//				throw new RuntimeException(e);
+//			}
+//			imports.add(builtinImport);
+//		}
+//	}
+//	catch (Exception e)
+//	{
+//		e.printStackTrace();
+//	}
 
 		return imports;
 	}
@@ -457,6 +458,20 @@ public class EolModule extends AbstractModule implements IEolModule {
 			modelDeclaration.compile(context);
 		}
 		
+//        String root = "/Users/quratulainali/Desktop/org.eclipse.epsilon/plugins/org.eclipse.epsilon.eol.engine/src/org/eclipse/epsilon/eol/";
+//		BuiltinEolModule builtinModule = new BuiltinEolModule();
+//        
+//        if(!(this instanceof BuiltinEolModule)) {
+//		try {
+//			builtinModule.parse(new File(root+"builtin.eol"));
+//			operations.addAll(builtinModule.getDeclaredOperations());
+//		
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		}
+		
 		//Check the signature of functions
 		for (Operation operation : getOperations()) {
 			
@@ -474,7 +489,6 @@ public class EolModule extends AbstractModule implements IEolModule {
 				operation.returnFlag = true;
 		}
 		
-				
 		
 		
 		if (main != null) {
@@ -485,12 +499,15 @@ public class EolModule extends AbstractModule implements IEolModule {
 			operation.compile(context);
 		}
 		
-		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
-			
-			IModel model=context.getModelFactory().createModel(modelDeclaration.getDriverNameExpression().getName());
-			model.reWrite(this);
-		}
-		
+//		
+//		if(!(this instanceof BuiltinEolModule))
+//		operations.removeAll(builtinModule.getDeclaredOperations());
+//		
+//		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
+//			
+//			IModel model=context.getModelFactory().createModel(modelDeclaration.getDriverNameExpression().getName());
+//			model.rewrite(this);
+//		}
 		//imports.remove(imports.size()-1);
 		
 		return context.getMarkers();
