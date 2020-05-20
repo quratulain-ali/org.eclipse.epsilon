@@ -13,6 +13,8 @@ def getSlackMessage() {
     return message
 }
 
+def baseTriggers = '(pom\\.xml)|(Jenkinsfile)|(plugins\\/.*)'
+
 pipeline {
     agent any
     options {
@@ -27,7 +29,7 @@ pipeline {
         pollSCM('H/5 * * * *')
     }
     stages {
-      stage('Sequential') {
+      stage('Co-ordinator') {
         when {
           branch 'master'
         }
@@ -39,15 +41,15 @@ pipeline {
         stages {
           stage('Build') {
             when {
-              changeset comparator: 'REGEXP', pattern: '(pom\\.xml)|(Jenkinsfile)|(features\\/.*)|(plugins\\/.*)|(tests\\/.*)|(releng\\/.*target.*)'
+              changeset comparator: 'REGEXP', pattern: "${baseTriggers}|(features\\/.*)|(tests\\/.*)|(releng\\/.*target.*)"
             } 
             steps {
-              sh 'mvn -B -T 1C install -P eclipse-sign'
+              sh 'mvn -B -T 1C clean install -P eclipse-sign'
             }
           }
           stage('Test') {
             when {
-              changeset comparator: 'REGEXP', pattern: '(pom\\.xml)|(Jenkinsfile)|(plugins\\/.*)|(tests\\/.*)'
+              changeset comparator: 'REGEXP', pattern: "${baseTriggers}|(tests\\/.*)"
             }
             steps {
               wrap([$class: 'Xvnc', takeScreenshot: false, useXauthority: false]) {
@@ -57,19 +59,19 @@ pipeline {
             }
           }
           stage('Artifacts') {
-            when {
-              changeset comparator: 'REGEXP', pattern: '(pom\\.xml)|(Jenkinsfile)|(plugins\\/.*)|(standalone\\/.*)'
-            }
             parallel {
               stage('Javadocs') {
                 when {
-                  changeset comparator: 'REGEXP', pattern: '(pom\\.xml)|(Jenkinsfile)|(plugins\\/.*)'
+                  changeset comparator: 'REGEXP', pattern: "${baseTriggers}"
                 }
                 steps {
                   sh 'mvn -B javadoc:aggregate'
                 }
               }
               stage('Standalone JARs') {
+                when {
+                  changeset comparator: 'REGEXP', pattern: "${baseTriggers}|(standalone\\/.*)"
+                }
                 steps {
                   sh 'mvn -B -f standalone install'
                   sh 'cd standalone/org.eclipse.epsilon.standalone && bash build-javadoc-jar.sh'
@@ -78,11 +80,11 @@ pipeline {
             }
           }
           stage('Release') {
-            when {
-              changeset comparator: 'REGEXP', pattern: '(pom\\.xml)|(Jenkinsfile)|(features\\/.*)|(plugins\\/.*)|(releng\\/.*interim.*)|(standalone\\/.*)'
-            }
             parallel {
               stage('Update site') {
+                when {
+                  changeset comparator: 'REGEXP', pattern: "${baseTriggers}|(standalone\\/.*)|(features\\/.*)|(releng\\/.*interim.*)"
+                }
                 steps {
                   sh 'mvn -f releng install -P interim'
                   lock('download-area') {
@@ -116,7 +118,7 @@ pipeline {
               }
               stage('Deploy to OSSRH') {
                 when {
-                  changeset comparator: 'REGEXP', pattern: '(pom\\.xml)|(Jenkinsfile)|(plugins\\/.*)|(standalone\\/.*)'
+                  changeset comparator: 'REGEXP', pattern: "${baseTriggers}|(standalone\\/.*)"
                 }
                 environment {
                   KEYRING = credentials('secret-subkeys.asc')
