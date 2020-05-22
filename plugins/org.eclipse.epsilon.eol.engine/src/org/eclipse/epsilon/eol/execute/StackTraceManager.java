@@ -18,9 +18,9 @@ import org.eclipse.epsilon.eol.execute.control.IExecutionListener;
 
 /**
  * 
- * @since 1.6 Not extensible - implement an {@link IExecutionListener}
- * and add it to the {@link ExecutorFactory}.
- * Doesn't implement IExecutionListener to prevent misuse.
+ * @since 1.6 Doesn't implement IExecutionListener to prevent misuse.
+ * Not extensible - add an {@link IExecutionListener} to {@link ExecutorFactory}
+ * if you want to add functionality.
  */
 public final class StackTraceManager {
 	
@@ -38,6 +38,11 @@ public final class StackTraceManager {
 		stackTrace.clear();
 	}
 	
+	/**
+	 * 
+	 * @return An immutable view of the stack trace
+	 * in proper order.
+	 */
 	public List<ModuleElement> getStackTrace() {
 		return new ArrayList<>(this.stackTrace);
 	}
@@ -53,7 +58,7 @@ public final class StackTraceManager {
 	public String getStackTraceAsString() {
 		StringBuilder sb = new StringBuilder();
 		for (ModuleElement ast : getStackTrace()) {
-			sb.append(toString(ast) + "\r\n");
+			sb.append(toString(ast) + System.lineSeparator());
 		}
 		return sb.toString();
 	}
