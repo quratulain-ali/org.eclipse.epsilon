@@ -458,19 +458,19 @@ public class EolModule extends AbstractModule implements IEolModule {
 			modelDeclaration.compile(context);
 		}
 		
-//        String root = "/Users/quratulainali/Desktop/org.eclipse.epsilon/plugins/org.eclipse.epsilon.eol.engine/src/org/eclipse/epsilon/eol/";
-//		BuiltinEolModule builtinModule = new BuiltinEolModule();
-//        
-//        if(!(this instanceof BuiltinEolModule)) {
-//		try {
-//			builtinModule.parse(new File(root+"builtin.eol"));
-//			operations.addAll(builtinModule.getDeclaredOperations());
-//		
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		}
+        String root = "/Users/quratulainali/Desktop/org.eclipse.epsilon/plugins/org.eclipse.epsilon.eol.engine/src/org/eclipse/epsilon/eol/";
+		BuiltinEolModule builtinModule = new BuiltinEolModule();
+        
+        if(!(this instanceof BuiltinEolModule)) {
+		try {
+			builtinModule.parse(new File(root+"builtin.eol"));
+			operations.addAll(builtinModule.getDeclaredOperations());
+		
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		}
 		
 		//Check the signature of functions
 		for (Operation operation : getOperations()) {
@@ -499,16 +499,15 @@ public class EolModule extends AbstractModule implements IEolModule {
 			operation.compile(context);
 		}
 		
-//		
-//		if(!(this instanceof BuiltinEolModule))
-//		operations.removeAll(builtinModule.getDeclaredOperations());
-//		
-//		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
-//			
-//			IModel model=context.getModelFactory().createModel(modelDeclaration.getDriverNameExpression().getName());
-//			model.rewrite(this);
-//		}
-		//imports.remove(imports.size()-1);
+	
+		if(!(this instanceof BuiltinEolModule))
+		operations.removeAll(builtinModule.getDeclaredOperations());
+		
+		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
+			
+			IModel model=context.getModelFactory().createModel(modelDeclaration.getDriverNameExpression().getName());
+			model.rewrite(this);
+		}
 		
 		return context.getMarkers();
 	}
@@ -565,7 +564,7 @@ public class EolModule extends AbstractModule implements IEolModule {
 		
 		try {
 			module.parse("1.println();");
-		//	module.compile();
+			module.compile();
 			module.execute();
 		} catch (Exception e) {
 			e.printStackTrace();

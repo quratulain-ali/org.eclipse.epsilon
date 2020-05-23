@@ -126,7 +126,7 @@ public class AssignmentStatement extends Statement {
 		
 		if(!(isCompatible(targetType, valueType))) {
 			if (canBeCompatible(targetType, valueType))
-				context.addWarningMarker(targetExpression, valueExpression.getResolvedType()+" may not be asssigned to " + targetType);
+				context.addWarningMarker(targetExpression, valueExpression.getResolvedType()+" may not be assigned to " + targetType);
 			else
 					context.addErrorMarker(targetExpression, valueExpression.getResolvedType()+" cannot be assigned to " + targetType);
 		}

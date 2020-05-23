@@ -18,9 +18,9 @@ true.HelloWorld();
 3.HelloAny();
 
 /**/
-a.collect(n | n<4).HelloCol();
+//a.collect(n | n<4).HelloCol();
 /*Hello can not be invoked on Collection<Boolean>*/
-a.collect(n | n>4).Hello();
+//a.collect(n | n>4).Hello();
 /**/
 a.HelloCol();
 /**/
@@ -32,7 +32,7 @@ d.HelloCol();
 a.Hello();
 /**/
 b.Hello();
-/*Hello can not be invoked on Collection<Any>*/
+/*Hello may not be invoked on Collection<Any>*/
 c.Hello();
 /**/
 e.Hello();

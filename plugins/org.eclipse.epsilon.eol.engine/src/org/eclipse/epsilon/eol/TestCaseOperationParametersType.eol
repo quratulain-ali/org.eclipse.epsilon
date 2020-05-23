@@ -9,9 +9,12 @@ var d : Sequence<Integer> = Sequence {1,2,3};
 var ac : Action;
 
 "P".HelloParameters(ac,"5");
-
-c.HelloParameters(10 , "h".HelloParameters(9,"d"));
 /*Parameters type mismatch*/
+"P".HelloParameters("abc",5);
+
+/*Parameters type mismatch*/
+c.HelloParameters(10 , "h".HelloParameters(9,"d"));
+/*HelloParameters can not be invoked on Integer*/
 "y".HelloParameters(9,"d").HelloParameters(10,"a");
 "r".HelloParameters("y".HelloParameters(9,"d"),"a");
 /**/
@@ -27,7 +30,7 @@ c.HelloParameters(4,5);
 
 /*Parameters type mismatch*/
 c.HelloParameters(a,"i");
-/*Parameters type mismatch*/
+/**/
 "a".HelloParameters("s".HelloParameters(9,"d"),"a");
 
 /*Number of parameters does not match*/

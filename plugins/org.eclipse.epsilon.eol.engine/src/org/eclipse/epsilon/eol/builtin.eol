@@ -38,13 +38,13 @@ operation String characterAt(index: Integer): String {
 operation String escapeXml() : String {
 }
 
-operation String setTarget(target: Object) {
+operation String setTarget(target: Any) {
 }
 
-operation String toEnum() : Object {
+operation String toEnum() : Any {
 }
 
-operation String contributesTo(target : Object) : Boolean {
+operation String contributesTo(target : Any) : Boolean {
 } 
 
 operation Integer mod(other: Integer) : Integer {
@@ -95,44 +95,44 @@ operation Any asInteger () : Integer {
 operation Any format () : String {
 }
 
-operation Any errln (prefix: Object, suffix: Object) : Object {
+operation Any errln (prefix: Any, suffix: Any) : Any {
 }
 
-operation Any errln (prefix: Object) : Object {
+operation Any errln (prefix: Any) : Any {
 }
 
-operation Any errln () : Object {
+operation Any errln () : Any {
 }
 
-operation Any err (prefix: Object, suffix: Object) : Object {
+operation Any err (prefix: Any, suffix: Any) : Any {
 }
 
-operation Any err (prefix: Object) : Object {
+operation Any err (prefix: Any) : Any {
 }
 
-operation Any err () : Object {
+operation Any err () : Any {
 }
 
-operation Any print (prefix: Object, suffix: Object) : Object {
+operation Any print (prefix: Any, suffix: Any) : Any {
 }
 
-operation Any print (prefix: Object) : Object {
+operation Any print (prefix: Any) : Any {
 }
 
-operation Any print () : Object {
+operation Any print () : Any {
 }
 
-operation Any println (prefix: Object, suffix: Object) : Object {
+operation Any println (prefix: Any, suffix: Any) : Any {
 }
 
-operation Any println (prefix: Object) : Object {
+operation Any println (prefix: Any) : Any {
 }
 
-operation Any println () : Object {
+operation Any println () : Any {
 
 }
 
-operation Any ifUndefined (alternative: Object) : Object {
+operation Any ifUndefined (alternative: Any) : Any {
 }
 
 operation Any isUndefined () : Boolean {

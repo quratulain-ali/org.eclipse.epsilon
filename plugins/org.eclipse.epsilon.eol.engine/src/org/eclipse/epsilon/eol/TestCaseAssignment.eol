@@ -14,14 +14,14 @@ var data : Collection<Integer> = Collection{0..9};
 var bar : Sequence<Integer> = Sequence{0..9};
 var bared : Bag<Integer> = Bag{0..9};
 
-/*Collection<Integer> cannot be assigned to Bag<Integer>*/
+/*Collection<Integer> may not be assigned to Bag<Integer>*/
 bared=data;
 /**/
 data=bar;
 
 var action: Action;
 var node: Node;
-/*Node cannot be assigned to Action*/
+/*Node may not be assigned to Action*/
 action = node;
 /**/
 node = action;
@@ -55,12 +55,12 @@ bCollection = aCollection;
 var cCollection : Sequence = Sequence{0..9};
 var dCollection : Collection = Collection{1..9};
 
-/*Collection<Action> cannot be assigned to Sequence<Any>*/
+/*Collection<Action> may not be assigned to Sequence<Any>*/
 cCollection = colAction;
 
 /**/
 dCollection = cCollection;
-/*Collection<Any> cannot be assigned to Sequence<Any>*/
+/*Collection<Any> may not be assigned to Sequence<Any>*/
 cCollection = dCollection;
 
 var test : Integer= 4;
@@ -92,12 +92,12 @@ a=g;
 /**/
 a=c;
 
-/*Collection<Collection<Integer>> cannot be assigned to Collection<Sequence<Integer>>*/
+/*Collection<Collection<Integer>> may not be assigned to Collection<Sequence<Integer>>*/
 d=e;
 /**/
 e=d;
 
 /**/
 f=g;
-/*Collection<Collection<Collection<Integer>>> cannot be assigned to Collection<Bag<Collection<Integer>>>*/
+/*Collection<Collection<Collection<Integer>>> may not be assigned to Collection<Bag<Collection<Integer>>>*/
 g=f;
