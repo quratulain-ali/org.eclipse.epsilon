@@ -15,6 +15,9 @@ import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.epsilon.common.util.StringProperties;
+import org.eclipse.epsilon.eol.EolModule;
+import org.eclipse.epsilon.eol.IEolModule;
+import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
 import org.eclipse.epsilon.eol.compile.m3.Metamodel;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.exceptions.models.EolEnumerationValueNotFoundException;
@@ -264,6 +267,10 @@ public class ModelReference implements IAdaptableModel, IWrapper, IOperationCont
 	@Override
 	public Metamodel getMetamodel(StringProperties properties, IRelativePathResolver resolver) {
 		return target.getMetamodel(properties, resolver);
+	}
+
+	@Override
+	public void rewrite(IEolModule module, EolCompilationContext context) {
 	}
 
 }
