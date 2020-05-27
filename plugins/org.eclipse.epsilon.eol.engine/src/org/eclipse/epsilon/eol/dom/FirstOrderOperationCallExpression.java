@@ -155,13 +155,14 @@ public class FirstOrderOperationCallExpression extends FeatureCallExpression {
 	public void compile(EolCompilationContext context) {
 			OperationList builtinOperations = new OperationList();
 			
-			for (int i=0; i < ((EolModule)nameExpression.getModule()).getImports().size() ; i++)
-				
-				if (((EolModule)nameExpression.getModule()).getImports().get(i).getPathLiteral() == null)
-					
-					for (Operation op :(((EolModule)((EolModule)nameExpression.getModule()).getImports().get(i).getImportedModule()).getDeclaredOperations()))
+//			for (int i=0; i < ((EolModule)nameExpression.getModule()).getImports().size() ; i++)
+//				
+//				if (((EolModule)nameExpression.getModule()).getImports().get(i).getPathLiteral() == null)
+//					
+					//for (Operation op :(((EolModule)((EolModule)nameExpression.getModule()).getImports().get(i).getImportedModule()).getDeclaredOperations()))
+						for( Operation op: ((EolModule) module).getOperations())
 						if (op.getAnnotation("firstorder")!=null)
-						//if (op.getAnnotation("firstorder").toString().equals("firstorder"))
+						if (op.getAnnotation("firstorder").toString().equals("firstorder"))
 							builtinOperations.add(op);
 			
 			targetExpression.compile(context);
