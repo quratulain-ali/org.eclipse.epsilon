@@ -1,43 +1,30 @@
 set -u
 
+Downloads=/home/data/httpd/download.eclipse.org/epsilon
+Archives=/home/data/httpd/archive.eclipse.org/epsilon
+
 NewVersion=2.1
-DownloadSite=/home/data/httpd/download.eclipse.org/epsilon
-ArchiveSite=/home/data/httpd/archive.eclipse.org/epsilon
+OldVersion=2.0
 
-echo "downloads before: " && ls $DownloadSite | xargs
-echo "archives before: " && ls $ArchiveSite | xargs
+echo "downloads before: " && ls $Downloads | xargs
+echo "archives before: " && ls $Archives | xargs
 
-# Update the array with previous release(s)
-declare -a OldVersions=("obsolete" "1.6" "2.0");
-for version in "${OldVersions[@]}"; do
-  echo "Moving $version...";
-  mkdir $ArchiveSite/$version &&
-  mv $DownloadSite/updates/$version/* $ArchiveSite/$version &&
-  rm -rf $DownloadSite/updates/$version &&
-  mv $DownloadSite/$version/* $ArchiveSite/$version &&
-  rm -rf $DownloadSite/$version
-done
+echo "Moving $OldVersion...";
+mkdir $Archives/$OldVersion &&
+mv $Downloads/updates/$OldVersion/* $Archives/$OldVersion &&
+rm -rf $Downloads/updates/$OldVersion &&
+mv $Downloads/$OldVersion/* $Archives/$OldVersion &&
+rm -rf $Downloads/$OldVersion
 
-cd /home/data/httpd/download.eclipse.org/epsilon &&
-mkdir /home/data/httpd/archive.eclipse.org/epsilon/$NewVersion &&
-cp -r interim /home/data/httpd/archive.eclipse.org/epsilon/$NewVersion/updates &&
-cd updates &&
-mkdir $NewVersion && 
-cp -r /home/data/httpd/archive.eclipse.org/epsilon/$NewVersion/updates $NewVersion &&
-mv $NewVersion/updates/* $NewVersion &&
-rm -rf $NewVersion/updates &&
+cd $Downloads &&
+mkdir $NewVersion && mkdir updates/$NewVersion &&
+echo "Copying update site" &&
+cp -r interim updates/$NewVersion &&
 declare -a NewFolders=("jars" "javadoc");
 for folder in "${NewFolders[@]}"; do
-  cd /home/data/httpd/download.eclipse.org/epsilon &&
-  echo "Moving $folder"
-  mkdir -p $NewVersion/$folder &&
-  mv updates/$NewVersion/$folder/* $NewVersion/$folder &&
-  rm -rf updates/$NewVersion/$folder &&
-  cd /home/data/httpd/archive.eclipse.org/epsilon/$NewVersion &&
-  mkdir $folder &&
-  mv updates/$folder/* $folder &&
-  rm -rf updates/$folder
-done;
+  echo "Copying $folder"
+  cp -r latest/$folder $NewVersion
+done
 
 ant -f /shared/modeling/tools/promotion/manage-composite.xml add -Dchild.repository=$NewVersion
 
