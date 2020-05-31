@@ -13,7 +13,7 @@ def getSlackMessage() {
     return message
 }
 
-def baseTriggers = '(pom\\.xml)|(Jenkinsfile)|(plugins\\/.*)'
+def baseTriggers = '(pom\\.xml)|(Jenkinsfile)|(plugins\\/.*)|(pom[-]plain[.]xml)'
 def updateTriggers = "${baseTriggers}|(standalone\\/.*)|(features\\/.*)|(releng\\/.*(target|updatesite)\\/.*)"
 
 pipeline {
@@ -31,9 +31,6 @@ pipeline {
     }
     stages {
       stage('Main') {
-        when {
-          branch 'master'
-        }
         agent {
           kubernetes {
             label 'migration'
@@ -42,7 +39,10 @@ pipeline {
         stages {
           stage('Build') {
             when {
-              changeset comparator: 'REGEXP', pattern: "${updateTriggers}|(tests\\/.*)"
+              anyOf {
+                changeset comparator: 'REGEXP', pattern: "${updateTriggers}|(tests\\/.*)"
+                expression { return currentBuild.number == 1 }
+              }
             } 
             steps {
               sh 'mvn -B -T 1C clean install -P eclipse-sign'
@@ -50,7 +50,10 @@ pipeline {
           }
           stage('Test') {
             when {
-              changeset comparator: 'REGEXP', pattern: "${baseTriggers}|(tests\\/.*)"
+              anyOf {
+                changeset comparator: 'REGEXP', pattern: "${baseTriggers}|(tests\\/.*)"
+                expression { return currentBuild.number == 1 }
+              }
             }
             steps {
               wrap([$class: 'Xvnc', takeScreenshot: false, useXauthority: false]) {
@@ -61,24 +64,35 @@ pipeline {
           }
           stage('Javadocs') {
             when {
-              changeset comparator: 'REGEXP', pattern: "${baseTriggers}"
+              anyOf {
+                changeset comparator: 'REGEXP', pattern: "${baseTriggers}"
+                expression { return currentBuild.number == 1 }
+              }
             }
             steps {
               sh 'mvn -B javadoc:aggregate'
             }
           }
-          stage('Standalone JARs') {
+          stage('Plain Maven build') {
             when {
-              changeset comparator: 'REGEXP', pattern: "${baseTriggers}|(standalone\\/.*)"
+              anyOf {
+                changeset comparator: 'REGEXP', pattern: "${updateTriggers}"
+                expression { return currentBuild.number == 1 }
+              }
             }
             steps {
-              sh 'mvn -B -f standalone install -P build'
-              sh 'cd standalone/org.eclipse.epsilon.standalone && bash build-javadoc-jar.sh'
+              sh 'mvn -B -T 1C -f pom-plain.xml compile'
             }
           }
           stage('Update site') {
             when {
-              changeset comparator: 'REGEXP', pattern: "${updateTriggers}"
+              allOf {
+                branch 'master'
+                anyOf {
+                  changeset comparator: 'REGEXP', pattern: "${updateTriggers}"
+                  expression { return currentBuild.number == 1 }
+                }
+              }
             }
             steps {
               sh 'mvn -f releng install -P updatesite'
@@ -110,7 +124,13 @@ pipeline {
           }
           stage('Deploy to OSSRH') {
             when {
-              changeset comparator: 'REGEXP', pattern: "${baseTriggers}|(standalone\\/.*)"
+              allOf {
+                branch 'master'
+                anyOf {
+                  changeset comparator: 'REGEXP', pattern: "${updateTriggers}"
+                  expression { return currentBuild.number == 1 }
+                }
+              }
             }
             environment {
               KEYRING = credentials('secret-subkeys.asc')
@@ -124,7 +144,7 @@ pipeline {
                 done
               '''
               lock('ossrh') {
-                sh 'mvn -B -f standalone/org.eclipse.epsilon.standalone -P ossrh org.eclipse.epsilon:eutils-maven-plugin:deploy'
+                sh 'mvn -B -f pom-plain.xml -P ossrh,eclipse-sign deploy'
               }
             }
           }
