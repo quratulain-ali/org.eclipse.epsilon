@@ -17,13 +17,16 @@ mv $Downloads/$OldVersion/* $Archives/$OldVersion &&
 rm -rf $Downloads/$OldVersion
 
 cd $Downloads &&
-mkdir $NewVersion && mkdir updates/$NewVersion &&
-echo "Copying update site" &&
-cp -r interim updates/$NewVersion &&
-declare -a NewFolders=("jars" "javadoc");
+echo "Copying interim to $NewVersion" &&
+cp -r interim updates/$NewVersion
+if [ -e updates/epsilon-interim-site.zip]; then
+  mv updates/epsilon-interim-site.zip updates/epsilon-${$NewVersion}-site.zip
+fi
+declare -a NewFolders=("javadoc" "jars");
 for folder in "${NewFolders[@]}"; do
-  echo "Copying $folder"
-  cp -r latest/$folder $NewVersion
+  if [ -d updates/$NewVersion/$folder ]; then
+    mv updates/$NewVersion/$folder $NewVersion/$folder
+  fi
 done
 
 ant -f /shared/modeling/tools/promotion/manage-composite.xml add -Dchild.repository=$NewVersion
