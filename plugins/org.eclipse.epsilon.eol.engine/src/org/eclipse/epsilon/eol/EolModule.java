@@ -453,62 +453,62 @@ public class EolModule extends AbstractModule implements IEolModule {
 	@Override
 	public List<ModuleMarker> compile() {
 		EolCompilationContext context = getCompilationContext();
-		
+
 		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
 			modelDeclaration.compile(context);
 		}
-		
-        String root = "/Users/quratulainali/Desktop/org.eclipse.epsilon/plugins/org.eclipse.epsilon.eol.engine/src/org/eclipse/epsilon/eol/";
+
+		String root = "/Users/quratulainali/Desktop/org.eclipse.epsilon/plugins/org.eclipse.epsilon.eol.engine/src/org/eclipse/epsilon/eol/";
 		BuiltinEolModule builtinModule = new BuiltinEolModule();
-        
-        if(!(this instanceof BuiltinEolModule)) {
-		try {
-			builtinModule.parse(new File(root+"builtin.eol"));
-			operations.addAll(builtinModule.getDeclaredOperations());
-		
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+
+		if (!(this instanceof BuiltinEolModule)) {
+			try {
+				builtinModule.parse(new File(root + "builtin.eol"));
+				operations.addAll(builtinModule.getDeclaredOperations());
+
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		}
-		
-		//Check the signature of functions
+
+		// Check the signature of functions
 		for (Operation operation : getOperations()) {
-			
 			if (operation.getReturnTypeExpression() == null) {
-				
-				if (operation.hasReturnStatement())
-				{
+
+				if (operation.hasReturnStatement()) {
 					operation.returnFlag = true;
 					operation.setReturnTypeExpression(new TypeExpression("Any"));
 				}
-				
+
 			}
 			// when returnType is not null
-			else
-				operation.returnFlag = true;
+			else {
+
+				if (operation.hasReturnStatement())
+					operation.returnFlag = true;
+				else
+					operation.returnFlag = false;
+			}
 		}
-		
-		
-		
+
 		if (main != null) {
- 			main.compile(context);
-		}	
-		
+			main.compile(context);
+		}
+
 		for (Operation operation : getDeclaredOperations()) {
 			operation.compile(context);
 		}
-		
-	
-		if(!(this instanceof BuiltinEolModule))
-		operations.removeAll(builtinModule.getDeclaredOperations());
-		
+
+		if (!(this instanceof BuiltinEolModule))
+			operations.removeAll(builtinModule.getDeclaredOperations());
+
 		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
-			
-			IModel model=context.getModelFactory().createModel(modelDeclaration.getDriverNameExpression().getName());
+
+			IModel model = context.getModelFactory().createModel(modelDeclaration.getDriverNameExpression().getName());
 			model.rewrite(this, context);
 		}
-		
+
 		return context.getMarkers();
 	}
 	
