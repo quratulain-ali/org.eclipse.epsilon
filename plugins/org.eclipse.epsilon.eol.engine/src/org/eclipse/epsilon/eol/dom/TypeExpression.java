@@ -136,51 +136,48 @@ public class TypeExpression extends Expression {
 		return name;
 	}
 	
-	public void setName(String name) {
-		switch (this.name = name) {
+	/**
+	 * 
+	 * @param name
+	 * @return
+	 * @since 2.1
+	 */
+	public static EolType getType(String name) {
+		switch (name) {
 			case "Integer":
-				type = EolPrimitiveType.Integer;
-				break;
+				return EolPrimitiveType.Integer;
 			case "Any":
-				type = EolAnyType.Instance;
-				break;
+				return EolAnyType.Instance;
 			case "Boolean":
-				type = EolPrimitiveType.Boolean;
-				break;
+				return EolPrimitiveType.Boolean;
 			case "String":
-				type = EolPrimitiveType.String;
-				break;
+				return EolPrimitiveType.String;
 			case "Real":
-				type = EolPrimitiveType.Real;
-				break;
+				return EolPrimitiveType.Real;
 			case "Map": case "ConcurrentMap":
-				type = new EolMapType(name);
-				break;
+				return new EolMapType(name);
 			case "List": name = "Sequence";
 			case "Bag": case "Sequence": case "Collection":
 			case "Set": case "OrderedSet":
 			case "ConcurrentSet": case "ConcurrentBag":
-				type = new EolCollectionType(name);
-				break;
-			case "Nothing":
-				type = EolNoType.Instance;
-				break;
+				return new EolCollectionType(name);
 			case "EolSelf":
-				type = new EolSelf();
-				break;
+				return new EolSelf();
 			case "EolSelfContentType":
-				type = new EolSelfContentType();
-				break;
+				return new EolSelfContentType();
 			case "EolSelfExpressionType":
-				type = new EolSelfExpressionType();
-				break;
+				return new EolSelfExpressionType();
 			case "EolSelfCollectionType":
-				type = new EolSelfCollectionType();
-				break;
+				return new EolSelfCollectionType();
+			case "Nothing": case "None":
+				return EolNoType.Instance;
 			default:
-				type = null;
-				break;
+				return null;
 		}
+	}
+	
+	public void setName(String name) {
+		this.type = getType(this.name = name);
 	}
 	
 	public EolType getCompilationType() {

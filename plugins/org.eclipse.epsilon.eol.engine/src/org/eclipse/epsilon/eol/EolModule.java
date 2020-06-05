@@ -210,7 +210,6 @@ public class EolModule extends AbstractModule implements IEolModule {
 					return new VariableDeclaration();
 				}
 			}
-			case EolParser.TYPE: return new TypeExpression();
 			case EolParser.IMPORT: return new Import();
 			case EolParser.OPERATOR: {
 				if (cst.getText().equals("=") && ((
@@ -233,8 +232,31 @@ public class EolModule extends AbstractModule implements IEolModule {
 			case EolParser.Annotation: return new SimpleAnnotation();
 			case EolParser.EXECUTABLEANNOTATION: return new ExecutableAnnotation();
 			case EolParser.ANNOTATIONBLOCK: return new AnnotationBlock();
-			case EolParser.MAP: return new MapLiteralExpression();
-			case EolParser.COLLECTION: return new CollectionLiteralExpression();
+			case EolParser.COLLECTION: {
+				String typeName = cst.getText();
+				if (CollectionLiteralExpression.createCollection(typeName) != null) {
+					return new CollectionLiteralExpression();
+				}
+				else if (MapLiteralExpression.createMap(typeName) != null) {
+					return new MapLiteralExpression();
+				}
+				else {
+					getParseProblems().add(new ParseProblem("Unknown collection type: "+typeName, this));
+				}
+			}
+			case EolParser.MAP: {
+				String typeName = cst.getText();
+				if (MapLiteralExpression.createMap(typeName) != null) {
+					return new MapLiteralExpression();
+				}
+				else if (CollectionLiteralExpression.createCollection(typeName) != null) {
+					return new CollectionLiteralExpression();
+				}
+				else {
+					getParseProblems().add(new ParseProblem("Unknown map type: "+typeName, this));
+				}
+			}
+			case EolParser.TYPE: return new TypeExpression();
 			case EolParser.BREAK: return new BreakStatement(false);
 			case EolParser.BREAKALL: return new BreakStatement(true);
 			case EolParser.THROW: return new ThrowStatement();
