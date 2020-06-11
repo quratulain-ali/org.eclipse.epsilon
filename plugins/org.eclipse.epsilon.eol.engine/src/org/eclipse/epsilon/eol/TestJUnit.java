@@ -17,7 +17,8 @@ public class TestJUnit extends TestCase{
 	public static void test() throws Exception {
 		EolModule module = new EolModule();
 		
-		module.parse(new File("src/org/eclipse/epsilon/eol/TestCaseAssignment.eol"));
+		
+		module.parse(new File("src/org/eclipse/epsilon/eol/TestCollectionAsParameters.eol"));
 		module.compile();
 		
 		List<Statement> statements = module.getMain().getStatements();
@@ -38,7 +39,7 @@ public class TestJUnit extends TestCase{
 				System.out.println("Actual # " + index + ": " + actual);
 				
 				if(commentLine==markerLine) {
-					
+					System.out.println(expected.equalsIgnoreCase(actual));
 					assertEquals("Failed", expected, actual);
 					index++;
 				}

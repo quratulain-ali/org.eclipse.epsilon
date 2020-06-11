@@ -189,15 +189,6 @@ public class PropertyCallExpression extends FeatureCallExpression {
 						resolvedType = new EolCollectionType("Sequence", resolvedType);
 					}
 					
-//					ModuleElement e=targetExpression.getParent();
-//					while (!(e instanceof Statement))
-//					e=e.getParent();
-//					
-//					Statement parentStatement = (Statement)e;
-//				//	String tablename= ((EolModelElementType)targetExpression.getResolvedType()).getTypeName();
-//					//parentStatement.translatedQueryParams.put("table",tablename);
-//					parentStatement.translatedQueryParams.put("feature",propertyNameExpression.getName());
-//					
 				}
 				else {
 					context.addWarningMarker(nameExpression, "Structural feature " + nameExpression.getName() + " not found in type " + metaClass.getName());
@@ -205,9 +196,5 @@ public class PropertyCallExpression extends FeatureCallExpression {
 			}
 			
 		}
-	}
-	
-	public NameExpression getPropertyNameExpression() {
-		return getNameExpression();
 	}
 }

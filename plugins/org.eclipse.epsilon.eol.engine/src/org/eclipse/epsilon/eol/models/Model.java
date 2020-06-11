@@ -16,6 +16,9 @@ import java.util.List;
 
 import org.eclipse.epsilon.common.util.CollectionUtil;
 import org.eclipse.epsilon.common.util.StringProperties;
+import org.eclipse.epsilon.eol.EolModule;
+import org.eclipse.epsilon.eol.IEolModule;
+import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
 import org.eclipse.epsilon.eol.compile.m3.Metamodel;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.exceptions.models.EolModelElementTypeNotFoundException;
@@ -28,7 +31,7 @@ import org.eclipse.epsilon.eol.execute.introspection.java.JavaPropertySetter;
 import org.eclipse.epsilon.eol.models.transactions.IModelTransactionSupport;
 import org.eclipse.epsilon.eol.models.transactions.NoModelTransactionSupport;
 
-public abstract class Model implements IModel {
+public abstract class Model implements IModel{
 	
 	public static final String PROPERTY_NAME = "name";
 	public static final String PROPERTY_READONLOAD = "readOnLoad";
@@ -197,6 +200,10 @@ public abstract class Model implements IModel {
 	@Override
 	public Metamodel getMetamodel(StringProperties properties, IRelativePathResolver resolver) {
 		return null;
+	}
+	
+	@Override
+	public void rewrite(IEolModule module, EolCompilationContext context) {
 	}
 
 	@Override

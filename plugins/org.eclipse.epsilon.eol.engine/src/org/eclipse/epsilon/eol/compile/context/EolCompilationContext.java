@@ -93,4 +93,17 @@ public class EolCompilationContext {
 		return modelElementType;
 	}
 	
+	public String getModelType(String modelAndType) {
+		EolModelElementType modelElementType = new EolModelElementType(modelAndType);
+		String modelType = "";
+		
+		for (ModelDeclaration modelDeclaration : modelDeclarations) {
+			if (modelElementType.getModelName().isEmpty() || modelDeclaration.getNameExpression().getName().equals(modelElementType.getModelName())) {
+				modelType = modelDeclaration.getDriverNameExpression().getName();
+			}
+		}
+		
+		return modelType;
+	}
+	
 }

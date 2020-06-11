@@ -70,6 +70,18 @@ StrangeNameLiteral
     :  '`' ( EscapeSequence | ~('\\'|'`'|'\n'|'\r') )* '`'
     {$type=NAME; setText($text.substring(1,$text.length() - 1));}
     ;
+	
+CollectionTypeName
+	:	'Bag'|'Sequence'|'Set'|'OrderedSet'|'Collection'|'List'|'ConcurrentBag'|'ConcurrentSet'
+	;
+	
+MapTypeName
+	:	'Map'|'ConcurrentMap'
+	;
+	
+SpecialTypeName
+	:	'Native'
+	;
 
 fragment
 EscapeSequence

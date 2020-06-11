@@ -1,5 +1,5 @@
 /*********************************************************************
-* Copyright (c) 2008 The University of York.
+* Copyright (c) 2008-2020 The University of York.
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
@@ -14,41 +14,35 @@ import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import org.eclipse.epsilon.common.module.ModuleElement;
-import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
-import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.control.IExecutionListener;
 
-public class StackTraceManager implements IExecutionListener {
+/**
+ * 
+ * @since 1.6 Doesn't implement IExecutionListener to prevent misuse.
+ * Not extensible - add an {@link IExecutionListener} to {@link ExecutorFactory}
+ * if you want to add functionality.
+ */
+public final class StackTraceManager {
 	
 	/** Use Deque instead of Stack to avoid bottlenecks due to synchronisation overhead!
 	 * Concurrency can be handled by having a different StackTraceManager for each thread,
 	 * or by using a {@linkplain ConcurrentLinkedDeque}
 	 * @since 1.6
 	 */
-	Deque<ModuleElement> stackTrace = new ArrayDeque<>();
+	final Deque<ModuleElement> stackTrace = new ArrayDeque<>();
 	
 	/**
 	 * @since 1.6
 	 */
 	protected void dispose() {
-		if (stackTrace != null) stackTrace.clear();
+		stackTrace.clear();
 	}
 	
-	@Override
-	public void aboutToExecute(ModuleElement ast, IEolContext context) {
-		stackTrace.push(ast);
-	}
-
-	@Override
-	public void finishedExecuting(ModuleElement ast, Object result, IEolContext context) {
-		stackTrace.pop();
-	}
-	
-	@Override
-	public void finishedExecutingWithException(ModuleElement ast, EolRuntimeException exception, IEolContext context) {
-		
-	}
-	
+	/**
+	 * 
+	 * @return An immutable view of the stack trace
+	 * in proper order.
+	 */
 	public List<ModuleElement> getStackTrace() {
 		return new ArrayList<>(this.stackTrace);
 	}
@@ -64,7 +58,7 @@ public class StackTraceManager implements IExecutionListener {
 	public String getStackTraceAsString() {
 		StringBuilder sb = new StringBuilder();
 		for (ModuleElement ast : getStackTrace()) {
-			sb.append(toString(ast) + "\r\n");
+			sb.append(toString(ast) + System.lineSeparator());
 		}
 		return sb.toString();
 	}
@@ -89,7 +83,7 @@ public class StackTraceManager implements IExecutionListener {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(stackTrace);
+		return Objects.hash(StackTraceManager.class, stackTrace);
 	}
 	
 	@Override

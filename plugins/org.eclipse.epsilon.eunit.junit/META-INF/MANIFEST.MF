@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: JUnit bridge for Epsilon EUnit (plain Java)
 Bundle-SymbolicName: org.eclipse.epsilon.eunit.junit
-Bundle-Version: 1.6.0.qualifier
-Bundle-Vendor: Eclipse.org
+Bundle-Version: 2.1.0.qualifier
+Bundle-Vendor: Eclipse Modeling Project
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.eclipse.epsilon.eol.engine,
  org.eclipse.epsilon.eunit.engine;visibility:=reexport

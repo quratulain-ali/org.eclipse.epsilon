@@ -13,7 +13,6 @@ package org.eclipse.epsilon.eol.execute;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.stream.Collectors;
 import org.eclipse.epsilon.common.function.BaseDelegate;
 import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.eol.EolModule;
@@ -25,13 +24,18 @@ import org.eclipse.epsilon.eol.exceptions.flowcontrol.EolTerminationException;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.control.*;
 
+/**
+ * This class is not thread-safe.
+ * Use serial thread confinement (ThreadLocal) if using from multiple threads.
+ * 
+ */
 public class ExecutorFactory implements BaseDelegate<ExecutorFactory> {
 	
-	protected ExecutionController executionController;
-	protected ModuleElement activeModuleElement;
-	protected Collection<IExecutionListener> executionListeners;
-	protected StackTraceManager stackTraceManager;
-	protected ExecutorFactory base;
+	private ExecutionController executionController;
+	private ModuleElement activeModuleElement;
+	private Collection<IExecutionListener> executionListeners;
+	private ExecutorFactory base;
+	private StackTraceManager stackTraceManager;
 	
 	public ExecutorFactory() {
 		this(null);
@@ -45,27 +49,41 @@ public class ExecutorFactory implements BaseDelegate<ExecutorFactory> {
 	public ExecutorFactory(ExecutorFactory parent) {
 		this.base = parent;
 		executionController = new DefaultExecutionController();
-		executionListeners = new ArrayList<>(2);
-		/*if (base != null) {
-			executionListeners.addAll(base.executionListeners
-				.stream()
-				.filter(el -> el != base.stackTraceManager)
-				.collect(Collectors.toSet())
-			);
-		}*/
-		setStackTraceManager(new StackTraceManager());
+		enableStackTraceManager();
+	}
+	
+	/**
+	 * @since 1.6
+	 */
+	public final void enableStackTraceManager() {
+		stackTraceManager = new StackTraceManager();
+	}
+	
+	/**
+	 * @since 1.6
+	 */
+	public final void disableStackTraceManager() {
+		stackTraceManager = null;
+	}
+	
+	public final StackTraceManager getStackTraceManager() {
+		return stackTraceManager;
 	}
 	
 	public void addExecutionListener(IExecutionListener listener) {
+		if (executionListeners == null) {
+			executionListeners = new ArrayList<>(1);
+		}
 		executionListeners.add(listener);
 	}
 	
 	public Collection<IExecutionListener> getExecutionListeners() {
-		return Collections.unmodifiableCollection(executionListeners);
+		return executionListeners == null ? Collections.emptyList() :
+			Collections.unmodifiableCollection(executionListeners);
 	}
 	
 	public boolean removeExecutionListener(IExecutionListener listener) {
-		return executionListeners.remove(listener);
+		return executionListeners != null && executionListeners.remove(listener);
 	}
 	
 	public ExecutionController getExecutionController() {
@@ -74,17 +92,6 @@ public class ExecutorFactory implements BaseDelegate<ExecutorFactory> {
 
 	public void setExecutionController(ExecutionController executionController) {
 		this.executionController = executionController;
-	}
-	
-	public StackTraceManager getStackTraceManager() {
-		return stackTraceManager;
-	}
-	
-	public void setStackTraceManager(StackTraceManager stackTraceManager) {
-		if (this.stackTraceManager != null) {
-			removeExecutionListener(this.stackTraceManager);
-		}
-		addExecutionListener(this.stackTraceManager = stackTraceManager);
 	}
 	
 	/**
@@ -116,12 +123,17 @@ public class ExecutorFactory implements BaseDelegate<ExecutorFactory> {
 			} 
 		}
 		
-		for (IExecutionListener listener : executionListeners) {
+		if (stackTraceManager != null) {
+			stackTraceManager.stackTrace.push(moduleElement);
+		}
+		
+		if (executionListeners != null) for (IExecutionListener listener : executionListeners) {
 			listener.aboutToExecute(moduleElement, context);
 		}
 	}
 	
 	/**
+	 * Overriding classes must call this super method.
 	 * 
 	 * @param moduleElement
 	 * @param result
@@ -129,12 +141,13 @@ public class ExecutorFactory implements BaseDelegate<ExecutorFactory> {
 	 * @since 1.6
 	 */
 	protected void postExecuteSuccess(ModuleElement moduleElement, Object result, IEolContext context) {
-		for (IExecutionListener listener : executionListeners) {
+		if (executionListeners != null) for (IExecutionListener listener : executionListeners) {
 			listener.finishedExecuting(moduleElement, result, context);
 		}
 	}
 	
 	/**
+	 * Overriding classes must call this super method.
 	 * 
 	 * @param moduleElement
 	 * @param ex
@@ -154,25 +167,30 @@ public class ExecutorFactory implements BaseDelegate<ExecutorFactory> {
 		else {
 			exception = new EolInternalException(ex, moduleElement);
 		}
-		for (IExecutionListener listener : executionListeners) {
+		if (executionListeners != null) for (IExecutionListener listener : executionListeners) {
 			listener.finishedExecutingWithException(moduleElement, exception, context);
 		}
 		throw exception;
 	}
 	
 	/**
+	 * Overriding classes must call this super method.
 	 * 
 	 * @param moduleElement
 	 * @param context
 	 * @since 1.6
 	 */
 	protected void postExecuteFinally(ModuleElement moduleElement, IEolContext context) {
+		if (stackTraceManager != null) {
+			stackTraceManager.stackTrace.pop();
+		}
 		if (executionController != null) {
 			executionController.done(moduleElement, context);
 		}
 	}
 	
 	/**
+	 * Overriding classes should call this super method.
 	 * 
 	 * @param moduleElement
 	 * @param context
@@ -233,7 +251,7 @@ public class ExecutorFactory implements BaseDelegate<ExecutorFactory> {
 	 * @throws EolRuntimeException
 	 * @since 1.6
 	 */
-	public Object execute(IExecutableModuleElementParameter moduleElement, IEolContext context, Object parameter) throws EolRuntimeException {
+	public final Object execute(IExecutableModuleElementParameter moduleElement, IEolContext context, Object parameter) throws EolRuntimeException {
 		if (moduleElement == null) return null;
 		
 		preExecute(moduleElement, context);
@@ -281,10 +299,7 @@ public class ExecutorFactory implements BaseDelegate<ExecutorFactory> {
 	@Override
 	public void merge(MergeMode mode) {
 		mergeCollectionsUnique(
-			ef -> ef.executionListeners
-				.stream()
-				.filter(el -> el != ef.stackTraceManager && el != this.stackTraceManager)
-				.collect(Collectors.toList()),
+			ef -> ef.executionListeners,
 			ArrayList::new,
 			mode
 		);
@@ -297,5 +312,6 @@ public class ExecutorFactory implements BaseDelegate<ExecutorFactory> {
 		activeModuleElement = null;
 		if (stackTraceManager != null) stackTraceManager.dispose();
 		if (executionController != null) executionController.dispose();
+		if (executionListeners != null) executionListeners.clear();
 	}
 }

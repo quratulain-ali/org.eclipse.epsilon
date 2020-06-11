@@ -13,18 +13,14 @@ def getSlackMessage() {
     return message
 }
 
+def baseTriggers = '(pom\\.xml)|(Jenkinsfile)|(plugins\\/.*)|(pom[-]plain[.]xml)'
+def updateTriggers = "${baseTriggers}|(standalone\\/.*)|(features\\/.*)|(releng\\/.*(target|updatesite)\\/.*)"
+
 pipeline {
-    agent {
-      kubernetes {
-        label 'ui-test'
-      }
-    }
+    agent any
     options {
       disableConcurrentBuilds()
-      buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '28', numToKeepStr: ''))
-    }
-    environment {
-      KEYRING = credentials('secret-subkeys.asc')
+      buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '2', daysToKeepStr: '14', numToKeepStr: ''))
     }
     tools {
         maven 'apache-maven-latest'
@@ -34,64 +30,130 @@ pipeline {
         pollSCM('H/5 * * * *')
     }
     stages {
-        stage('Build') {
-          when { allOf { branch 'master'; changeset comparator: 'REGEXP', pattern: '(Jenkinsfile)|(features\\/.*)|(plugins\\/.*)|(releng\\/.*)|(pom\\.xml)|(standalone\\/.*)' } }
-          steps {
-            wrap([$class: 'Xvnc', takeScreenshot: false, useXauthority: false]) {
-              sh 'mvn -T 1C -B --quiet clean javadoc:aggregate install -P eclipse-sign'
-              sh 'mvn -B --quiet -f standalone/pom.xml process-resources install'
-              sh 'mvn --quiet -f tests/org.eclipse.epsilon.test/pom.xml surefire:test'
-            }
-            sh 'cd standalone/org.eclipse.epsilon.standalone && bash build-javadoc-jar.sh'
+      stage('Main') {
+        agent {
+          kubernetes {
+            label 'migration'
           }
         }
-        stage('Update website') {
-          when { allOf { branch 'master'; changeset comparator: 'REGEXP', pattern: '(Jenkinsfile)|(features\\/.*)|(plugins\\/.*)|(releng\\/.*interim\\/.*)|(pom\\.xml)|(standalone\\/.*)' } }
-          steps {
-            lock('download-area') {
-              sshagent (['projects-storage.eclipse.org-bot-ssh']) {
-                sh '''
-                  INTERIM=/home/data/httpd/download.eclipse.org/epsilon/interim
-                  INTERIMWS="$WORKSPACE/releng/org.eclipse.epsilon.updatesite.interim"
-                  SITEDIR="$INTERIMWS/target"
-                  if [ -d "$SITEDIR" ]; then
-                    ssh genie.epsilon@projects-storage.eclipse.org rm -rf $INTERIM
-                    scp -r "$SITEDIR/repository" genie.epsilon@projects-storage.eclipse.org:${INTERIM}
-                    scp "$SITEDIR"/*.zip genie.epsilon@projects-storage.eclipse.org:${INTERIM}/site.zip
-                  fi
-                  if [ -e "$INTERIMWS/index.html" ]; then
-                    scp "$INTERIMWS/index.html" genie.epsilon@projects-storage.eclipse.org:${INTERIM}/index.html
-                  fi
-                  JARSDIR="$WORKSPACE/standalone/org.eclipse.epsilon.standalone/target"
-                  if [ -d "$JARSDIR" ]; then
-                    ssh genie.epsilon@projects-storage.eclipse.org "rm -rf $INTERIM/jars; mkdir -p $INTERIM/jars"
-                    scp "$JARSDIR"/epsilon-* genie.epsilon@projects-storage.eclipse.org:${INTERIM}/jars
-                  fi
-                  JAVADOCDIR="$WORKSPACE/target/site/apidocs"
-                  if [ -d "$JAVADOCDIR" ]; then
-                    ssh genie.epsilon@projects-storage.eclipse.org rm -rf ${INTERIM}/javadoc
-                    scp -r "$JAVADOCDIR" genie.epsilon@projects-storage.eclipse.org:${INTERIM}/javadoc
-                  fi
-                '''
+        stages {
+          stage('Build') {
+            when {
+              anyOf {
+                changeset comparator: 'REGEXP', pattern: "${updateTriggers}|(tests\\/.*)"
+                expression { return currentBuild.number == 1 }
+              }
+            } 
+            steps {
+              sh 'mvn -B -T 1C clean install -P eclipse-sign'
+            }
+          }
+          stage('Test') {
+            when {
+              anyOf {
+                changeset comparator: 'REGEXP', pattern: "${baseTriggers}|(tests\\/.*)"
+                expression { return currentBuild.number == 1 }
+              }
+            }
+            steps {
+              wrap([$class: 'Xvnc', takeScreenshot: false, useXauthority: false]) {
+                sh 'mvn -B -f tests/org.eclipse.epsilon.test verify -P plugged'
+              }
+              sh 'mvn -B -f tests/org.eclipse.epsilon.test surefire:test -P ci'
+            }
+          }
+          stage('Javadocs') {
+            when {
+              anyOf {
+                changeset comparator: 'REGEXP', pattern: "${baseTriggers}"
+                expression { return currentBuild.number == 1 }
+              }
+            }
+            steps {
+              sh 'mvn -B javadoc:aggregate'
+            }
+          }
+          stage('Plain Maven build') {
+            when {
+              anyOf {
+                changeset comparator: 'REGEXP', pattern: "${updateTriggers}"
+                expression { return currentBuild.number == 1 }
+              }
+            }
+            steps {
+              sh 'mvn -B -T 1C -f pom-plain.xml compile'
+            }
+          }
+          stage('Update site') {
+            when {
+              allOf {
+                branch 'master'
+                anyOf {
+                  changeset comparator: 'REGEXP', pattern: "${updateTriggers}"
+                  expression { return currentBuild.number == 1 }
+                }
+              }
+            }
+            steps {
+              sh 'mvn -f releng install -P updatesite'
+              lock('download-area') {
+                sshagent (['projects-storage.eclipse.org-bot-ssh']) {
+                  sh '''
+                    INTERIM=/home/data/httpd/download.eclipse.org/epsilon/interim
+                    SITEDIR="$WORKSPACE/releng/org.eclipse.epsilon.updatesite/target"
+                    if [ -d "$SITEDIR" ]; then
+                      ssh genie.epsilon@projects-storage.eclipse.org rm -rf $INTERIM
+                      scp -r "$SITEDIR/repository" genie.epsilon@projects-storage.eclipse.org:$INTERIM
+                      scp "$SITEDIR"/*.zip genie.epsilon@projects-storage.eclipse.org:$INTERIM/epsilon-interim-site.zip
+                    fi
+                    JAVADOCDIR="$WORKSPACE/target/site/apidocs"
+                    if [ -d "$JAVADOCDIR" ]; then
+                      ssh genie.epsilon@projects-storage.eclipse.org "rm -rf $INTERIM/javadoc"
+                      scp -r "$JAVADOCDIR" genie.epsilon@projects-storage.eclipse.org:$INTERIM/javadoc
+                    fi
+                  '''
+                }
+              }
+            }
+          }
+          stage('Deploy to OSSRH') {
+            when {
+              allOf {
+                branch 'master'
+                anyOf {
+                  changeset comparator: 'REGEXP', pattern: "${updateTriggers}"
+                  expression { return currentBuild.number == 1 }
+                }
+              }
+            }
+            environment {
+              KEYRING = credentials('secret-subkeys.asc')
+            }
+            steps {
+              sh '''
+                gpg --batch --import "${KEYRING}"
+                for fpr in $(gpg --list-keys --with-colons  | awk -F: '/fpr:/ {print $10}' | sort -u);
+                do
+                  echo -e "5\ny\n" |  gpg --batch --command-fd 0 --expert --edit-key $fpr trust;
+                done
+              '''
+              lock('ossrh') {
+                sh 'mvn -B -f pom-plain.xml -P ossrh,eclipse-sign deploy'
               }
             }
           }
         }
-        stage('Deploy to OSSRH') {
-          when { allOf { branch 'master'; changeset comparator: 'REGEXP', pattern: '(features\\/.*)|(plugins\\/.*)|(standalone\\/.*)' } }
-          steps {
-            sh '''
-              gpg --batch --import "${KEYRING}"
-              for fpr in $(gpg --list-keys --with-colons  | awk -F: '/fpr:/ {print $10}' | sort -u);
-              do
-                echo -e "5\ny\n" |  gpg --batch --command-fd 0 --expert --edit-key $fpr trust;
-              done
-            '''
-            lock('ossrh') {
-              sh 'mvn -B --quiet -f standalone/org.eclipse.epsilon.standalone/pom.xml -P ossrh org.eclipse.epsilon:eutils-maven-plugin:deploy'
+      }
+      /*stage('NEW VERSION') { 
+        // This stage should only be uncommented when creating a new release.
+        steps {
+          lock('download-area') {
+            sshagent (['projects-storage.eclipse.org-bot-ssh']) {
+              sh 'cat "$WORKSPACE/releng/org.eclipse.epsilon.releng/new_version_tasks.sh" | ssh genie.epsilon@projects-storage.eclipse.org'
             }
           }
         }
+      }*/
     }
     post {
       success {

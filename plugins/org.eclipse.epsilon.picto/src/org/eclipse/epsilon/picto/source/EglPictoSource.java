@@ -11,16 +11,8 @@ package org.eclipse.epsilon.picto.source;
 
 import java.io.File;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.epsilon.common.dt.console.EpsilonConsole;
@@ -33,6 +25,7 @@ import org.eclipse.epsilon.egl.EglTemplateFactoryModuleAdapter;
 import org.eclipse.epsilon.emc.emf.InMemoryEmfModel;
 import org.eclipse.epsilon.eol.IEolModule;
 import org.eclipse.epsilon.eol.dt.ExtensionPointToolNativeTypeDelegate;
+import org.eclipse.epsilon.eol.execute.context.FrameStack;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
 import org.eclipse.epsilon.eol.models.IModel;
@@ -45,18 +38,12 @@ import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRuleContentPromise;
 import org.eclipse.epsilon.picto.ResourceLoadingException;
 import org.eclipse.epsilon.picto.StaticContentPromise;
 import org.eclipse.epsilon.picto.ViewTree;
-import org.eclipse.epsilon.picto.dom.CustomView;
-import org.eclipse.epsilon.picto.dom.Model;
-import org.eclipse.epsilon.picto.dom.Parameter;
-import org.eclipse.epsilon.picto.dom.Patch;
-import org.eclipse.epsilon.picto.dom.Picto;
-import org.eclipse.epsilon.picto.dom.PictoFactory;
-import org.eclipse.epsilon.picto.dom.PictoPackage;
+import org.eclipse.epsilon.picto.dom.*;
 import org.eclipse.ui.IEditorPart;
 
 public abstract class EglPictoSource implements PictoSource {
 	
-	protected List<IModel> models = new ArrayList<>();
+	protected Collection<IModel> models = new ArrayList<>();
 	
 	@SuppressWarnings("unchecked")
 	@Override
@@ -102,19 +89,19 @@ public abstract class EglPictoSource implements PictoSource {
 				module = new EglTemplateFactoryModuleAdapter(new EglFileGeneratingTemplateFactory());
 			}
 			
-			module.getContext().getNativeTypeDelegates().add(new ExtensionPointToolNativeTypeDelegate());
+			IEolContext context = module.getContext();
+			context.getNativeTypeDelegates().add(new ExtensionPointToolNativeTypeDelegate());
 			
-			URI templateUri = null;
+			URI transformationUri = null;
 			
-			if (renderingMetadata.getTemplate() != null) {			
-				templateUri = UriUtil.resolve(renderingMetadata.getTemplate(), modelFile.toURI());
-				module.parse(templateUri);
+			if (renderingMetadata.getTransformation() != null) {			
+				transformationUri = UriUtil.resolve(renderingMetadata.getTransformation(), modelFile.toURI());
+				module.parse(transformationUri);
 			}
 			else {
 				module.parse("");
-			}
+			}	
 			
-			IEolContext context = module.getContext();
 			context.setOutputStream(EpsilonConsole.getInstance().getDebugStream());
 			context.setErrorStream(EpsilonConsole.getInstance().getErrorStream());
 			context.setWarningStream(EpsilonConsole.getInstance().getWarningStream());		
@@ -134,16 +121,19 @@ public abstract class EglPictoSource implements PictoSource {
 				// Handle dynamic views (i.e. where type != null)
 				for (CustomView customView : renderingMetadata.getCustomViews().stream().filter(cv -> cv.getType() != null).collect(Collectors.toList())) {
 					
-					LazyGenerationRule generationRule = (LazyGenerationRule)((LazyEgxModule) module).
-							getGenerationRules().stream().filter(r -> r.getName().
-							equals(customView.getType())).findFirst().orElse(null);
+					LazyGenerationRule generationRule = ((LazyEgxModule) module).getGenerationRules().stream()
+						.filter(r -> r.getName().equals(customView.getType()) && r instanceof LazyGenerationRule)
+						.map(LazyGenerationRule.class::cast)
+						.findFirst().orElse(null);
 					
 					if (generationRule != null) {
 						Object source = null;
 						if (generationRule.getSourceParameter() != null) {
 							String sourceParameterName = generationRule.getSourceParameter().getName();
-							Parameter sourceParameter = customView.getParameters().stream().
-									filter(sp -> sp.getName().equals(sourceParameterName)).findFirst().orElse(null);
+							Parameter sourceParameter = customView.getParameters()
+									.stream()
+									.filter(sp -> sp.getName().equals(sourceParameterName))
+									.findFirst().orElse(null);
 							if (sourceParameter != null) {
 								customView.getParameters().remove(sourceParameter);
 								source = sourceParameter.getValue(); 
@@ -159,73 +149,122 @@ public abstract class EglPictoSource implements PictoSource {
 							customView.getParameters().add(createParameter("activeLayers", customView.getLayers()));
 						}
 						
-						LazyGenerationRuleContentPromise contentPromise = (LazyGenerationRuleContentPromise) 
-								generationRule.execute(module.getContext(), source);
-						
-						for (Parameter parameter : customView.getParameters()) {
-							Variable variable = contentPromise.getVariables().stream().filter(v -> v.getName().equals(parameter.getName())).findFirst().orElse(null);
-							
-							Object value = getValue(parameter);
-							
-							if (variable != null) {
-								variable.setValue(value, module.getContext());
-							}
-							else {
-								contentPromise.getVariables().add(new Variable(parameter.getName(), value, EolAnyType.Instance, false));
-							}
+						FrameStack fs = context.getFrameStack();
+						for (Parameter customViewParameter : customView.getParameters()) {
+							fs.put(new Variable(customViewParameter.getName(), getValue(customViewParameter), EolAnyType.Instance));
 						}
 						
-						instances.add(contentPromise);
+						LazyGenerationRuleContentPromise contentPromise = (LazyGenerationRuleContentPromise) 
+								generationRule.execute(context, source);
 						
+						Collection<Variable> variables = contentPromise.getVariables();
+						
+						for (Parameter parameter : customView.getParameters()) {
+							Object value = getValue(parameter);
+							String paramName = parameter.getName();
+							
+							Variable variable = variables.stream()
+								.filter(v -> v.getName().equals(paramName))
+								.findAny()
+								.orElse(null);
+							
+							if (variable != null) {
+								variable.setValue(value, context);
+							}
+							else {
+								variables.add(new Variable(paramName, value, EolAnyType.Instance, false));
+							}
+						}
+						instances.add(contentPromise);
 					}
-					
 				}
 				
 				for (LazyGenerationRuleContentPromise instance : instances) {
 					String format = getDefaultFormat();
 					String icon = getDefaultIcon();
-					List<Patch> patches = new ArrayList<>();
-					Collection<String> path = new ArrayList<>(Arrays.asList(""));
+					List<Patch> patches = new ArrayList<>(1);
+					Collection<String> path = Arrays.asList("");
 					List<Layer> layers = new ArrayList<>();
 					Variable layersVariable = null;
 					Integer position = null;
 					
-					for (Variable variable : instance.getVariables()) {
+					Collection<Variable> instanceVariables = instance.getVariables();
+					
+					for (Variable variable : instanceVariables) {
+						Object varValue = variable.getValue();
 						switch (variable.getName()) {
-						case "format": format = variable.getValue() + ""; break;
-						case "path": path = (Collection<String>) variable.getValue(); break;
-						case "icon": icon = variable.getValue() + ""; break;
-						case "position": position = (Integer) variable.getValue(); break;
-						case "layers": {
+							case "format": {
+								format = varValue + "";
+								break;
+							}
+							case "path": {
+								if (!(varValue instanceof Collection)) {
+									(path = (Collection<String>) (varValue = new ArrayList<>(1)))
+										.add(Objects.toString(varValue));
+								}
+								else if (!((Collection<?>) varValue).isEmpty()) {
+									path = ((Collection<?>) varValue).stream()
+										.map(Objects::toString).collect(Collectors.toList());
+								}
+								break;
+							}
+							case "icon": {
+								icon = varValue + "";
+								break;
+							}
+							case "position": {
+								if (varValue instanceof Integer) {
+									position = (Integer) varValue;
+								}
+								else if (varValue != null) {
+									position = Integer.parseInt(varValue.toString());
+								}
+								break;
+							}
+							case "layers": {
 								layersVariable = variable;
-								List<Object> layerMaps = (List<Object>) variable.getValue();
-								for (Object layerMapObject : layerMaps) {
+								for (Object layerMapObject : (Iterable<?>) varValue) {
 									Map<Object, Object> layerMap = (Map<Object, Object>) layerMapObject;
 									Layer layer = new Layer();
 									layer.setId(layerMap.get("id") + "");
 									layer.setTitle(layerMap.get("title") + "");
-									if (layerMap.containsKey("active")) layer.setActive((Boolean) layerMap.get("active"));
+									if (layerMap.containsKey("active")) {
+										layer.setActive((boolean) layerMap.get("active"));
+									}
 									layers.add(layer);
 								}
 								break;
 							}
-						case "patches": patches = (List<Patch>) variable.getValue();
+							case "patches": {
+								if (varValue instanceof List) {
+									patches = (List<Patch>) varValue;
+								}
+								else if (varValue instanceof Patch) {
+									patches.add((Patch) varValue);
+								}
+								else if (varValue instanceof Collection) {
+									patches.addAll((Collection<? extends Patch>) varValue);
+								}
+								break;
+							}
 						}
 						
 					}
 					
 					// If this is a custom view there may be an activeLayers variable in the variables list
-					Variable activeLayersVariable = instance.getVariables().stream().filter(v -> v.getName().equals("activeLayers")).findAny().orElse(null);
+					Variable activeLayersVariable = instanceVariables.stream().filter(v -> v.getName().equals("activeLayers")).findAny().orElse(null);
 					if (activeLayersVariable != null) {
-						List<String> activeLayers =  (List<String>) activeLayersVariable.getValue();
+						Collection<?> activeLayers =  (Collection<?>) activeLayersVariable.getValue();
 						for (Layer layer : layers) {
 							layer.setActive(activeLayers.contains(layer.getId()));
 						}
 					}
 					
 					// Replace layers variable from list of maps to list of Layer objects
-					if (layersVariable != null) instance.getVariables().remove(layersVariable);
-					instance.getVariables().add(Variable.createReadOnlyVariable("layers", layers));
+					if (layersVariable != null) {
+						instanceVariables.remove(layersVariable);
+					}
+					instanceVariables.add(Variable.createReadOnlyVariable("layers", layers));
 					viewTree.add(new ArrayList<>(path), new ViewTree(instance, format, icon, position, patches, layers));
 				}
 				
@@ -261,7 +300,7 @@ public abstract class EglPictoSource implements PictoSource {
 					
 					existingView.getPatches().addAll(customView.getPatches());
 					if (customView.eIsSet(PictoPackage.eINSTANCE.getCustomView_Layers())) {
-						List<String> layers = customView.getLayers();
+						Collection<?> layers = customView.getLayers();
 						for (Layer layer : existingView.getLayers()) {
 							layer.setActive(layers.contains(layer.getId()));
 						}
@@ -269,9 +308,10 @@ public abstract class EglPictoSource implements PictoSource {
 				}
 			}
 			
-			if (templateUri != null) {
-				viewTree.getBaseUris().add(templateUri);
-				viewTree.getBaseUris().add(templateUri.resolve("./icons/"));
+			if (transformationUri != null) {
+				Collection<URI> baseUris = viewTree.getBaseUris();
+				baseUris.add(transformationUri);
+				baseUris.add(transformationUri.resolve("./icons/"));
 			}
 			
 			return viewTree;
@@ -290,6 +330,7 @@ public abstract class EglPictoSource implements PictoSource {
 	}
 	
 	protected IFile waitForFile(IEditorPart editorPart) {
+		// TODO FIXME : Why is this not using wait / notify mechanism?
 		int attempts = 0;
 		int maxAttempts = 50;
 		IFile file = getFile(editorPart);
@@ -308,6 +349,7 @@ public abstract class EglPictoSource implements PictoSource {
 		return viewTree;
 	}
 	
+	@Override
 	public void dispose() {
 		for (IModel model : models) {
 			try {
@@ -326,21 +368,13 @@ public abstract class EglPictoSource implements PictoSource {
 		m.setReadOnLoad(true);
 		m.setStoredOnDisposal(false);
 		StringProperties properties = new StringProperties();
-		IRelativePathResolver relativePathResolver = new IRelativePathResolver() {
-			
-			@Override
-			public String resolve(String relativePath) {
-				return new File(baseFile.getParentFile(), relativePath).getAbsolutePath();
-			}
-		};
+		IRelativePathResolver relativePathResolver = relativePath ->
+			new File(baseFile.getParentFile(), relativePath).getAbsolutePath();
 		
 		for (Parameter parameter : model.getParameters()) {
-			if (parameter.getFile() != null) {
-				properties.put(parameter.getName(), relativePathResolver.resolve(parameter.getFile()));
-			}
-			else {
-				properties.put(parameter.getName(), parameter.getValue());
-			}
+			properties.put(parameter.getName(), parameter.getFile() != null ?
+					relativePathResolver.resolve(parameter.getFile()) : parameter.getValue()
+			);
 		}
 		m.load(properties, relativePathResolver);
 		return m;
@@ -361,34 +395,26 @@ public abstract class EglPictoSource implements PictoSource {
 	
 	public Object getValue(Parameter parameter) {
 		Object value = parameter.getValue();
-		if (value == null) {
-			if (parameter.eIsSet(PictoPackage.Literals.PARAMETER__VALUES)) {
-				value = parameter.getValues();
+		if (value == null && parameter.eIsSet(PictoPackage.Literals.PARAMETER__VALUES)) {
+			value = parameter.getValues();
+		}
+		if (value == null && !parameter.getItems().isEmpty()) {
+			// If one of the nested items has a name, then the parameter is a Map
+			if (parameter.getItems().stream().anyMatch(item -> item.getName() != null)) {
+				Map<String, Object> values = new LinkedHashMap<>();
+				for (Parameter item : parameter.getItems()) {
+					String key = item.getName();
+					if (key == null) key = "";
+					values.put(key, getValue(item));
+				}
+				value = values;
+			}
+			else {
+				value = parameter.getItems().stream()
+					.map(item -> getValue(item))
+					.collect(Collectors.toCollection(ArrayList::new));
 			}
 		}
-		
-		if (value == null) {
-			if (!parameter.getItems().isEmpty()) {
-				// If one of the nested items has a name, then the parameter is a map
-				boolean map = parameter.getItems().stream().anyMatch(item -> item.getName() != null);
-				System.out.println("MAP: " + map);
-				if (map) {
-					HashMap<String, Object> values = new LinkedHashMap<String, Object>();
-					for (Parameter item : parameter.getItems()) {
-						String key = item.getName();
-						if (key == null) key = "";
-						values.put(key, getValue(item));
-					}
-					value = values;
-				}
-				else {
-					List<Object> values = new ArrayList<Object>();
-					values.addAll(parameter.getItems().stream().map(item -> getValue(item)).collect(Collectors.toList()));
-					value = values;
-				}
-			}
-		}
-		
 		return value;
 	}
 	

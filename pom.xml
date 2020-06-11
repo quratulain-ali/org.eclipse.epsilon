@@ -5,13 +5,15 @@
 
   <groupId>org.eclipse.epsilon</groupId>
   <artifactId>epsilon</artifactId>
-  <version>1.6.0-SNAPSHOT</version>
+  <version>2.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <tycho.version>1.7.0</tycho.version>
     <java.version>1.8</java.version>
+    <javadoc.opts>-Xdoclint:none</javadoc.opts>
+    <epsilon.version>2.1.0-SNAPSHOT</epsilon.version>
   </properties>
   
   <repositories>
@@ -40,12 +42,12 @@
       <id>ossrh</id>
       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
     </snapshotRepository>
-    <repository>
+    <!--repository>
       <id>eclipse-repo-releases</id>
       <name>Epsilon Repository - Releases</name>
       <url>https://repo.eclipse.org/content/repositories/epsilon-releases</url>
     </repository>
-    <!--snapshotRepository>
+    <snapshotRepository>
       <id>eclipse-repo-snapshots</id>
       <name>Epsilon Repository - Snapshots</name>
       <url>https://repo.eclipse.org/content/repositories/epsilon-snapshots</url>
@@ -57,8 +59,6 @@
     <module>features</module>
     <module>tests</module>
     <module>releng</module>
-    <!-- Build standalone separately -->
-    <!--module>standalone</module-->
   </modules>
 
   <build>
@@ -110,6 +110,12 @@
 
       <plugin>
         <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-versions-plugin</artifactId>
+        <version>${tycho.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.eclipse.tycho</groupId>
         <artifactId>target-platform-configuration</artifactId>
         <version>${tycho.version}</version>
         <configuration>
@@ -118,7 +124,7 @@
             <artifact>
               <groupId>${project.groupId}</groupId>
               <artifactId>org.eclipse.epsilon.target</artifactId>
-              <version>1.6.0-SNAPSHOT</version>
+              <version>${epsilon.version}</version>
             </artifact>
           </target>
           <!--dependency-resolution>
@@ -153,8 +159,10 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.10.4</version>
+        <version>3.2.0</version>
         <configuration>
+          <doclint>none</doclint>
+          <failOnError>false</failOnError>
           <additionalparam>${javadoc.opts}</additionalparam>
         </configuration>
       </plugin>
@@ -179,6 +187,8 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>3.2.0</version>
         <configuration>
+          <doclint>none</doclint>
+          <failOnError>false</failOnError>
           <additionalparam>${javadoc.opts}</additionalparam>
           <doctitle>Epsilon Interim API</doctitle>
           <sourceFileIncludes>
@@ -190,48 +200,6 @@
   </reporting>
 
   <profiles>
-    <profile>
-      <id>ossrh</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.6.8</version>
-            <extensions>true</extensions>
-            <configuration>
-              <serverId>ossrh</serverId>
-              <nexusUrl>https://oss.sonatype.org</nexusUrl>
-              <!-- We want to check staged releases manually on
-                   Sonatype OSSRH before we propagate to Central. -->
-              <autoReleaseAfterClose>false</autoReleaseAfterClose>
-            </configuration>
-          </plugin>
-          <!-- Anything that goes to Central must be GPG signed -->
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.6</version>
-            <executions>
-              <execution>
-                <id>sign-artifacts</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>sign</goal>
-                </goals>
-                <configuration>
-                  <gpgArguments>
-                    <arg>--pinentry-mode</arg>
-                    <arg>loopback</arg>
-                  </gpgArguments>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  
     <profile>
       <id>eclipse-sign</id>
       <activation>
@@ -260,7 +228,7 @@
         </plugins>
       </build>
     </profile>
-  
+
     <!--profile>
       <id>maven-sign</id>
       <activation>
@@ -276,15 +244,5 @@
         </plugins>
       </build>
     </profile-->
-  
-    <profile>
-      <id>java8-doclint-disabled</id>
-      <activation>
-        <jdk>[1.8,)</jdk>
-      </activation>
-      <properties>
-        <javadoc.opts>-Xdoclint:none</javadoc.opts>
-      </properties>
-    </profile>
   </profiles>
 </project>

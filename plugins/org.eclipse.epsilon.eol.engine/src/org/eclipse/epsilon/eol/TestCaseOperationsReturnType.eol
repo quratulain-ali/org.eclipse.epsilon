@@ -1,8 +1,7 @@
-
 operation Hello(): String{
 	var a : Collection<Integer> = Collection {0..9};
 	/*Return type should be String instead of Collection<Boolean>*/
-	return a.collect(n | n < 5);
+	//return a.collect(n | n < 5);
 }
 /*This operation should return String*/
 operation Hello(): String{

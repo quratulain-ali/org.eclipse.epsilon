@@ -1,6 +1,7 @@
 # binaries
 bin/
 target
+target-plain
 
 # Unwanted JARs
 /tests/org.eclipse.epsilon.egl.engine.test.dependencies/dependencies.jar
@@ -11,6 +12,13 @@ target
 # Ignore IntelliJ files
 *.iml
 *.idea/
+
+# Maven version bump artifacts
+*.versionsBackup
+
+# Debug files
+*.phd
+*.trc
 
 # Ignore sym-link to project stored in EpsilonLabs
 /plugins/org.eclipse.epsilon.antlr.dev

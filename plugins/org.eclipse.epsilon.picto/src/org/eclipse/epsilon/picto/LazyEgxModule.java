@@ -11,6 +11,7 @@ package org.eclipse.epsilon.picto;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.epsilon.common.module.ModuleElement;
@@ -22,6 +23,7 @@ import org.eclipse.epsilon.egl.dom.GenerationRule;
 import org.eclipse.epsilon.egl.execute.context.IEgxContext;
 import org.eclipse.epsilon.eol.dom.Parameter;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
+import org.eclipse.epsilon.eol.execute.ExecutorFactory;
 import org.eclipse.epsilon.eol.execute.context.FrameStack;
 import org.eclipse.epsilon.eol.execute.context.FrameType;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
@@ -49,10 +51,14 @@ public class LazyEgxModule extends EgxModule {
 	@Override
 	protected Object processRules() throws EolRuntimeException {
 		IEgxContext context = getContext();
+		ExecutorFactory ef = context.getExecutorFactory();
 		context.getOperationContributorRegistry().add(new GetImageOperationContributor(this));
-		List<LazyGenerationRuleContentPromise> promises = new ArrayList<>();
-		for (GenerationRule rule : getGenerationRules()) {
-			promises.addAll((List<LazyGenerationRuleContentPromise>) context.getExecutorFactory().execute(rule, context));
+		Collection<? extends GenerationRule> rules = getGenerationRules();
+		Collection<LazyGenerationRuleContentPromise> promises = new ArrayList<>(rules.size());
+		for (GenerationRule rule : rules) {
+			if (!rule.isLazy(context)) {
+				promises.addAll((Collection<? extends LazyGenerationRuleContentPromise>) ef.execute(rule, context));
+			}
 		}
 		return promises;
 	}
@@ -82,6 +88,7 @@ public class LazyEgxModule extends EgxModule {
 			
 			final String templateName = (templateBlock == null) ? null : templateBlock.execute(context, false);
 			final EglTemplateFactory templateFactory = context.getTemplateFactory();
+			final Map<URI, EglTemplate> templateCache = context.getTemplateCache();
 			List<Variable> variables = new ArrayList<>();
 			URI templateUri = null; 
 			
@@ -100,14 +107,15 @@ public class LazyEgxModule extends EgxModule {
 			}
 			
 			frameStack.leaveLocal(this);
-			return new LazyGenerationRuleContentPromise(templateFactory, templateUri, variables);
+			return new LazyGenerationRuleContentPromise(templateFactory, templateCache, templateUri, variables);
 		}
 		
 		@Override
 		public Object execute(IEolContext context) throws EolRuntimeException {
-			List<LazyGenerationRuleContentPromise> promises = new ArrayList<>();
+			Collection<LazyGenerationRuleContentPromise> promises = new ArrayList<>();
+			ExecutorFactory ef = context.getExecutorFactory();
 			for (Object element : getAllElements(context)) {
-				Object result = context.getExecutorFactory().execute(this, context, element);
+				Object result = ef.execute(this, context, element);
 				if (result instanceof LazyGenerationRuleContentPromise) {
 					promises.add((LazyGenerationRuleContentPromise) result);
 				}
@@ -123,32 +131,45 @@ public class LazyEgxModule extends EgxModule {
 	
 	public class LazyGenerationRuleContentPromise implements ContentPromise {
 		protected EglTemplateFactory templateFactory;
+		protected Map<URI, EglTemplate> templateCache;
 		protected URI templateUri;
-		protected List<Variable> variables;
+		protected Collection<Variable> variables;
 		
-		public LazyGenerationRuleContentPromise() {}
+		protected LazyGenerationRuleContentPromise() {}
 		
-		public LazyGenerationRuleContentPromise(EglTemplateFactory templateFactory, URI templateUri, List<Variable> variables) {
-			super();
+		public LazyGenerationRuleContentPromise(EglTemplateFactory templateFactory,
+				Map<URI, EglTemplate> templateCache,
+				URI templateUri, Collection<Variable> variables) {
 			this.templateFactory = templateFactory;
+			this.templateCache = templateCache;
 			this.templateUri = templateUri;
 			this.variables = variables;
 		}
 		
-		public List<Variable> getVariables() {
+		public Collection<Variable> getVariables() {
 			return variables;
 		}
 		
+		@Override
 		public String getContent() throws Exception {
-			
 			if (templateUri == null) return "";
 			
-			EglTemplate template = templateFactory.load(templateUri);
+			EglTemplate template = null;
+			if (templateCache == null || (template = templateCache.get(templateUri)) == null) {
+				template = templateFactory.load(templateUri);
+				if (templateCache != null) {
+					templateCache.put(templateUri, template);
+				}
+			}
 			
 			for (Variable variable : variables) {
 				template.populate(variable.getName(), variable.getValue());
 			}
-			return template.process();
+
+			String result = template.process();
+			template.reset();
+
+			return result;
 		}
 		
 	}

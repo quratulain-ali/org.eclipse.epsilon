@@ -10,14 +10,12 @@
 package org.eclipse.epsilon.emc.emf.xml;
 
 import static org.junit.Assert.assertTrue;
-import java.io.File;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.epsilon.common.util.FileUtil;
-import org.eclipse.epsilon.common.util.OperatingSystem;
 import org.eclipse.epsilon.common.util.StringProperties;
 import org.eclipse.epsilon.eol.exceptions.models.EolModelLoadingException;
 import org.junit.BeforeClass;
@@ -25,16 +23,12 @@ import org.junit.Test;
 
 public class XmlModelTests {
 	
-	static String SCHEMA_FILE_PATH, MODEL_PATH;
-	
-	public XmlModelTests() throws Exception {
-	}
+	private static String SCHEMA_FILE_PATH, MODEL_PATH;
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		Class<?> relClass = XmlModelTests.class;
 		// Load dependencies
-		FileUtil.getFileStandalone("graphml/ygraphml.xsd", relClass);
 		FileUtil.getFileStandalone("graphml/yfeatures.xsd", relClass);
 		FileUtil.getFileStandalone("graphml/ygraphics.xsd", relClass);
 		FileUtil.getFileStandalone("graphml/yprocessors.xsd", relClass);
@@ -45,32 +39,18 @@ public class XmlModelTests {
 	}
 	
 	@Test
-	public void testAbsolutePath() throws Exception {
-		String absolutePath = new File(MODEL_PATH).getAbsolutePath();
-		if (OperatingSystem.isWindows()) {
-			absolutePath = "file:///"+absolutePath;
-		}
-		XmlModel model = createXmlModel(absolutePath, SCHEMA_FILE_PATH);
-		Resource resource = model.getResource();
-		resource.getContents().add(createRootElement(resource));
-		assertTrue(model.store());
-	}
-	
-
-	@Test
 	public void testFileURI() throws Exception {
-		String absolutePath = new File(MODEL_PATH).getAbsolutePath();
-		XmlModel model = createXmlModel(URI.createFileURI(absolutePath).toString(), SCHEMA_FILE_PATH);
+		XmlModel model = createXmlModel(URI.createFileURI(MODEL_PATH).toString(), SCHEMA_FILE_PATH);
 		Resource resource = model.getResource();
 		resource.getContents().add(createRootElement(resource));
 		assertTrue(model.store());
 	}
 	
-	private XmlModel createXmlModel(String uri, String xsdURI) throws EolModelLoadingException {
+	private XmlModel createXmlModel(String uri, String xsdFile) throws EolModelLoadingException {
 	  	XmlModel xmlModel = new XmlModel();
 		StringProperties properties = new StringProperties();
 	    properties.put(XmlModel.PROPERTY_MODEL_URI, uri);
-	    properties.put(XmlModel.PROPERTY_XSD_FILE, xsdURI);
+	    properties.put(XmlModel.PROPERTY_XSD_URI, URI.createFileURI(xsdFile).toString());
 	    properties.put(XmlModel.PROPERTY_READONLOAD, "false");
 	    properties.put(XmlModel.PROPERTY_STOREONDISPOSAL, "true");
 	    xmlModel.load(properties);

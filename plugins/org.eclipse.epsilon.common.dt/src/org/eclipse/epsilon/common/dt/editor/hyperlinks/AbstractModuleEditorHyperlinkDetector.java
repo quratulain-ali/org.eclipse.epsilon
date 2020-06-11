@@ -44,11 +44,12 @@ public class AbstractModuleEditorHyperlinkDetector implements IHyperlinkDetector
 		
 		ArrayList<IHyperlink> hyperlinks = new ArrayList<>();
 		
+
 		EolType reqType , provType; 
 		for (Object op : ast.matchedoperations) {
 				Operation operation = (Operation) op;
 				
-			if (operation.getName().equals(ast.getOperationName()) && operation.getFormalParameters().size() == ast.getParameterExpressions().size())	
+			if (operation.getName().equals(ast.getName()) && operation.getFormalParameters().size() == ast.getParameterExpressions().size())	
 			{
 				int index =0;
 				ok = false;
@@ -116,11 +117,15 @@ public class AbstractModuleEditorHyperlinkDetector implements IHyperlinkDetector
 				if (ok)
 					hyperlinks.add(new ASTHyperlink(astRegions.get(ast), operation, operation.toString()));
 			}	
+
 		}
 		if (hyperlinks.isEmpty()) {
 			for (Object op : module.getOperations()) {
 				Operation operation = (Operation) op;
-				if (operation.getName().equals(ast.getOperationName())) {
+
+			
+				if (operation.getName().equals(ast.getName())) {
+
 					hyperlinks.add(new ASTHyperlink(astRegions.get(ast), operation, operation.toString()));
 				}
 			}	
@@ -168,7 +173,7 @@ public class AbstractModuleEditorHyperlinkDetector implements IHyperlinkDetector
 			try {
 				OperationCallExpression operationCallExpression = (OperationCallExpression) ast;
 				int linkOffset = doc.getLineOffset(operationCallExpression.getNameExpression().getRegion().getStart().getLine()-1) + operationCallExpression.getNameExpression().getRegion().getStart().getColumn();
-				astRegions.put(operationCallExpression, new Region(linkOffset, operationCallExpression.getOperationName().length()));
+				astRegions.put(operationCallExpression, new Region(linkOffset, operationCallExpression.getName().length()));
 			} catch (BadLocationException e) { }
 		}
 		

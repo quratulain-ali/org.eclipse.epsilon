@@ -104,18 +104,18 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 	public Object execute(IEolContext context) throws EolRuntimeException {
 		Object targetObject;
 		String operationName = nameExpression.getName();
-		ExecutorFactory executorFactory = null;
+		final ExecutorFactory executorFactory = context.getExecutorFactory();
 		
 		if (!contextless) {
 			try {
-				executorFactory = context.getExecutorFactory();
 				targetObject = executorFactory.execute(targetExpression, context);
 			}
 			catch (EolUndefinedVariableException npe) {
 				switch (operationName) {
 					default: throw npe;
-					case "isDefined": case "isUndefined": case "ifDefined": case "ifUndefined":
+					case "isDefined": case "isUndefined": case "ifDefined": case "ifUndefined": {
 						targetObject = EolUndefined.INSTANCE;
+					}
 				}
 			}
 		}
@@ -155,8 +155,7 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 		if (objectMethod != null) {
 			return wrap(objectMethod.execute(nameExpression, context, nameExpression)); 
 		}
-		
-		if (executorFactory == null) executorFactory = context.getExecutorFactory();
+
 		ArrayList<Object> parameterValues = new ArrayList<>(parameterExpressions.size());
 		
 		for (Expression parameter : parameterExpressions) {
@@ -394,8 +393,8 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 							} else if (canBeCompatible(reqParameter, provPrameter)) {
 								success = true;
 								successMatch = true;
-								context.addWarningMarker(nameExpression, " Parameter (" + provPrameter
-										+ ") might not match, as it requires " + reqParameter);
+								context.addWarningMarker(nameExpression, " Parameter " + provPrameter
+										+ " might not match, as it requires " + reqParameter);
 							} else if (matchedReturnType.isEmpty()) {
 								// Bcz if we found the perfect match before, no need to make success false at
 								// the end
@@ -468,10 +467,6 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 				context.addErrorMarker(nameExpression, "Parameters type mismatch, as it's void");
 				break;
 			}
-	}
-	
-	public String getOperationName() {
-		return nameExpression.getName();
 	}
 	
 	public void setContextless(boolean contextless) {

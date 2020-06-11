@@ -38,6 +38,7 @@ import org.eclipse.emf.ecore.util.ExtendedMetaData;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.epsilon.common.util.OperatingSystem;
+import org.eclipse.epsilon.common.util.StringUtil;
 
 public class EmfUtil {
 	private EmfUtil() {}	
@@ -78,30 +79,38 @@ public class EmfUtil {
 			
 			return feature;
 		}
-			catch (Throwable t) {
-				t.printStackTrace();
-				return null;
+		catch (Throwable t) {
+			t.printStackTrace();
+			return null;
 		}
 	}
 	
+	/**
+	 * 
+	 * @param relativePath
+	 * @return
+	 * @since 1.6
+	 */
+	public static String createFullyQualifiedUri(String relativePath) {
+		return StringUtil.isEmpty(relativePath) ? "" : createPlatformResourceURI(relativePath).toString();
+	} 
+	
     public static URI createPlatformResourceURI(String s) {
         final URI uri = fixUriForOperatingSystem(s, URI.createURI(s));
-
         if (uri.scheme() == null) {
             return URI.createPlatformResourceURI(s, true);
-        
-        } else {
+        }
+        else {
         	return uri;
         }
     }
     
     public static URI createFileBasedURI(String s) {
     	final URI uri = fixUriForOperatingSystem(s, URI.createURI(s));
-        
     	if (uri.scheme() == null) {
             return URI.createFileURI(s);
-        
-        } else {
+        }
+    	else {
         	return uri;
         }
     }

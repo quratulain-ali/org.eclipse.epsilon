@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.eclipse.epsilon</groupId>
     <artifactId>epsilon</artifactId>
-    <version>1.6.0-SNAPSHOT</version>
+    <version>2.1.0-SNAPSHOT</version>
   </parent>
   <artifactId>plugins</artifactId>
   <packaging>pom</packaging>
@@ -50,12 +50,9 @@
     <module>org.eclipse.epsilon.emc.plainxml</module>
     <module>org.eclipse.epsilon.emc.plainxml.dt</module>
     <module>org.eclipse.epsilon.emc.spreadsheets</module>
-    <module>org.eclipse.epsilon.emc.spreadsheets.dependencies</module>
     <module>org.eclipse.epsilon.emc.spreadsheets.excel</module>
-    <module>org.eclipse.epsilon.emc.spreadsheets.excel.dependencies</module>
     <module>org.eclipse.epsilon.emc.spreadsheets.excel.dt</module>
     <module>org.eclipse.epsilon.emc.spreadsheets.google</module>
-    <module>org.eclipse.epsilon.emc.spreadsheets.google.dependencies</module>
     <module>org.eclipse.epsilon.emc.spreadsheets.google.dt</module>
     <module>org.eclipse.epsilon.emc.uml</module>
     <module>org.eclipse.epsilon.emc.uml.dt</module>
@@ -83,6 +80,7 @@
     <module>org.eclipse.epsilon.etl.dt</module>
     <module>org.eclipse.epsilon.etl.engine</module>
     <module>org.eclipse.epsilon.eugenia</module>
+    <module>org.eclipse.epsilon.eugenia.runtime.dependencies</module>
     <module>org.eclipse.epsilon.eunit.dt</module>
     <module>org.eclipse.epsilon.eunit.dt.cmp.emf</module>
     <module>org.eclipse.epsilon.eunit.dt.diff.emf</module>

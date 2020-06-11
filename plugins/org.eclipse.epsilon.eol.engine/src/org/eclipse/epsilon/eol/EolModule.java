@@ -9,7 +9,9 @@
  ******************************************************************************/
 package org.eclipse.epsilon.eol;
 
+import java.io.File;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.*;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.Lexer;
@@ -29,6 +31,7 @@ import org.eclipse.epsilon.eol.execute.Return;
 import org.eclipse.epsilon.eol.execute.context.EolContext;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
+import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.eol.parse.EolLexer;
 import org.eclipse.epsilon.eol.parse.EolParser;
 import org.eclipse.epsilon.eol.tools.EolSystem;
@@ -207,7 +210,6 @@ public class EolModule extends AbstractModule implements IEolModule {
 					return new VariableDeclaration();
 				}
 			}
-			case EolParser.TYPE: return new TypeExpression();
 			case EolParser.IMPORT: return new Import();
 			case EolParser.OPERATOR: {
 				if (cst.getText().equals("=") && ((
@@ -230,8 +232,31 @@ public class EolModule extends AbstractModule implements IEolModule {
 			case EolParser.Annotation: return new SimpleAnnotation();
 			case EolParser.EXECUTABLEANNOTATION: return new ExecutableAnnotation();
 			case EolParser.ANNOTATIONBLOCK: return new AnnotationBlock();
-			case EolParser.MAP: return new MapLiteralExpression();
-			case EolParser.COLLECTION: return new CollectionLiteralExpression();
+			case EolParser.COLLECTION: {
+				String typeName = cst.getText();
+				if (CollectionLiteralExpression.createCollection(typeName) != null) {
+					return new CollectionLiteralExpression();
+				}
+				else if (MapLiteralExpression.createMap(typeName) != null) {
+					return new MapLiteralExpression();
+				}
+				else {
+					getParseProblems().add(new ParseProblem("Unknown collection type: "+typeName, this));
+				}
+			}
+			case EolParser.MAP: {
+				String typeName = cst.getText();
+				if (MapLiteralExpression.createMap(typeName) != null) {
+					return new MapLiteralExpression();
+				}
+				else if (CollectionLiteralExpression.createCollection(typeName) != null) {
+					return new CollectionLiteralExpression();
+				}
+				else {
+					getParseProblems().add(new ParseProblem("Unknown map type: "+typeName, this));
+				}
+			}
+			case EolParser.TYPE: return new TypeExpression();
 			case EolParser.BREAK: return new BreakStatement(false);
 			case EolParser.BREAKALL: return new BreakStatement(true);
 			case EolParser.THROW: return new ThrowStatement();
@@ -308,7 +333,6 @@ public class EolModule extends AbstractModule implements IEolModule {
 
 	@Override
 	public Set<ModelDeclaration> getModelDelcarations() {
-		
 		if (modelDeclarations == null) {
 			modelDeclarations = new ListSet<>();
 			for (Import import_ : imports) {
@@ -373,26 +397,31 @@ public class EolModule extends AbstractModule implements IEolModule {
 			}
 			imports.add(import_);
 		}
-		
-		if (!(this instanceof BuiltinEolModule)) {
-			Import builtinImport = new Import() {
-				@Override
-				public String getPath() {
-					return "builtin.eol";
-				}
-			};
-			BuiltinEolModule builtinModule = new BuiltinEolModule();
-			builtinModule.setParentModule(this);
-			builtinImport.setImportedModule(builtinModule);
-
-			try {
-				builtinImport.load(EolModule.class.getResource(".").toURI());
-			} catch (URISyntaxException e) {
-				throw new RuntimeException(e);
-			}
-
-			imports.add(builtinImport);
-		}
+//	try {	
+//		if (!(this instanceof BuiltinEolModule)) {
+//			Import builtinImport = new Import() {
+//				@Override
+//				public String getPath() {
+//					return "builtin.eol";
+//				}
+//			};
+//			BuiltinEolModule builtinModule = new BuiltinEolModule();
+//			builtinModule.setParentModule(this);
+//			builtinImport.setImportedModule(builtinModule);
+//
+//			try {
+//				builtinImport.load(EolModule.class.getResource(".").toURI());
+//			
+//			} catch (URISyntaxException e) {
+//				throw new RuntimeException(e);
+//			}
+//			imports.add(builtinImport);
+//		}
+//	}
+//	catch (Exception e)
+//	{
+//		e.printStackTrace();
+//	}
 
 		return imports;
 	}
@@ -445,47 +474,63 @@ public class EolModule extends AbstractModule implements IEolModule {
 	
 	@Override
 	public List<ModuleMarker> compile() {
-		
 		EolCompilationContext context = getCompilationContext();
+
 		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
 			modelDeclaration.compile(context);
 		}
-<<<<<<< HEAD
-		
-		//Check the signature of functions
-				for (Operation operation : getOperations()) {
-				
-					if (operation.getReturnTypeExpression() == null) {
-						
-						if (operation.hasReturnStatement())
-						{
-							operation.returnFlag = true;
-							operation.setReturnTypeExpression(new TypeExpression("Any"));
-						}
-						
-					}
-					// when returnType is not null
-					else
-						operation.returnFlag = true;
-				}
-				
-			//	System.out.println(this);
-				if (main != null) {
-					main.compile(context);
-				}	
-				
-				for (Operation operation : getDeclaredOperations()) {
-					operation.compile(context);
+
+		String root = "/Users/quratulainali/Desktop/org.eclipse.epsilon/plugins/org.eclipse.epsilon.eol.engine/src/org/eclipse/epsilon/eol/";
+		BuiltinEolModule builtinModule = new BuiltinEolModule();
+
+		if (!(this instanceof BuiltinEolModule)) {
+			try {
+				builtinModule.parse(new File(root + "builtin.eol"));
+				operations.addAll(builtinModule.getDeclaredOperations());
+
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		// Check the signature of functions
+		for (Operation operation : getOperations()) {
+			if (operation.getReturnTypeExpression() == null) {
+
+				if (operation.hasReturnStatement()) {
+					operation.returnFlag = true;
+					operation.setReturnTypeExpression(new TypeExpression("Any"));
 				}
 
-=======
-		for (Operation operation : getDeclaredOperations()) {
-			operation.compile(context);
+			}
+			// when returnType is not null
+			else {
+
+				if (operation.hasReturnStatement())
+					operation.returnFlag = true;
+				else
+					operation.returnFlag = false;
+			}
 		}
+
 		if (main != null) {
 			main.compile(context);
 		}
->>>>>>> parent of 37ad267f4... Update EolModule Compile
+
+		for (Operation operation : getDeclaredOperations()) {
+			operation.compile(context);
+		}
+
+		if (!(this instanceof BuiltinEolModule))
+			operations.removeAll(builtinModule.getDeclaredOperations());
+
+		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
+
+			IModel model = context.getModelFactory().createModel(modelDeclaration.getDriverNameExpression().getName());
+			model.rewrite(this, context);
+		}
+
 		return context.getMarkers();
 	}
 	
@@ -534,5 +579,19 @@ public class EolModule extends AbstractModule implements IEolModule {
 			op.clearCache();
 		}
 		getContext().getExtendedProperties().clear();
+	}
+	
+	public static void main(String[] args) {
+		EolModule module = new EolModule();
+		
+		try {
+			module.parse("1.println();");
+			module.compile();
+			module.execute();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		
 	}
 }

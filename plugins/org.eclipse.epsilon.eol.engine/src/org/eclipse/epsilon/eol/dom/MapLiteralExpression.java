@@ -13,6 +13,8 @@ import java.util.Map.Entry;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import org.eclipse.epsilon.common.module.IModule;
 import org.eclipse.epsilon.common.parse.AST;
 import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
@@ -29,12 +31,16 @@ public class MapLiteralExpression extends LiteralExpression {
 	
 	/**
 	 * 
+	 * @param mapName
 	 * @return
-	 * @since 1.6
+	 * @since 2.1
 	 */
-	protected EolMap<Object, Object> createMap() {
-		return mapName != null && mapName.contains("Concurrent") ?
-			new EolConcurrentMap<>() : new EolMap<>();
+	public static Map<Object, Object> createMap(String mapName) {
+		switch (mapName) {
+			case "Map": return new EolMap<>();
+			case "ConcurrentMap": return new EolConcurrentMap<>();
+			default: return null;
+		}
 	}
 	
 	@Override
@@ -56,8 +62,12 @@ public class MapLiteralExpression extends LiteralExpression {
 	}
 	
 	@Override
-	public EolMap<Object, Object> execute(IEolContext context) throws EolRuntimeException {
-		final EolMap<Object, Object> map = createMap();
+	public Map<Object, Object> execute(IEolContext context) throws EolRuntimeException {
+		final Map<Object, Object> map = createMap(mapName);
+		if (map == null) {
+			throw new EolRuntimeException("Unknown map type: "+mapName);
+		}
+		
 		ExecutorFactory executorFactory = context.getExecutorFactory();
 		
 		for (Entry<Expression, Expression> keyValueExpressionPair : keyValueExpressionPairs) {

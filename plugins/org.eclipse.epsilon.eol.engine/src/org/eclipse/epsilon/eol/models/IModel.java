@@ -13,6 +13,9 @@ package org.eclipse.epsilon.eol.models;
 import java.util.Collection;
 import java.util.List;
 import org.eclipse.epsilon.common.util.StringProperties;
+import org.eclipse.epsilon.eol.EolModule;
+import org.eclipse.epsilon.eol.IEolModule;
+import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
 import org.eclipse.epsilon.eol.compile.m3.Metamodel;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.exceptions.models.EolEnumerationValueNotFoundException;
@@ -148,6 +151,8 @@ public interface IModel extends AutoCloseable {
 	IModelTransactionSupport getTransactionSupport();
 	
 	Metamodel getMetamodel(StringProperties properties, IRelativePathResolver resolver);
+	
+	void rewrite(IEolModule module, EolCompilationContext context);
 	
 	/**
 	 * @since 1.6
