@@ -308,6 +308,7 @@ public class EolModule extends AbstractModule implements IEolModule {
 
 	@Override
 	public Set<ModelDeclaration> getModelDelcarations() {
+		
 		if (modelDeclarations == null) {
 			modelDeclarations = new ListSet<>();
 			for (Import import_ : imports) {
@@ -444,16 +445,47 @@ public class EolModule extends AbstractModule implements IEolModule {
 	
 	@Override
 	public List<ModuleMarker> compile() {
+		
 		EolCompilationContext context = getCompilationContext();
 		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
 			modelDeclaration.compile(context);
 		}
+<<<<<<< HEAD
+		
+		//Check the signature of functions
+				for (Operation operation : getOperations()) {
+				
+					if (operation.getReturnTypeExpression() == null) {
+						
+						if (operation.hasReturnStatement())
+						{
+							operation.returnFlag = true;
+							operation.setReturnTypeExpression(new TypeExpression("Any"));
+						}
+						
+					}
+					// when returnType is not null
+					else
+						operation.returnFlag = true;
+				}
+				
+			//	System.out.println(this);
+				if (main != null) {
+					main.compile(context);
+				}	
+				
+				for (Operation operation : getDeclaredOperations()) {
+					operation.compile(context);
+				}
+
+=======
 		for (Operation operation : getDeclaredOperations()) {
 			operation.compile(context);
 		}
 		if (main != null) {
 			main.compile(context);
 		}
+>>>>>>> parent of 37ad267f4... Update EolModule Compile
 		return context.getMarkers();
 	}
 	

@@ -590,4 +590,9 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 			}
 		return false;
 	}
+
+	public ArrayList<Operation> getOperations() {
+		// TODO Auto-generated method stub
+		return operations;
+	}
 }

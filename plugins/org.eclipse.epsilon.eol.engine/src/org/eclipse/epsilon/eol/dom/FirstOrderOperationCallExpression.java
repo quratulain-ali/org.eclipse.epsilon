@@ -21,6 +21,7 @@ import org.eclipse.epsilon.eol.exceptions.EolIllegalOperationException;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.execute.context.FrameType;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
+import org.eclipse.epsilon.eol.execute.context.Variable;
 import org.eclipse.epsilon.eol.execute.operations.AbstractOperation;
 import org.eclipse.epsilon.eol.execute.operations.declarative.*;
 import org.eclipse.epsilon.eol.models.IModel;
@@ -163,6 +164,7 @@ public class FirstOrderOperationCallExpression extends FeatureCallExpression {
 						if (op.getAnnotation("firstorder")!=null)
 						//if (op.getAnnotation("firstorder").toString().equals("firstorder"))
 							builtinOperations.add(op);
+
 			
 			targetExpression.compile(context);
 			
@@ -182,28 +184,26 @@ public class FirstOrderOperationCallExpression extends FeatureCallExpression {
 				context.getFrameStack().enterLocal(FrameType.UNPROTECTED, this);
 				Parameter parameter = parameters.get(0);
 				
-				parameter.compile(context, false);
 				if (parameter.isExplicitlyTyped()) {
 					//TODO: Check that the type of the parameter is a subtype of the type of the collection
 					contextType = parameter.getCompilationType();
 				}
-				context.getFrameStack().put(parameter.getName(), contextType);
 				
+			//	context.getFrameStack().put(parameter.getName(), contextType);
+				parameter.setTypeExpression(new TypeExpression(((EolCollectionType)targetExpression.getResolvedType()).getContentType().getName()));
+				parameter.getTypeExpression().resolvedType = ((EolCollectionType)targetExpression.getResolvedType()).getContentType();
+				parameter.type= parameter.getTypeExpression().resolvedType;
+				parameter.getTypeExpression().type= parameter.getTypeExpression().resolvedType;
+				parameter.compile(context, true);	
+			//	System.out.println("**"+ parameter +" - " + parameter.getTypeExpression().getName());
+					
 				Expression expression = expressions.get(0);
-				//((PropertyCallExpression) expression).getTargetExpression().compile(context);
 				expression.compile(context);
+				//((PropertyCallExpression) expression).getTargetExpression().compile(context);
+				
 				
 				System.out.println(expressions.get(0).getResolvedType());
-				
-//				Operation firstOrder=builtinOperations.getOperation("collect");
-//				firstOrder.getReturnTypeExpression().compile(context);
-//				if(((EolCollectionType)firstOrder.getReturnTypeExpression().getResolvedType()).getContentType().equals(EolSelfExpressionType.Instance))
-//				{
-//					firstOrder.getReturnTypeExpression().resolvedType= targetExpression.getResolvedType();
-//					
-//					((EolCollectionType)firstOrder.getReturnTypeExpression().getResolvedType()).setContentType(expressions.get(0).getResolvedType());
-//					resolvedType= new EolCollectionType(targetExpression.getResolvedType().getName(),expressions.get(0).getResolvedType() );
-//				}
+	
 				
 				context.getFrameStack().leaveLocal(this);
 				
@@ -223,6 +223,8 @@ public class FirstOrderOperationCallExpression extends FeatureCallExpression {
 						if (!(firstOrder.getReturnTypeExpression().resolvedType instanceof EolAnyType))
 						((EolCollectionType)firstOrder.getReturnTypeExpression().getResolvedType()).setContentType(expressions.get(0).getResolvedType());
 						resolvedType= new EolCollectionType(targetExpression.getResolvedType().getName(),expressions.get(0).getResolvedType() );
+						
+						
 				//	}
 				}
 				else if (StringUtil.isOneOf(name, "exists", "forAll", "one", "none", "nMatch")) {
@@ -251,6 +253,7 @@ public class FirstOrderOperationCallExpression extends FeatureCallExpression {
 						
 					context.addErrorMarker(expression, "Expression should return a Boolean but returns a " + expression.getResolvedType().getName() + " instead");
 				}
+					
 				
 			}
 			else {

@@ -13,10 +13,14 @@ package org.eclipse.epsilon.evl.dom;
 
 import java.util.*;
 import org.eclipse.epsilon.common.module.IModule;
+import org.eclipse.epsilon.common.module.ModuleElement;
+import org.eclipse.epsilon.common.module.ModuleMarker;
 import org.eclipse.epsilon.common.parse.AST;
 import org.eclipse.epsilon.common.util.AstUtil;
+import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
 import org.eclipse.epsilon.eol.dom.AnnotatableModuleElement;
 import org.eclipse.epsilon.eol.dom.ExecutableBlock;
+import org.eclipse.epsilon.eol.dom.ICompilableModuleElement;
 import org.eclipse.epsilon.eol.dom.IExecutableModuleElement;
 import org.eclipse.epsilon.eol.dom.IExecutableModuleElementParameter;
 import org.eclipse.epsilon.eol.dom.TypeExpression;
@@ -26,11 +30,12 @@ import org.eclipse.epsilon.eol.exceptions.models.EolModelNotFoundException;
 import org.eclipse.epsilon.eol.execute.ExecutorFactory;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
+import org.eclipse.epsilon.eol.execute.operations.contributors.ModelElementOperationContributor;
 import org.eclipse.epsilon.eol.types.EolModelElementType;
 import org.eclipse.epsilon.evl.execute.context.IEvlContext;
 import org.eclipse.epsilon.evl.parse.EvlParser;
 
-public class ConstraintContext extends AnnotatableModuleElement implements IExecutableModuleElement, IExecutableModuleElementParameter {
+public class ConstraintContext extends AnnotatableModuleElement implements IExecutableModuleElement, IExecutableModuleElementParameter, ICompilableModuleElement {
 	
 	protected final ArrayList<Constraint> constraints = new ArrayList<>(0);
 	protected TypeExpression typeExpression;
@@ -270,4 +275,16 @@ public class ConstraintContext extends AnnotatableModuleElement implements IExec
 			Objects.equals(this.getTypeName(), cc.getTypeName()) &&
 			this.constraints.size() == cc.constraints.size();
 	}
+	
+	@Override
+	 public void compile(EolCompilationContext context) {
+		 
+		 typeExpression.compile(context);
+		 
+			
+		 for (Constraint c : getConstraints())
+			 
+			 c.compile(context);
+		
+	 }
 }

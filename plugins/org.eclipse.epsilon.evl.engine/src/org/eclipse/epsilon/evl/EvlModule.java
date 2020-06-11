@@ -10,20 +10,28 @@
  ******************************************************************************/
 package org.eclipse.epsilon.evl;
 
+import java.io.File;
+import java.io.ObjectInputStream.GetField;
 import java.util.*;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.Lexer;
 import org.antlr.runtime.TokenStream;
 import org.eclipse.epsilon.common.module.IModule;
 import org.eclipse.epsilon.common.module.ModuleElement;
+import org.eclipse.epsilon.common.module.ModuleMarker;
 import org.eclipse.epsilon.common.parse.AST;
 import org.eclipse.epsilon.common.parse.EpsilonParser;
 import org.eclipse.epsilon.common.util.AstUtil;
 import org.eclipse.epsilon.common.util.CollectionUtil;
+import org.eclipse.epsilon.emc.emf.EmfModel;
+import org.eclipse.epsilon.eol.EolModule;
+import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
+import org.eclipse.epsilon.eol.compile.context.IModelFactory;
 import org.eclipse.epsilon.eol.dom.ExecutableBlock;
 import org.eclipse.epsilon.eol.dom.Import;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.execute.context.Variable;
+import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.erl.ErlModule;
 import org.eclipse.epsilon.evl.dom.*;
 import org.eclipse.epsilon.evl.execute.UnsatisfiedConstraint;
@@ -148,8 +156,10 @@ public class EvlModule extends ErlModule implements IEvlModule {
 		for (ConstraintContext constraintContext : getConstraintContexts()) {
 			constraints.addAll(constraintContext.getConstraints());
 		}
+		
 	}
 
+	
 	@Override
 	public List<ConstraintContext> getDeclaredConstraintContexts() {
 		return declaredConstraintContexts;
@@ -283,6 +293,7 @@ public class EvlModule extends ErlModule implements IEvlModule {
 	@SuppressWarnings("unchecked")
 	@Override
 	public Set<UnsatisfiedConstraint> execute() throws EolRuntimeException {
+		
 		return (Set<UnsatisfiedConstraint>) super.execute();
 	}
 	
@@ -348,4 +359,41 @@ public class EvlModule extends ErlModule implements IEvlModule {
 		return CONFIG_PROPERTIES;
 	}
 	
+	
+	@Override
+	public List<ModuleMarker> compile() {
+
+		EolCompilationContext context = getCompilationContext();
+		super.compile();
+	
+		for (ConstraintContext cc : getConstraintContexts()) {
+				cc.compile(context);
+		}
+	
+		return context.getMarkers();
+	}
+
+	
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

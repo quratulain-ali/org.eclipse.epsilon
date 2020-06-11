@@ -5,9 +5,14 @@ operation String firstToLowerCase () : String {
 @firstorder
 operation Collection<Any> sortBy(a : Any) : Collection <Any>{
 }
+@firstorder
+operation Any allInstances() : Collection<Any>{}
 // Remove it after testing _ 25Feb2020
 @firstorder
 operation Collection<Any> collect(a: Any) : Collection<EolSelfExpressionType> {
+}
+@firstorder
+operation Collection<Any> exists(a: Any) : Collection<EolSelfExpressionType> {
 }
 operation String toCharSequence() : List<String> {
 }
@@ -138,6 +143,7 @@ operation Any isUndefined () : Boolean {
 operation String split(ab: String) : Collection<String> {
 }
 
+
 // Remove it after testing _ 31Jan2020
 operation Collection<Any> testCol () : EolSelf {
 }
@@ -150,6 +156,8 @@ operation Collection<Any> first() : Any {
 }
 // Added for Eugenia _ 17March2020
 operation Collection<Any> isEmpty() : Boolean {
+}
+operation Collection<Any> notEmpty() : Boolean{
 }
 // Added for Eugenia _ 17March2020
 operation Any isDefined() : Boolean {
@@ -180,6 +188,7 @@ operation Any isKindOf(type : Any) : Boolean{
 }
 operation Any allOfKind() : Collection <Any>{
 }
+
 // Added for Eugenia _ 17March2020
 operation Collection<Any> includes(item : Any) : Boolean{
 }
@@ -199,3 +208,10 @@ operation Collection<Any> testSelfCollection() : EolSelfCollectionType{
 
 operation Any asSet(): Set {
 }
+
+operation Any satisfies(invariant :String) : Boolean{}
+operation String substring(startIndex : Integer,endIndex : Integer) : String{}
+operation String substring(startIndex : Integer) : String{}
+operation String toLowerCase():String{}
+operation String toUpperCase():String{}
+

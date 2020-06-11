@@ -105,6 +105,7 @@ public class Parameter extends AbstractModuleElement implements ICompilableModul
 	public void compile(EolCompilationContext context, boolean createVariable) {
 		if (typeExpression != null) typeExpression.compile(context);
 		if (createVariable) context.getFrameStack().put(new Variable(getName(), getCompilationType()));
+		
 	}
 	
 	public EolType getCompilationType() {

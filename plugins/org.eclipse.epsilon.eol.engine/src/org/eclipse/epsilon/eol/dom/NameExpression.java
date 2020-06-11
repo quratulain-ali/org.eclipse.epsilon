@@ -103,6 +103,7 @@ public class NameExpression extends Expression {
 		if (variable != null) {
 			resolvedType = variable.getType();
 //			modelElementType = context.getModelElementType(name);
+			
 		}
 		else {
 			modelElementType = context.getModelElementType(name);

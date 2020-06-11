@@ -12,9 +12,12 @@ package org.eclipse.epsilon.evl.dom;
 
 import java.util.*;
 import org.eclipse.epsilon.common.module.IModule;
+import org.eclipse.epsilon.common.module.ModuleMarker;
 import org.eclipse.epsilon.common.parse.AST;
 import org.eclipse.epsilon.common.util.AstUtil;
+import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
 import org.eclipse.epsilon.eol.dom.ExecutableBlock;
+import org.eclipse.epsilon.eol.dom.ICompilableModuleElement;
 import org.eclipse.epsilon.eol.dom.IExecutableModuleElementParameter;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.execute.context.FrameType;
@@ -27,7 +30,7 @@ import org.eclipse.epsilon.evl.execute.context.IEvlContext;
 import org.eclipse.epsilon.evl.execute.operations.SatisfiesOperation;
 import org.eclipse.epsilon.evl.parse.EvlParser;
 
-public class Constraint extends NamedRule implements IExecutableModuleElementParameter {
+public class Constraint extends NamedRule implements IExecutableModuleElementParameter,ICompilableModuleElement {
 	
 	protected boolean isCritique = false;
 	protected List<Fix> fixes;
@@ -260,5 +263,32 @@ public class Constraint extends NamedRule implements IExecutableModuleElementPar
 		return
 			Objects.equals(this.constraintContext, constraint.constraintContext) &&
 			Objects.equals(this.isCritique, constraint.isCritique);
+	}
+	
+	@Override
+	public void compile (EolCompilationContext context){
+		
+		ConstraintContext cc = (ConstraintContext)this.getParent();
+		context.getFrameStack().put(new Variable("self",cc.getTypeExpression().getResolvedType()));
+		 
+			
+		if (guardBlock!=null)
+			guardBlock.compile(context);
+		
+		if (checkBlock!=null)
+			checkBlock.compile(context);
+		
+		if (messageBlock!=null)
+			messageBlock.compile(context);
+		
+		for (Fix f : fixes)
+		{
+			if (f.bodyBlock!=null)
+			f.bodyBlock.compile(context);
+			if (f.guardBlock!=null)
+			f.guardBlock.compile(context);
+			if (f.titleBlock!=null)
+			f.titleBlock.compile(context); // Is it necessary?
+		}		
 	}
 }

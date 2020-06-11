@@ -58,4 +58,10 @@ public class EglComplexType extends EolType {
 	public String getName() {
 		return name;
 	}
+
+	@Override
+	public EolType getParentType() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
