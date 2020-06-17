@@ -32,6 +32,7 @@ import org.eclipse.epsilon.eol.execute.context.EolContext;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
 import org.eclipse.epsilon.eol.models.IModel;
+import org.eclipse.epsilon.eol.models.IRewriter;
 import org.eclipse.epsilon.eol.parse.EolLexer;
 import org.eclipse.epsilon.eol.parse.EolParser;
 import org.eclipse.epsilon.eol.tools.EolSystem;
@@ -482,10 +483,10 @@ public class EolModule extends AbstractModule implements IEolModule {
 
 		String root = "/Users/quratulainali/Desktop/org.eclipse.epsilon/plugins/org.eclipse.epsilon.eol.engine/src/org/eclipse/epsilon/eol/";
 		BuiltinEolModule builtinModule = new BuiltinEolModule();
-
+		
 		if (!(this instanceof BuiltinEolModule)) {
 			try {
-				builtinModule.parse(new File(root + "builtin.eol"));
+				builtinModule.parse(new File(root+"builtin.eol"));
 				operations.addAll(builtinModule.getDeclaredOperations());
 
 			} catch (Exception e) {
@@ -509,8 +510,13 @@ public class EolModule extends AbstractModule implements IEolModule {
 
 				if (operation.hasReturnStatement())
 					operation.returnFlag = true;
-				else
-					operation.returnFlag = false;
+				else {
+					if ((operation.getAnnotation("builtin")!=null) || 
+							(operation.getAnnotation("firstorder")!=null))
+						operation.returnFlag = true;
+					else
+						operation.returnFlag = false;
+				}
 			}
 		}
 
@@ -524,12 +530,6 @@ public class EolModule extends AbstractModule implements IEolModule {
 
 		if (!(this instanceof BuiltinEolModule))
 			operations.removeAll(builtinModule.getDeclaredOperations());
-
-		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
-
-			IModel model = context.getModelFactory().createModel(modelDeclaration.getDriverNameExpression().getName());
-			model.rewrite(this, context);
-		}
 
 		return context.getMarkers();
 	}
