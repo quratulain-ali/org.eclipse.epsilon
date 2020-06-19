@@ -15,7 +15,7 @@ import org.eclipse.epsilon.common.module.IModule;
 import org.eclipse.epsilon.common.parse.AST;
 import org.eclipse.epsilon.eol.EolModule;
 import org.eclipse.epsilon.eol.IEolModule;
-import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
+import org.eclipse.epsilon.eol.compile.context.IEolCompilationContext;
 import org.eclipse.epsilon.eol.exceptions.EolIllegalOperationException;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.exceptions.EolUndefinedVariableException;
@@ -211,7 +211,7 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 	}
 	
 	@Override
-	public void compile(EolCompilationContext context) {
+	public void compile(IEolCompilationContext context) {
 		OperationList allOperations = ((EolModule) module).getOperations();
 		
 		if (targetExpression != null) {
@@ -219,7 +219,6 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 			this.contextless = false;
 		} else
 			this.contextless = true;
-
 		for (Expression parameterExpression : parameterExpressions) {
 			parameterExpression.compile(context);
 		}
