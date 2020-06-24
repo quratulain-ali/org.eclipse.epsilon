@@ -13,6 +13,9 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
+
+import javax.xml.crypto.dsig.keyinfo.RetrievalMethod;
+
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.Lexer;
 import org.antlr.runtime.TokenStream;
@@ -34,6 +37,7 @@ import org.eclipse.epsilon.eol.execute.context.Variable;
 import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.eol.parse.EolLexer;
 import org.eclipse.epsilon.eol.parse.EolParser;
+import org.eclipse.epsilon.eol.parse.Eol_EolParserRules.returnStatement_return;
 import org.eclipse.epsilon.eol.tools.EolSystem;
 
 public class EolModule extends AbstractModule implements IEolModule {
@@ -48,6 +52,8 @@ public class EolModule extends AbstractModule implements IEolModule {
 	protected Set<ModelDeclaration> modelDeclarations;
 	protected EolCompilationContext compilationContext;
 	private IEolModule parent;
+	private BuiltinEolModule builtinModule;
+	private EolCompilationContext compileContext;
 	
 	/**
 	 * The type of {@link #context} when using {@link #getContext()} and {@link #setContext(IEolContext)}.
@@ -472,16 +478,15 @@ public class EolModule extends AbstractModule implements IEolModule {
 		return Return.getValue(context.getExecutorFactory().execute(main, context));
 	}
 	
-	@Override
-	public List<ModuleMarker> compile() {
-		EolCompilationContext context = getCompilationContext();
+	public List<ModuleMarker> preCompile(){
+		compileContext = getCompilationContext();
 
 		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
-			modelDeclaration.compile(context);
+			modelDeclaration.compile(compileContext);
 		}
 
-		String root = "/Users/quratulainali/Desktop/org.eclipse.epsilon/plugins/org.eclipse.epsilon.eol.engine/src/org/eclipse/epsilon/eol/";
-		BuiltinEolModule builtinModule = new BuiltinEolModule();
+		String root = "/Users/sorourjahanbin/git/org.eclipse.epsilon/plugins/org.eclipse.epsilon.eol.engine/src/org/eclipse/epsilon/eol/";
+		builtinModule = new BuiltinEolModule();
 
 		if (!(this instanceof BuiltinEolModule)) {
 			try {
@@ -513,25 +518,44 @@ public class EolModule extends AbstractModule implements IEolModule {
 					operation.returnFlag = false;
 			}
 		}
+		return compileContext.getMarkers();
+		
+	}
+	@Override
+	public List<ModuleMarker> compile() {
+		preCompile();
+		mainCompile();
+		postCompile();
+		return compileContext.getMarkers();
+		
+	}
+	public List<ModuleMarker> mainCompile(){
+		compileContext = getCompilationContext();
 
 		if (main != null) {
-			main.compile(context);
+			main.compile(compileContext);
 		}
 
 		for (Operation operation : getDeclaredOperations()) {
-			operation.compile(context);
+			operation.compile(compileContext);
 		}
+
+		
+		return compileContext.getMarkers();
+	}
+	public List<ModuleMarker> postCompile(){
+		
+		compileContext = getCompilationContext();
 
 		if (!(this instanceof BuiltinEolModule))
 			operations.removeAll(builtinModule.getDeclaredOperations());
 
 		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
 
-			IModel model = context.getModelFactory().createModel(modelDeclaration.getDriverNameExpression().getName());
-			model.rewrite(this, context);
+			IModel model = compileContext.getModelFactory().createModel(modelDeclaration.getDriverNameExpression().getName());
+			model.rewrite(this, compileContext);
 		}
-
-		return context.getMarkers();
+		return compileContext.getMarkers();
 	}
 	
 	@Override

@@ -5,9 +5,7 @@ operation String firstToLowerCase () : String {
 @firstorder
 operation Collection<Any> sortBy(a : Any) : Collection <Any>{
 }
-@firstorder
-operation Any allInstances() : Collection<Any>{}
-// Remove it after testing _ 25Feb2020
+
 @firstorder
 operation Collection<Any> collect(a: Any) : Collection<EolSelfExpressionType> {
 }
@@ -145,7 +143,7 @@ operation Any ifUndefined (alternative: Any) : Any {
 operation Any isUndefined () : Boolean {
 }
 
-@builtin
+@firstorder
 operation String split(ab: String) : Collection<String> {
 }
 
