@@ -9,14 +9,9 @@
 **********************************************************************/
 package org.eclipse.epsilon.emc.spreadsheets;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * This class provides support methods.
@@ -90,7 +85,7 @@ public class SpreadsheetUtils {
 	@SuppressWarnings("unchecked")
 	public static Map<String, Object> extractMapFromCollection(final Collection<Object> collection) {
 		Map<String, Object> extractedMap = new HashMap<>();
-		if (CollectionUtils.isEmpty(collection)) {
+		if (collection == null || collection.isEmpty()) {
 			return extractedMap;
 		}
 		else {
@@ -115,7 +110,9 @@ public class SpreadsheetUtils {
 	 */
 	public static String convertObjectToString(final SpreadsheetColumn column, final Object inputValue) {
 		if (inputValue instanceof Iterable) {
-			return StringUtils.join((Iterable<?>) inputValue, column.getDelimiter());
+			return StreamSupport.stream(((Iterable<?>) inputValue).spliterator(), false)
+				.map(Objects::toString)
+				.collect(Collectors.joining(column.getDelimiter()));
 		}
 		else {
 			return String.valueOf(inputValue);

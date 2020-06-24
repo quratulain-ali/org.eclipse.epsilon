@@ -22,6 +22,8 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.epsilon.common.module.AbstractModuleElement;
 import org.eclipse.epsilon.common.module.ModuleElement;
+import org.eclipse.epsilon.eol.EolModule;
+import org.eclipse.epsilon.eol.dom.Operation;
 import org.eclipse.epsilon.eol.execute.context.FrameStack;
 import org.eclipse.epsilon.flexmi.actions.Action;
 import org.eclipse.epsilon.flexmi.actions.ActionMap;
@@ -49,12 +51,11 @@ public class FlexmiResource extends ResourceImpl implements Handler {
 	protected List<ProcessingInstruction> processingInstructions = new ArrayList<>();
 	protected EObjectTraceManager eObjectTraceManager = new EObjectTraceManager();
 	protected List<UnresolvedReference> unresolvedReferences = new ArrayList<>();
-	// protected List<Action> actions = new ArrayList<>();
 	protected Stack<Object> objectStack = new Stack<>();
-	protected Node currentNode = null;
-	protected List<String> scripts = new ArrayList<>();
-	protected HashMap<String, EClass> eClassCache = new HashMap<>();
-	protected HashMap<EClass, List<EClass>> allSubtypesCache = new HashMap<>();
+	protected Node currentNode;
+	protected Collection<String> importedEolModules = new ArrayList<>();
+	protected Map<String, EClass> eClassCache = new HashMap<>();
+	protected Map<EClass, List<EClass>> allSubtypesCache = new HashMap<>();
 	protected StringSimilarityProvider stringSimilarityProvider = new CachedStringSimilarityProvider(new DefaultStringSimilarityProvider());
 	protected Stack<URI> parsedFragmentURIStack = new Stack<>();
 	protected Set<URI> parsedFragmentURIs = new HashSet<>();
@@ -63,7 +64,9 @@ public class FlexmiResource extends ResourceImpl implements Handler {
 	protected Map<EObject, String> localIDs = new HashMap<>();
 	protected FrameStack frameStack = new FrameStack();
 	protected ActionMap actionMap = new ActionMap();
-	protected HashMap<EObject, List<EObject>> orderedChildren = new HashMap<>();
+	protected Map<EObject, List<EObject>> orderedChildren = new HashMap<>();
+	protected Collection<Operation> operations = new ArrayList<>();
+	protected FlexmiResource importedFrom = null;
 	
 	public void startProcessingFragment(URI uri) {
 		parsedFragmentURIStack.push(uri);
@@ -154,7 +157,8 @@ public class FlexmiResource extends ResourceImpl implements Handler {
 		getContents().clear();
 		unresolvedReferences.clear();
 		objectStack.clear();
-		scripts.clear();
+		importedEolModules.clear();
+		operations.clear();
 		eClassCache.clear();
 		allSubtypesCache.clear();
 		setIntrinsicIDToEObjectMap(new HashMap<String, EObject>());
@@ -182,10 +186,10 @@ public class FlexmiResource extends ResourceImpl implements Handler {
 		
 		//Remove prefixes
 		//TODO: Add option to disable this
-		int colonIndex = name.indexOf(":");
-		if (colonIndex > -1) {
-			name = name.substring(colonIndex+1);
-		}
+		//int colonIndex = name.indexOf(":");
+		//if (colonIndex > -1) {
+		//	name = name.substring(colonIndex+1);
+		//}
 		
 		EObject eObject = null;
 		EClass eClass = null;
@@ -364,10 +368,34 @@ public class FlexmiResource extends ResourceImpl implements Handler {
 				addParseWarning("Failed to locate EPackages for nsURI pattern " + value + " ");
 			}
 		}
-		else if ("eol".equalsIgnoreCase(key)) {
-			scripts.add(value);
+		else if ("eol".equalsIgnoreCase(key)) { 
+			// Parse the module and cache its operations 
+			// to be used later in feature computations
+			URI relativeUri = URI.createURI(value);
+			URI eolUri = relativeUri.resolve(getCurrentURI());
+			if (!importedEolModules.contains(eolUri.toString())) {
+				try {
+					parseEol(eolUri.toString());
+				} catch (Exception e) {
+					addParseWarning(e.getMessage());
+				}
+				finally {
+					importedEolModules.add(eolUri.toString());
+				}
+			}
 		}
 		
+	}
+	
+	public void parseEol(String uri) throws Exception {
+		EolModule module = new EolModule();
+		module.parse(new java.net.URI(uri));
+		if (!module.getParseProblems().isEmpty()) {
+			throw new RuntimeException(module.getParseProblems().get(0).toString());
+		}
+		else {
+			operations.addAll(module.getOperations());
+		}
 	}
 	
 	public List<ProcessingInstruction> getProcessingInstructions() {
@@ -682,6 +710,23 @@ public class FlexmiResource extends ResourceImpl implements Handler {
 	
 	public String getLocalId(EObject eObject) {
 		return localIDs.get(eObject);
+	}
+
+	public Collection<Operation> getOperations() {
+		return operations;
+	}
+	
+	public FlexmiResource getImportedFrom() {
+		return importedFrom;
+	}
+	
+	public void setImportedFrom(FlexmiResource importedFrom) {
+		this.importedFrom = importedFrom;
+	}
+	
+	public FlexmiResource getRootResource() {
+		if (importedFrom == null) return this;
+		else return importedFrom.getRootResource();
 	}
 	
 }

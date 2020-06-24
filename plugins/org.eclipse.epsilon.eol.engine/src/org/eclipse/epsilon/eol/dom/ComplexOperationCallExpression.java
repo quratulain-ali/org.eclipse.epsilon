@@ -15,7 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import org.eclipse.epsilon.common.module.IModule;
 import org.eclipse.epsilon.common.parse.AST;
-import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
+import org.eclipse.epsilon.eol.compile.context.IEolCompilationContext;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.operations.DynamicOperation;
@@ -68,11 +68,14 @@ public class ComplexOperationCallExpression extends FeatureCallExpression {
 	@Override
 	public Object execute(IEolContext context) throws EolRuntimeException {
 		Object target = context.getExecutorFactory().execute(targetExpression, context);
+		if (target == null && isNullSafe()) {
+			return target;
+		}
 		return new DynamicOperation().execute(target, nameExpression, complexParameters, context);
 	}
 
 	@Override
-	public void compile(EolCompilationContext context) {
+	public void compile(IEolCompilationContext context) {
 		// TODO Auto-generated method stub
 	}
 	
