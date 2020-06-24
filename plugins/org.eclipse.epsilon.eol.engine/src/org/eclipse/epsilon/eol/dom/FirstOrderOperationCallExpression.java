@@ -92,6 +92,10 @@ public class FirstOrderOperationCallExpression extends FeatureCallExpression {
 			}
 		}
 		
+		if (target == null && isNullSafe()) {
+			return null;
+		}
+		
 		String operationName = nameExpression.getName();
 		IModel owningModel = context.getModelRepository().getOwningModel(target);
 		AbstractOperation operation = getAbstractOperation(target, operationName, owningModel, context);

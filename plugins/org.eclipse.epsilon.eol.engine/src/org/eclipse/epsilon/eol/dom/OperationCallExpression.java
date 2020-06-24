@@ -123,6 +123,10 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 			targetObject = EolNoType.NoInstance;
 		}
 		
+		if (targetObject == null && isNullSafe()) {
+			return null;
+		}
+		
 		IModel owningModel = context.getModelRepository().getOwningModel(targetObject);
 		
 		// Non-overridable operations
