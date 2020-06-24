@@ -11,19 +11,17 @@ package org.eclipse.epsilon.eol.dom;
 
 import org.eclipse.epsilon.common.module.IModule;
 import org.eclipse.epsilon.common.parse.AST;
-import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
-import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
-import org.eclipse.epsilon.eol.execute.context.IEolContext;
+import org.eclipse.epsilon.eol.compile.context.IEolCompilationContext;
 import org.eclipse.epsilon.eol.types.EolPrimitiveType;
 
-public class BooleanLiteral extends LiteralExpression {
+public class BooleanLiteral extends LiteralExpression<Boolean> {
 	
-	protected boolean value;
+	public BooleanLiteral() {
+		super();
+	}
 	
-	public BooleanLiteral() {}
-	
-	public BooleanLiteral(boolean value) {
-		setValue(value);
+	public BooleanLiteral(Boolean value) {
+		super(value);
 	}
 	
 	@Override
@@ -36,22 +34,9 @@ public class BooleanLiteral extends LiteralExpression {
 			value = false;
 		}
 	}
-
-	@Override
-	public Boolean execute(IEolContext context) throws EolRuntimeException {
-		return getValue();
-	}
-	
-	public boolean getValue() {
-		return value;
-	}
-	
-	public void setValue(boolean value) {
-		this.value = value;
-	}
 	
 	@Override
-	public void compile(EolCompilationContext context) {
+	public void compile(IEolCompilationContext context) {
 		resolvedType = EolPrimitiveType.Boolean;
 	}
 }

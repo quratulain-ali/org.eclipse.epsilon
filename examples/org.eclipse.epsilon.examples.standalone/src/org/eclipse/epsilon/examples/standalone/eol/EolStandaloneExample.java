@@ -9,47 +9,41 @@
  ******************************************************************************/
 package org.eclipse.epsilon.examples.standalone.eol;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.eclipse.epsilon.eol.EolModule;
-import org.eclipse.epsilon.eol.IEolModule;
-import org.eclipse.epsilon.eol.models.IModel;
-import org.eclipse.epsilon.examples.standalone.EpsilonStandaloneExample;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import org.eclipse.epsilon.common.util.StringProperties;
+import org.eclipse.epsilon.eol.launch.EolRunConfiguration;
+import org.eclipse.epsilon.emc.emf.EmfModel;
 
 /**
- * This example demonstrates using the 
- * Epsilon Object Language, the core language
- * of Epsilon, in a stand-alone manner 
+ * This example demonstrates using the Epsilon Object Language, the core language of Epsilon, in a stand-alone manner 
+ * 
+ * @author Sina Madani
  * @author Dimitrios Kolovos
  */
-public class EolStandaloneExample extends EpsilonStandaloneExample {
+public class EolStandaloneExample {
 	
 	public static void main(String[] args) throws Exception {
-		new EolStandaloneExample().execute();
-	}
-	
-	@Override
-	public IEolModule createModule() {
-		return new EolModule();
-	}
-
-	@Override
-	public List<IModel> getModels() throws Exception {
-		List<IModel> models = new ArrayList<IModel>();
-		models.add(createEmfModel("Model", "models/Tree.xmi", 
-				"models/Tree.ecore", true, true));
-		return models;
-	}
-
-	@Override
-	public String getSource() throws Exception {
-		return "eol/Demo.eol";
-	}
-
-	@Override
-	public void postProcess() {
+		Path root = Paths.get(EolStandaloneExample.class.getResource("").toURI()),
+			modelsRoot = root.getParent().resolve("models");
 		
+		StringProperties modelProperties = new StringProperties();
+		modelProperties.setProperty(EmfModel.PROPERTY_NAME, "Model");
+		modelProperties.setProperty(EmfModel.PROPERTY_FILE_BASED_METAMODEL_URI,
+			modelsRoot.resolve("Tree.ecore").toAbsolutePath().toUri().toString()
+		);
+		modelProperties.setProperty(EmfModel.PROPERTY_MODEL_URI,
+			modelsRoot.resolve("Tree.xmi").toAbsolutePath().toUri().toString()
+		);
+		
+		EolRunConfiguration runConfig = EolRunConfiguration.Builder()
+			.withScript(root.resolve("Demo.eol"))
+			.withModel(new EmfModel(), modelProperties)
+			.withParameter("Thread", Thread.class)
+			.build();
+		
+		runConfig.run();
+		System.out.println(runConfig.getResult());
 	}
 	
 }

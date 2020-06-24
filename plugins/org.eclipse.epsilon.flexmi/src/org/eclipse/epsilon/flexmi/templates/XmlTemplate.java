@@ -13,14 +13,15 @@ import java.net.URI;
 import java.util.List;
 import org.apache.commons.lang3.text.StrLookup;
 import org.apache.commons.lang3.text.StrSubstitutor;
+import org.eclipse.epsilon.flexmi.FlexmiResource;
 import org.eclipse.epsilon.flexmi.xml.Xml;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class XmlTemplate extends Template {
-
-	public XmlTemplate(Element element, URI uri) {
-		super(element, uri);
+	
+	public XmlTemplate(Element element, FlexmiResource resource, URI uri) {
+		super(element, resource, uri);
 	}
 
 	public List<Element> apply(Element call) {
@@ -43,16 +44,13 @@ public class XmlTemplate extends Template {
 		return application;
 	}
 	
-	public List<Element> getApplication(Element call) {
-		//List<Element> application = new ArrayList<Element>();
-		
-		Element clonedContent = (Element) content.cloneNode(true);
-		
-		List<Element> slots = Xml.getDescendant(clonedContent, Template.PREFIX + "slot");
+	protected void replaceSlots(Element call, Element content) {
+		List<Element> slots = Xml.getDescendant(content, Template.PREFIX + "slot");
 		Element slot = null;
 		if (!slots.isEmpty()) slot = slots.get(0);
 		
 		if (slot != null) {
+			
 			if (!Xml.getChildren(call).isEmpty()) {
 				for (Element child : Xml.getChildren(call)) {
 					slot.getParentNode().insertBefore(child.cloneNode(true), slot);
@@ -60,30 +58,13 @@ public class XmlTemplate extends Template {
 			}
 			slot.getParentNode().removeChild(slot);
 		}
+	}
+	
+	public List<Element> getApplication(Element call) {
 		
+		Element clonedContent = (Element) content.cloneNode(true);
+		replaceSlots(call, clonedContent);
 		return Xml.getChildren(clonedContent);
-		
-		/*
-		for (Element contentChild : Xml.getChildren(content)) {
-			Element cloned = (Element) contentChild.cloneNode(true);
-			
-			List<Element> slots = Xml.getDescendant(cloned, Template.PREFIX + "slot");
-			Element slot = null;
-			if (!slots.isEmpty()) slot = slots.get(0);
-			
-			if (slot != null) {
-				if (!Xml.getChildren(call).isEmpty()) {
-					for (Element child : Xml.getChildren(call)) {
-						slot.getParentNode().insertBefore(child.cloneNode(true), slot);
-					}
-				}
-				slot.getParentNode().removeChild(slot);
-			}
-			
-			application.add(cloned);
-		}
-		
-		return application;*/
 	}
 	
 	protected void replaceParameters(Element element, Element call) {

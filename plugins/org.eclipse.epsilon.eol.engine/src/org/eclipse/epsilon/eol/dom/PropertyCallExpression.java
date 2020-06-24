@@ -14,7 +14,7 @@ import java.util.Collection;
 import org.eclipse.epsilon.common.module.IModule;
 import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.common.parse.AST;
-import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
+import org.eclipse.epsilon.eol.compile.context.IEolCompilationContext;
 import org.eclipse.epsilon.eol.compile.m3.MetaClass;
 import org.eclipse.epsilon.eol.compile.m3.StructuralFeature;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
@@ -49,7 +49,14 @@ public class PropertyCallExpression extends FeatureCallExpression {
 	
 	public Object execute(Object source, NameExpression propertyNameExpression, IEolContext context) throws EolRuntimeException {
 		String propertyName = propertyNameExpression.getName();
-		if (source == null) throw new EolRuntimeException("Called feature '" + propertyName + "' on undefined object", propertyNameExpression);
+		if (source == null) {
+			if (isNullSafe()) {
+				return null;
+			}
+			else {
+				throw new EolRuntimeException("Called feature '" + propertyName + "' on undefined object", propertyNameExpression);
+			}
+		}
 
 		IPropertyGetter getter = context.getIntrospectionManager().getPropertyGetterFor(source, propertyName, context);
 		// Added support for properties on collections
@@ -77,8 +84,7 @@ public class PropertyCallExpression extends FeatureCallExpression {
 	}
 	
 	@Override
-	public void compile(EolCompilationContext context) {
-
+	public void compile(IEolCompilationContext context) {
 		targetExpression.compile(context);
 		
 		// Extended properties

@@ -10,6 +10,8 @@
 package org.eclipse.epsilon.eol.execute.operations.contributors;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.eclipse.epsilon.common.util.CollectionUtil;
 import org.eclipse.epsilon.eol.types.*;
@@ -72,7 +74,8 @@ public class IterableOperationContributor extends OperationContributor {
 	public int size() {
 		if (isCollection()) {
 			return getCollection().size();
-		} else {
+		}
+		else {
 			int size = 0;
 			for (Iterator<?> it = getTarget().iterator(); it.hasNext(); ++size) {
 				it.next();
@@ -88,11 +91,12 @@ public class IterableOperationContributor extends OperationContributor {
 		else {
 			int i = 0;
 			for (Object next : getTarget()) {
-				if (i == index) return next;
-				else i++;
+				if (i++ == index) {
+					return next;
+				}
 			}
+			return null;
 		}
-		return null;
 	}
 	
 	public Object removeAt(int index) {
@@ -160,7 +164,7 @@ public class IterableOperationContributor extends OperationContributor {
 	}
 	
 	public Number sum() {
-		return StreamSupport.stream(getTarget().spliterator(), true)
+		return parallelStream()
 			.filter(Number.class::isInstance)
 			.map(Number.class::cast)
 			.reduce(0, (i, sum) -> NumberUtil.add(sum, i));
@@ -169,7 +173,7 @@ public class IterableOperationContributor extends OperationContributor {
 	public Number product() {
 		if (isEmpty()) return 0.0f;
 		
-		return StreamSupport.stream(getTarget().spliterator(), true)
+		return parallelStream()
 			.filter(Number.class::isInstance)
 			.map(Number.class::cast)
 			.reduce(1, (product, i) -> NumberUtil.multiply(product, i));
@@ -177,7 +181,9 @@ public class IterableOperationContributor extends OperationContributor {
 	
 	public boolean isEmpty() {
 		Object target = getTarget();
-		if (target instanceof Collection<?>) return ((Collection<?>) target).isEmpty();
+		if (target instanceof Collection<?>) {
+			return ((Collection<?>) target).isEmpty();
+		}
 		return !getTarget().iterator().hasNext();
 	}
 
@@ -191,6 +197,41 @@ public class IterableOperationContributor extends OperationContributor {
 			it.hasNext();
 			target.add(it.next())
 		);
+	}
+	
+	/**
+	 * 
+	 * @return
+	 * @since 2.1
+	 */
+	public Stream<?> stream() {
+		return stream(false);
+	}
+	
+	/**
+	 * 
+	 * @return
+	 * @since 2.1
+	 */
+	public Stream<?> parallelStream() {
+		return stream(true);
+	}
+	
+	/**
+	 * 
+	 * @param parallel
+	 * @return
+	 * @since 2.1
+	 */
+	protected Stream<?> stream(boolean parallel) {
+		Iterable<?> target = getTarget();
+		if (target instanceof Collection) {
+			Collection<?> col = ((Collection<?>) target);
+			return parallel ? col.parallelStream() : col.stream();
+		}
+		else {
+			return StreamSupport.stream(target.spliterator(), parallel);
+		}
 	}
 
 	@Override
@@ -223,25 +264,59 @@ public class IterableOperationContributor extends OperationContributor {
 	
 	public boolean includesAll(Collection<?> col) {
 		for (Object item : col) {
-			if (!includes(item)) return false;
+			if (excludes(item)) {
+				return false;
+			}
 		}
 		return true;
 	}
 	
 	public boolean excludesAll(Collection<?> col) {
 		for (Object item : col) {
-			if (includes(item)) return false;
+			if (includes(item)) {
+				return false;
+			}
 		}
 		return true;
 	}
 	
 	public int count(Object o) {
-		return StreamSupport.stream(getTarget().spliterator(), false)
+		return stream()
 			.filter(item -> Objects.equals(item, o))
 			.mapToInt(item -> 1).sum();
 	}
 
-	public Collection<Object> includingAll(Collection<Object> col) {
+	/**
+	 * 
+	 * @param type
+	 * @return
+	 * @since 2.1
+	 */
+	public Collection<Object> selectByKind(EolType type) {
+		if (type == null) {
+			type = EolNoType.Instance;
+		}
+		return stream()
+			.filter(type::isKind)
+			.collect(Collectors.toCollection(this::createCollection));
+	}
+	
+	/**
+	 * 
+	 * @param type
+	 * @return
+	 * @since 2.1
+	 */
+	public Collection<Object> selectByType(EolType type) {
+		if (type == null) {
+			type = EolNoType.Instance;
+		}
+		return stream()
+			.filter(type::isType)
+			.collect(Collectors.toCollection(this::createCollection));
+	}
+	
+	public Collection<Object> includingAll(Collection<?> col) {
 		Collection<Object> result = createCollection();
 		addAll(getTarget(), result);
 		addAll(col, result);
@@ -355,7 +430,6 @@ public class IterableOperationContributor extends OperationContributor {
 	
 	public String concat(String delimiter) {
 		return CollectionUtil.join(getTarget(), delimiter,
-			//FIXME : Use the pretty printer manager here
 			element -> Objects.toString(element, "")
 		);
 	}
@@ -411,16 +485,16 @@ public class IterableOperationContributor extends OperationContributor {
 	public Collection<Object> createCollection() {
 		if (isCollection()) {
 			return EolCollectionType.createSameType(getCollection());
-		} else {
+		}
+		else {
 			return new EolSequence<>();
 		}
 	}
 	
-	public Set<Set<Object>> powerset() {
-		
+	public Set<Set<Object>> powerset() {	
 		List<Object> originalSet = asSequence();
-		
 		Set<Set<Object>> sets = new HashSet<>();
+		
 	    if (originalSet.isEmpty()) {
 	    	sets.add(new HashSet<>());
 	    	return sets;

@@ -12,21 +12,17 @@ package org.eclipse.epsilon.flexmi.templates;
 import java.net.URI;
 import java.util.List;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.eclipse.epsilon.egl.EglTemplateFactory;
 import org.eclipse.epsilon.egl.EglTemplateFactoryModuleAdapter;
-import org.eclipse.epsilon.emc.plainxml.StringInputStream;
-import org.eclipse.epsilon.eol.execute.context.Variable;
+import org.eclipse.epsilon.flexmi.FlexmiResource;
 import org.eclipse.epsilon.flexmi.xml.Xml;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class EglTemplate extends XmlTemplate {
+public class EglTemplate extends DynamicTemplate {
 
-	public EglTemplate(Element element, URI uri) {
-		super(element, uri);
+	public EglTemplate(Element element, FlexmiResource resource, URI uri) {
+		super(element, resource, uri);
 	}
 
 	@Override
@@ -34,22 +30,16 @@ public class EglTemplate extends XmlTemplate {
 		try {
 			EglTemplateFactoryModuleAdapter module = new EglTemplateFactoryModuleAdapter(new EglTemplateFactory());
 			module.parse(content.getTextContent().trim(), uri);
+			if (!module.getParseProblems().isEmpty()) throw new RuntimeException(module.getParseProblems().get(0).toString());
 			
-			for (Parameter parameter : getParameters()) {
-				String parameterName = parameter.getName();
-				String value = call.getAttribute(parameterName);
-				if (call.hasAttribute(Template.PREFIX + parameterName)) value = call.getAttribute(Template.PREFIX + parameterName);
-				module.getContext().getFrameStack().put(Variable.createReadOnlyVariable(parameterName, value));
-			}
+			prepareModule(module, call);
 			
 			String xml = "<?xml version=\"1.0\"?><root>" + (module.execute() + "").trim() + "</root>";
-			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-			Document document = documentBuilder.parse(new StringInputStream(xml));
+			Document document = Xml.parse(xml);
+			replaceSlots(call, document.getDocumentElement());
 			return Xml.getChildren(document.getDocumentElement());
 			
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
 	}

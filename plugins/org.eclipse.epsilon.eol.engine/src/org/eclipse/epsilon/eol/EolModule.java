@@ -28,6 +28,7 @@ import org.eclipse.epsilon.common.parse.problem.ParseProblem;
 import org.eclipse.epsilon.common.util.AstUtil;
 import org.eclipse.epsilon.common.util.ListSet;
 import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
+import org.eclipse.epsilon.eol.compile.context.IEolCompilationContext;
 import org.eclipse.epsilon.eol.dom.*;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.execute.Return;
@@ -35,6 +36,7 @@ import org.eclipse.epsilon.eol.execute.context.EolContext;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
 import org.eclipse.epsilon.eol.models.IModel;
+import org.eclipse.epsilon.eol.models.IRewriter;
 import org.eclipse.epsilon.eol.parse.EolLexer;
 import org.eclipse.epsilon.eol.parse.EolParser;
 import org.eclipse.epsilon.eol.parse.Eol_EolParserRules.returnStatement_return;
@@ -50,7 +52,7 @@ public class EolModule extends AbstractModule implements IEolModule {
 	protected OperationList operations = new OperationList();
 	protected List<ModelDeclaration> declaredModelDeclarations;
 	protected Set<ModelDeclaration> modelDeclarations;
-	protected EolCompilationContext compilationContext;
+	protected IEolCompilationContext compilationContext;
 	private IEolModule parent;
 	private BuiltinEolModule builtinModule;
 	private EolCompilationContext compileContext;
@@ -139,7 +141,10 @@ public class EolModule extends AbstractModule implements IEolModule {
 	@Override
 	public ModuleElement adapt(AST cst, ModuleElement parentAst) {
 		if (cst == null) return null;
-		if (cst.getParent() != null && cst.getParent().getType() == EolParser.EOLMODULE && cst.getType() == EolParser.BLOCK) {
+		
+		AST cstParent = cst.getParent();
+		
+		if (cstParent != null && cstParent.getType() == EolParser.EOLMODULE && cst.getType() == EolParser.BLOCK) {
 			return new StatementBlock();
 		}
 		
@@ -155,8 +160,7 @@ public class EolModule extends AbstractModule implements IEolModule {
 			case EolParser.SWITCH: return new SwitchStatement();
 			case EolParser.IF: return new IfStatement();
 			case EolParser.ITEMSELECTOR: return new ItemSelectorExpression();
-			case EolParser.ARROW:
-			case EolParser.POINT: {
+			case EolParser.ARROW: case EolParser.NAVIGATION: case EolParser.POINT: {
 				AST secondChild = cst.getSecondChild();
 				if (!secondChild.hasChildren()) {
 					return new PropertyCallExpression();
@@ -191,10 +195,14 @@ public class EolModule extends AbstractModule implements IEolModule {
 			case EolParser.FORMAL: return new Parameter();
 			case EolParser.BLOCK: return new StatementBlock();
 			case EolParser.FEATURECALL: {
+				int parentType = cstParent.getType();
 				if (cst.hasChildren() && cst.getFirstChild().getType() == EolParser.PARAMETERS && 
-						((cst.getParent().getType() != EolParser.ARROW && cst.getParent().getType() != EolParser.POINT) ||
-						(cst.getParent().getType() == EolParser.ARROW || cst.getParent().getType() == EolParser.POINT) && cst.getParent().getFirstChild() == cst)) {
-					return new OperationCallExpression(true);
+					(
+						(parentType != EolParser.ARROW && parentType != EolParser.POINT && parentType != EolParser.NAVIGATION) ||
+						(parentType == EolParser.ARROW || parentType == EolParser.POINT || parentType == EolParser.NAVIGATION) &&
+							cstParent.getFirstChild() == cst)
+					) {
+						return new OperationCallExpression(true);
 				}
 				else {
 					return new NameExpression();
@@ -220,7 +228,7 @@ public class EolModule extends AbstractModule implements IEolModule {
 			case EolParser.OPERATOR: {
 				if (cst.getText().equals("=") && ((
 										(parentAst instanceof IfStatement || parentAst instanceof ForStatement || parentAst instanceof WhileStatement) 
-										&& (cst.getParent().getFirstChild() != cst)) || 
+										&& (cstParent.getFirstChild() != cst)) || 
 										parentAst instanceof StatementBlock /*|| 
 										"BLOCK".equals(parentAst.getText())*/)) {
 					return new AssignmentStatement();
@@ -302,7 +310,7 @@ public class EolModule extends AbstractModule implements IEolModule {
 	}
 	
 	@Override
-	public EolCompilationContext getCompilationContext() {
+	public IEolCompilationContext getCompilationContext() {
 		if (compilationContext == null) {
 			compilationContext = new EolCompilationContext();
 			compilationContext.setModelDeclarations(getDeclaredModelDeclarations());
@@ -490,7 +498,7 @@ public class EolModule extends AbstractModule implements IEolModule {
 
 		if (!(this instanceof BuiltinEolModule)) {
 			try {
-				builtinModule.parse(new File(root + "builtin.eol"));
+				builtinModule.parse(new File(root+"builtin.eol"));
 				operations.addAll(builtinModule.getDeclaredOperations());
 
 			} catch (Exception e) {
@@ -514,8 +522,13 @@ public class EolModule extends AbstractModule implements IEolModule {
 
 				if (operation.hasReturnStatement())
 					operation.returnFlag = true;
-				else
-					operation.returnFlag = false;
+				else {
+					if ((operation.getAnnotation("builtin")!=null) || 
+							(operation.getAnnotation("firstorder")!=null))
+						operation.returnFlag = true;
+					else
+						operation.returnFlag = false;
+				}
 			}
 		}
 		return compileContext.getMarkers();
@@ -549,12 +562,16 @@ public class EolModule extends AbstractModule implements IEolModule {
 
 		if (!(this instanceof BuiltinEolModule))
 			operations.removeAll(builtinModule.getDeclaredOperations());
-
-		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
-
-			IModel model = compileContext.getModelFactory().createModel(modelDeclaration.getDriverNameExpression().getName());
-			model.rewrite(this, compileContext);
-		}
+		
+//		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
+//
+//			IModel model = context.getModelFactory().createModel(modelDeclaration.getDriverNameExpression().getName());
+//			model.setName(modelDeclaration.getNameExpression().getName());
+//			if(model instanceof IRewriter)
+//			{
+//				((IRewriter)model).rewrite(this, context);
+//			}
+//		}
 		return compileContext.getMarkers();
 	}
 	

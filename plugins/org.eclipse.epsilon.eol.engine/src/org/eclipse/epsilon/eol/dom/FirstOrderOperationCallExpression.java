@@ -16,7 +16,7 @@ import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.common.parse.AST;
 import org.eclipse.epsilon.common.util.StringUtil;
 import org.eclipse.epsilon.eol.EolModule;
-import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
+import org.eclipse.epsilon.eol.compile.context.IEolCompilationContext;
 import org.eclipse.epsilon.eol.exceptions.EolIllegalOperationException;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.execute.context.FrameType;
@@ -94,6 +94,11 @@ public class FirstOrderOperationCallExpression extends FeatureCallExpression {
 			}
 		}
 
+		
+		if (target == null && isNullSafe()) {
+			return null;
+		}
+		
 		String operationName = nameExpression.getName();
 		IModel owningModel = context.getModelRepository().getOwningModel(target);
 		AbstractOperation operation = getAbstractOperation(target, operationName, owningModel, context);
