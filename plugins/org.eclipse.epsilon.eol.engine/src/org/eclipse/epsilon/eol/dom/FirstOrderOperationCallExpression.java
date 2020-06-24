@@ -18,6 +18,7 @@ import org.eclipse.epsilon.common.util.StringUtil;
 import org.eclipse.epsilon.eol.EolModule;
 import org.eclipse.epsilon.eol.compile.context.IEolCompilationContext;
 import org.eclipse.epsilon.eol.exceptions.EolIllegalOperationException;
+import org.eclipse.epsilon.eol.exceptions.EolNullPointerException;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.execute.context.FrameType;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
@@ -92,11 +93,17 @@ public class FirstOrderOperationCallExpression extends FeatureCallExpression {
 			}
 		}
 		
-		if (target == null && isNullSafe()) {
-			return null;
+		String operationName = nameExpression.getName();
+		
+		if (target == null) {
+			if (isNullSafe()) {
+				return null;
+			}
+			else {
+				throw new EolNullPointerException(operationName, targetExpression);
+			}
 		}
 		
-		String operationName = nameExpression.getName();
 		IModel owningModel = context.getModelRepository().getOwningModel(target);
 		AbstractOperation operation = getAbstractOperation(target, operationName, owningModel, context);
 		
@@ -191,6 +198,7 @@ public class FirstOrderOperationCallExpression extends FeatureCallExpression {
 				if (parameter.isExplicitlyTyped()) {
 					//TODO: Check that the type of the parameter is a subtype of the type of the collection
 					contextType = parameter.getCompilationType();
+
 				}
 				context.getFrameStack().put(parameter.getName(), contextType);
 				

@@ -115,6 +115,7 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 					default: throw npe;
 					case "isDefined": case "isUndefined": case "ifDefined": case "ifUndefined": {
 						targetObject = EolUndefined.INSTANCE;
+						break;
 					}
 				}
 			}
