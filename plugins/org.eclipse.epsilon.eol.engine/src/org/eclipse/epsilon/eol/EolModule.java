@@ -536,6 +536,7 @@ public class EolModule extends AbstractModule implements IEolModule {
 //		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
 //
 //			IModel model = context.getModelFactory().createModel(modelDeclaration.getDriverNameExpression().getName());
+//			model.setName(modelDeclaration.getNameExpression().getName());
 //			if(model instanceof IRewriter)
 //			{
 //				((IRewriter)model).rewrite(this, context);
