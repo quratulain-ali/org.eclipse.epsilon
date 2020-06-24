@@ -175,5 +175,7 @@ public class ExecutableBlock<T> extends AbstractExecutableModuleElement {
 	@Override
 	public void compile(IEolCompilationContext context) {
 		// TODO Auto-generated method stub
+		ICompilableModuleElement body = (ICompilableModuleElement)getBody();
+		body.compile(context);
 	}
 }

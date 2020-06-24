@@ -97,7 +97,7 @@ public class ModelDeclaration extends AbstractModuleElement implements ICompilab
 		else {
 			StringProperties stringProperties = new StringProperties();
 			for (ModelDeclarationParameter parameter : modelDeclarationParameters) {
-				stringProperties.put(parameter.getKey().toLowerCase() , parameter.getValue());
+				stringProperties.put(parameter.getKey() , parameter.getValue());
 			}
 			metamodel = model.getMetamodel(stringProperties, context.getRelativePathResolver());
 			if (metamodel != null) {

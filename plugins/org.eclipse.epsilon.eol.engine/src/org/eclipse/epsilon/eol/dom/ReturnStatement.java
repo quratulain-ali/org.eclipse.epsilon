@@ -22,32 +22,33 @@ import org.eclipse.epsilon.eol.types.EolNoType;
 import org.eclipse.epsilon.eol.types.EolType;
 
 public class ReturnStatement extends Statement {
-	
+
 	protected Expression returnedExpression;
-	
-	public ReturnStatement() {}
-	
+
+	public ReturnStatement() {
+	}
+
 	public ReturnStatement(Expression returnedExpression) {
 		this.returnedExpression = returnedExpression;
 	}
-	
+
 	@Override
 	public void build(AST cst, IModule module) {
 		super.build(cst, module);
 		returnedExpression = (Expression) module.createAst(cst.getFirstChild(), this);
 	}
-	
+
 	@Override
 	public Return execute(IEolContext context) throws EolRuntimeException {
-	
+
 		Object result = null;
 		if (returnedExpression != null) {
 			result = context.getExecutorFactory().execute(returnedExpression, context);
 		}
-		
+
 		return new Return(result);
 	}
-	
+
 	@Override
 	public void compile(IEolCompilationContext context) {
 		if (returnedExpression != null) {
@@ -58,17 +59,21 @@ public class ReturnStatement extends Statement {
 			EolType providedReturnType = returnedExpression.getResolvedType();
 			
 			ModuleElement parent = returnedExpression.getParent();
-			while (!(parent instanceof Operation))
-			{
-				parent = parent.getParent();
-			}
 			
-			((Operation)parent).returnFlag = true;
-			// add for setting resolved type
-			if(((Operation) parent).getReturnTypeExpression()== null)
+				while (!(parent instanceof Operation) && parent != null)
+				{
+					
+					parent = parent.getParent();
+					
+				}
+				
+				if (parent instanceof Operation) {
+				((Operation)parent).returnFlag = true;
+				// add for setting resolved type
+				if(((Operation) parent).getReturnTypeExpression()== null)
 				 ((Operation) parent).setReturnTypeExpression(new TypeExpression("Any"));
-			(((Operation) parent).getReturnTypeExpression()).compile(context);
-			EolType requiredReturnType = ((Operation) parent).getReturnTypeExpression().getResolvedType();
+				(((Operation) parent).getReturnTypeExpression()).compile(context);
+				EolType requiredReturnType = ((Operation) parent).getReturnTypeExpression().getResolvedType();
 			
 
 			System.out.println("Required Type" + requiredReturnType);
@@ -81,9 +86,10 @@ public class ReturnStatement extends Statement {
 					context.addErrorMarker(returnedExpression, "Return type should be "+ requiredReturnType+ " instead of "+ returnedExpression.getResolvedType());
 
 			}	
-
+				}
 		}
 	}
+
 	public boolean isCompatible(EolType targetType, EolType valueType) {
 
 		boolean ok = false;
@@ -188,13 +194,13 @@ public class ReturnStatement extends Statement {
 			}
 		return false;
 	}
-	
+
 	public Expression getReturnedExpression() {
 		return returnedExpression;
 	}
-	
+
 	public void setReturnedExpression(Expression returnedExpression) {
 		this.returnedExpression = returnedExpression;
 	}
-	
+
 }

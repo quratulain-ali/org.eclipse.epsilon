@@ -23,8 +23,10 @@ import org.eclipse.epsilon.eol.compile.m3.MetaClass;
 import org.eclipse.epsilon.eol.compile.m3.Metamodel;
 import org.eclipse.epsilon.eol.compile.m3.Reference;
 import org.eclipse.epsilon.eol.models.IRelativePathResolver;
+import org.eclipse.epsilon.eol.types.EolAnyType;
 import org.eclipse.epsilon.eol.types.EolModelElementType;
 import org.eclipse.epsilon.eol.types.EolPrimitiveType;
+import org.eclipse.epsilon.eol.types.EolType;
 
 public class EmfModelMetamodel extends Metamodel {
 	
@@ -73,9 +75,11 @@ public class EmfModelMetamodel extends Metamodel {
 						else if (StringUtil.isOneOf(instanceClassName, Boolean.class.getCanonicalName(), "boolean")) {
 							attribute.setType(EolPrimitiveType.Boolean);
 						}
-						else if (instanceClassName.equals(Float.class.getCanonicalName()) || instanceClassName.equals(Double.class.getCanonicalName())) {
+						else if ((instanceClassName != null) && (instanceClassName.equals(Float.class.getCanonicalName()) || instanceClassName.equals(Double.class.getCanonicalName()))) {
 							attribute.setType(EolPrimitiveType.Real);
 						}
+						else
+							attribute.setType(EolAnyType.Instance);
 						metaClass.getStructuralFeatures().add(attribute);
 					}
 					

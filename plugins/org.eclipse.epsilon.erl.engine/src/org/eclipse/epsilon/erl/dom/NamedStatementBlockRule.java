@@ -12,11 +12,13 @@ package org.eclipse.epsilon.erl.dom;
 import org.eclipse.epsilon.common.module.IModule;
 import org.eclipse.epsilon.common.parse.AST;
 import org.eclipse.epsilon.common.util.AstUtil;
+import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
 import org.eclipse.epsilon.eol.dom.IExecutableModuleElement;
 import org.eclipse.epsilon.eol.dom.StatementBlock;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.execute.Return;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
+import org.omg.CORBA.Context;
 
 public class NamedStatementBlockRule extends NamedRule implements IExecutableModuleElement {
 	
@@ -59,6 +61,10 @@ public class NamedStatementBlockRule extends NamedRule implements IExecutableMod
 	@Override
 	public Return execute(IEolContext context) throws EolRuntimeException {
 		return (Return) context.getExecutorFactory().execute(body, context);
+	}
+	public void compile(EolCompilationContext context) {
+		body.compile(context);
+
 	}
 	
 }
