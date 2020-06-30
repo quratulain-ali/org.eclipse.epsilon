@@ -1,11 +1,16 @@
+/*********************************************************************
+* Copyright (c) 2020 The University of York.
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 package org.eclipse.epsilon.picto.transformers.elements;
 
 import java.io.InputStream;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -29,7 +34,7 @@ public class AbsolutePathElementTransformer extends AbstractHtmlElementTransform
 	@Override
 	public void transform(Element element) {
 		
-		Set<URI> baseUris = new LinkedHashSet<URI>(viewContent.getBaseUris());
+		Set<java.net.URI> baseUris = new LinkedHashSet<>(viewContent.getBaseUris());
 		if (viewContent.getFile() != null) {
 			baseUris.add(viewContent.getFile().toURI());
 		}
@@ -38,10 +43,10 @@ public class AbsolutePathElementTransformer extends AbstractHtmlElementTransform
 		
 		if (attributeValue != null && !attributeValue.trim().isEmpty()) {
 			try {
-				URI uri = new URI(attributeValue);
+				java.net.URI uri = new java.net.URI(attributeValue);
 				if (!uri.isAbsolute()) {
-					for (URI baseUri : baseUris) {
-						URI fileUri = baseUri.resolve(attributeValue);
+					for (java.net.URI baseUri : baseUris) {
+						java.net.URI fileUri = baseUri.resolve(attributeValue);
 						try (InputStream in = fileUri.toURL().openStream()){
 							if ("file".equals(fileUri.getScheme())) {
 								element.setAttribute(attributeName, fileUri.toString());
@@ -53,13 +58,16 @@ public class AbsolutePathElementTransformer extends AbstractHtmlElementTransform
 							}
 							break;
 						}
-						catch (Exception ex) {}
+						catch (Exception ex) {
+							// Try the next one
+						}
 					}
 				}
 			}
-			catch (Exception ex) {}
+			catch (Exception ex) {
+				// Ignored
+			}
 		}
-		
 	}
 
 }
