@@ -36,7 +36,6 @@ import org.eclipse.epsilon.eol.execute.context.EolContext;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
 import org.eclipse.epsilon.eol.models.IModel;
-import org.eclipse.epsilon.eol.models.IRewriter;
 import org.eclipse.epsilon.eol.parse.EolLexer;
 import org.eclipse.epsilon.eol.parse.EolParser;
 import org.eclipse.epsilon.eol.parse.Eol_EolParserRules.returnStatement_return;
@@ -52,10 +51,10 @@ public class EolModule extends AbstractModule implements IEolModule {
 	protected OperationList operations = new OperationList();
 	protected List<ModelDeclaration> declaredModelDeclarations;
 	protected Set<ModelDeclaration> modelDeclarations;
-	protected IEolCompilationContext compilationContext;
+	protected EolCompilationContext compilationContext;
 	private IEolModule parent;
 	private BuiltinEolModule builtinModule;
-	private EolCompilationContext compileContext;
+	private IEolCompilationContext compileContext;
 	
 	/**
 	 * The type of {@link #context} when using {@link #getContext()} and {@link #setContext(IEolContext)}.
@@ -310,7 +309,7 @@ public class EolModule extends AbstractModule implements IEolModule {
 	}
 	
 	@Override
-	public IEolCompilationContext getCompilationContext() {
+	public EolCompilationContext getCompilationContext() {
 		if (compilationContext == null) {
 			compilationContext = new EolCompilationContext();
 			compilationContext.setModelDeclarations(getDeclaredModelDeclarations());

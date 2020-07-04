@@ -18,6 +18,7 @@ import org.eclipse.epsilon.common.module.ModuleMarker;
 import org.eclipse.epsilon.common.parse.AST;
 import org.eclipse.epsilon.common.util.AstUtil;
 import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
+import org.eclipse.epsilon.eol.compile.context.IEolCompilationContext;
 import org.eclipse.epsilon.eol.dom.AnnotatableModuleElement;
 import org.eclipse.epsilon.eol.dom.ExecutableBlock;
 import org.eclipse.epsilon.eol.dom.ICompilableModuleElement;
@@ -277,7 +278,7 @@ public class ConstraintContext extends AnnotatableModuleElement implements IExec
 	}
 	
 	@Override
-	 public void compile(EolCompilationContext context) {
+	 public void compile(IEolCompilationContext context) {
 		 
 		 typeExpression.compile(context);
 		 

@@ -16,6 +16,7 @@ import org.eclipse.epsilon.common.module.ModuleMarker;
 import org.eclipse.epsilon.common.parse.AST;
 import org.eclipse.epsilon.common.util.AstUtil;
 import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
+import org.eclipse.epsilon.eol.compile.context.IEolCompilationContext;
 import org.eclipse.epsilon.eol.dom.ExecutableBlock;
 import org.eclipse.epsilon.eol.dom.ICompilableModuleElement;
 import org.eclipse.epsilon.eol.dom.IExecutableModuleElementParameter;
@@ -266,7 +267,7 @@ public class Constraint extends NamedRule implements IExecutableModuleElementPar
 	}
 	
 	@Override
-	public void compile (EolCompilationContext context){
+	public void compile(IEolCompilationContext context){
 		
 		ConstraintContext cc = (ConstraintContext)this.getParent();
 		context.getFrameStack().put(new Variable("self",cc.getTypeExpression().getResolvedType()));
