@@ -104,10 +104,13 @@ public class Parameter extends AbstractModuleElement implements ICompilableModul
 	
 	public void compile(IEolCompilationContext context, boolean createVariable) {
 		if (typeExpression != null) typeExpression.compile(context);
-		if (createVariable) context.getFrameStack().put(new Variable(getName(), getCompilationType()));
+		if (createVariable) pushToStack(context);
 		
 	}
-	
+	public void pushToStack(IEolCompilationContext context) {
+		context.getFrameStack().put(new Variable(getName(), getCompilationType()));
+		
+	}
 	public EolType getCompilationType() {
 		if (typeExpression != null) return typeExpression.getCompilationType();
 		else return EolAnyType.Instance;
