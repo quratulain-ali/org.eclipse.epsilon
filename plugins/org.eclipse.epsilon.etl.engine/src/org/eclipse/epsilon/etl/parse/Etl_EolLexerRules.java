@@ -1,6 +1,6 @@
 package org.eclipse.epsilon.etl.parse;
 
-// $ANTLR 3.1b1 EolLexerRules.g 2020-06-22 12:50:48
+// $ANTLR 3.1b1 EolLexerRules.g 2020-07-02 11:40:46
 
 import org.antlr.runtime.*;
 import java.util.Stack;
@@ -72,7 +72,7 @@ public class Etl_EolLexerRules extends Lexer {
     public static final int TYPE=70;
     public static final int T__139=139;
     public static final int T__138=138;
-    public static final int Tokens=161;
+    public static final int Tokens=163;
     public static final int T__133=133;
     public static final int T__132=132;
     public static final int T__135=135;
@@ -91,6 +91,8 @@ public class Etl_EolLexerRules extends Lexer {
     public static final int MAP=80;
     public static final int T__128=128;
     public static final int T__127=127;
+    public static final int T__162=162;
+    public static final int T__161=161;
     public static final int MODELDECLARATION=73;
     public static final int EXPRESSIONINBRACKETS=64;
     public static final int T__160=160;
@@ -653,9 +655,6 @@ public class Etl_EolLexerRules extends Lexer {
         try {
             int _type = BOOLEAN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // EolLexerRules.g:62:9: ( ( 'true' | 'false' ) )
-            // EolLexerRules.g:63:2: ( 'true' | 'false' )
-            {
             // EolLexerRules.g:63:2: ( 'true' | 'false' )
             int alt9=2;
             int LA9_0 = input.LA(1);
@@ -675,7 +674,7 @@ public class Etl_EolLexerRules extends Lexer {
             }
             switch (alt9) {
                 case 1 :
-                    // EolLexerRules.g:63:3: 'true'
+                    // EolLexerRules.g:63:4: 'true'
                     {
                     match("true"); if (state.failed) return ;
 
@@ -683,7 +682,7 @@ public class Etl_EolLexerRules extends Lexer {
                     }
                     break;
                 case 2 :
-                    // EolLexerRules.g:63:12: 'false'
+                    // EolLexerRules.g:63:13: 'false'
                     {
                     match("false"); if (state.failed) return ;
 
@@ -692,10 +691,6 @@ public class Etl_EolLexerRules extends Lexer {
                     break;
 
             }
-
-
-            }
-
             state.type = _type;
             state.channel = _channel;
         }

@@ -1,6 +1,6 @@
 package org.eclipse.epsilon.egl.parse;
 
-// $ANTLR 3.1b1 EolLexerRules.g 2020-06-22 12:50:57
+// $ANTLR 3.1b1 EolLexerRules.g 2020-07-02 11:40:55
 
 import org.antlr.runtime.*;
 import java.util.Stack;
@@ -73,7 +73,7 @@ public class Egx_EolLexerRules extends Lexer {
     public static final int TYPE=70;
     public static final int T__139=139;
     public static final int T__138=138;
-    public static final int Tokens=171;
+    public static final int Tokens=173;
     public static final int T__133=133;
     public static final int T__132=132;
     public static final int T__135=135;
@@ -161,8 +161,10 @@ public class Egx_EolLexerRules extends Lexer {
     public static final int T__98=98;
     public static final int ABORT=48;
     public static final int StrangeNameLiteral=16;
+    public static final int T__172=172;
     public static final int FOR=34;
     public static final int BLOCK=67;
+    public static final int T__171=171;
     public static final int T__170=170;
     public static final int PARAMETERS=51;
     public static final int SpecialNameChar=21;
@@ -663,9 +665,6 @@ public class Egx_EolLexerRules extends Lexer {
         try {
             int _type = BOOLEAN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // EolLexerRules.g:62:9: ( ( 'true' | 'false' ) )
-            // EolLexerRules.g:63:2: ( 'true' | 'false' )
-            {
             // EolLexerRules.g:63:2: ( 'true' | 'false' )
             int alt9=2;
             int LA9_0 = input.LA(1);
@@ -685,7 +684,7 @@ public class Egx_EolLexerRules extends Lexer {
             }
             switch (alt9) {
                 case 1 :
-                    // EolLexerRules.g:63:3: 'true'
+                    // EolLexerRules.g:63:4: 'true'
                     {
                     match("true"); if (state.failed) return ;
 
@@ -693,7 +692,7 @@ public class Egx_EolLexerRules extends Lexer {
                     }
                     break;
                 case 2 :
-                    // EolLexerRules.g:63:12: 'false'
+                    // EolLexerRules.g:63:13: 'false'
                     {
                     match("false"); if (state.failed) return ;
 
@@ -702,10 +701,6 @@ public class Egx_EolLexerRules extends Lexer {
                     break;
 
             }
-
-
-            }
-
             state.type = _type;
             state.channel = _channel;
         }
