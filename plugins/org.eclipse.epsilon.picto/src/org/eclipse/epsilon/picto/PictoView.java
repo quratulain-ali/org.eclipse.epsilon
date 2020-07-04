@@ -14,21 +14,22 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.epsilon.common.dt.EpsilonCommonsPlugin;
 import org.eclipse.epsilon.common.dt.util.LogUtil;
 import org.eclipse.epsilon.picto.ViewRenderer.ZoomType;
 import org.eclipse.epsilon.picto.actions.CopyToClipboardAction;
 import org.eclipse.epsilon.picto.actions.LayersMenuAction;
 import org.eclipse.epsilon.picto.actions.LockAction;
 import org.eclipse.epsilon.picto.actions.PrintAction;
-import org.eclipse.epsilon.picto.actions.SyncAction;
+import org.eclipse.epsilon.picto.actions.RefreshAction;
 import org.eclipse.epsilon.picto.actions.ViewContentsMenuAction;
 import org.eclipse.epsilon.picto.actions.ZoomAction;
+import org.eclipse.epsilon.picto.preferences.PictoPreferencePage;
 import org.eclipse.epsilon.picto.source.PictoSource;
 import org.eclipse.epsilon.picto.source.PictoSourceExtensionPointManager;
 import org.eclipse.epsilon.picto.source.VerbatimSource;
@@ -171,7 +172,7 @@ public class PictoView extends ViewPart {
 					
 					if (editor != part && part instanceof IEditorPart) {
 						PictoSource source = getSource((IEditorPart) part);
-						if (source!=null) {
+						if (source != null) {
 							if (source instanceof VerbatimSource && !renderVerbatimSources) return;
 							render((IEditorPart) part);
 						}
@@ -211,7 +212,7 @@ public class PictoView extends ViewPart {
 		toolbar.add(new Separator());
 		toolbar.add(new CopyToClipboardAction(this));
 		toolbar.add(new PrintAction(viewRenderer));
-		toolbar.add(new SyncAction(this));
+		toolbar.add(new RefreshAction(this));
 		toolbar.add(new LockAction(this));
 		toolbar.add(hideTreeAction);
 		toolbar.add(new Separator());
@@ -413,9 +414,12 @@ public class PictoView extends ViewPart {
 	@Override
 	public void dispose() {
 		super.dispose();
-		if (source != null) source.dispose();
-		if (editor != null)
+		if (source != null) {
+			source.dispose();
+		}
+		if (editor != null) {
 			editor.removePropertyListener(listener);
+		}
 	}
 
 	@Override
@@ -460,6 +464,8 @@ public class PictoView extends ViewPart {
 	class ToggleVerbatimSourcesAction extends Action {
 		public ToggleVerbatimSourcesAction() {
 			super("Render verbatim sources", Action.AS_CHECK_BOX);
+			renderVerbatimSources = EpsilonCommonsPlugin.getDefault().getPreferenceStore().getBoolean(PictoPreferencePage.PROPERTY_RENDER_VERBATIM);
+			setChecked(renderVerbatimSources);
 		}
 		
 		@Override

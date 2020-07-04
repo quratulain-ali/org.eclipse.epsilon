@@ -17,6 +17,7 @@ import org.eclipse.epsilon.common.parse.AST;
 import org.eclipse.epsilon.eol.compile.context.IEolCompilationContext;
 import org.eclipse.epsilon.eol.compile.m3.MetaClass;
 import org.eclipse.epsilon.eol.compile.m3.StructuralFeature;
+import org.eclipse.epsilon.eol.exceptions.EolNullPointerException;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.introspection.IPropertyGetter;
@@ -54,7 +55,7 @@ public class PropertyCallExpression extends FeatureCallExpression {
 				return null;
 			}
 			else {
-				throw new EolRuntimeException("Called feature '" + propertyName + "' on undefined object", propertyNameExpression);
+				throw new EolNullPointerException(propertyName, propertyNameExpression);
 			}
 		}
 
@@ -172,21 +173,18 @@ public class PropertyCallExpression extends FeatureCallExpression {
 				StructuralFeature structuralFeature = metaClass.getStructuralFeature(nameExpression.getName());
 				if (structuralFeature != null) {
 					if (structuralFeature.isMany()) {
-						EolCollectionType collectionType = null;
+						String collectionTypeName;
 						if (structuralFeature.isOrdered()) {
-							if (structuralFeature.isUnique())
-								collectionType = new EolCollectionType("OrderedSet");
-							else
-								collectionType = new EolCollectionType("Sequence");
+							collectionTypeName = structuralFeature.isUnique() ? "OrderedSet" : "Sequence";
 						}
 						else {
-							if (structuralFeature.isUnique())
-								collectionType = new EolCollectionType("Set");
-							else
-								collectionType = new EolCollectionType("Bag");
+							collectionTypeName = structuralFeature.isUnique() ? "Set" : "Bag";
+							if (structuralFeature.isConcurrent()) {
+								collectionTypeName = "Concurrent"+collectionTypeName;
+							}
 						}
-						collectionType.setContentType(structuralFeature.getType());
-						resolvedType = collectionType;
+						resolvedType = new EolCollectionType(collectionTypeName);
+						((EolCollectionType) resolvedType).setContentType(structuralFeature.getType());
 					}
 					else {
 						resolvedType = structuralFeature.getType();

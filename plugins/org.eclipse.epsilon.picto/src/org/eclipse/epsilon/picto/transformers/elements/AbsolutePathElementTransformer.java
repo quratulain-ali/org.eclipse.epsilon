@@ -1,8 +1,18 @@
+/*********************************************************************
+* Copyright (c) 2020 The University of York.
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 package org.eclipse.epsilon.picto.transformers.elements;
 
-import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.InputStream;
+import java.nio.file.*;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.w3c.dom.Element;
 
@@ -23,18 +33,41 @@ public class AbsolutePathElementTransformer extends AbstractHtmlElementTransform
 
 	@Override
 	public void transform(Element element) {
+		
+		Set<java.net.URI> baseUris = new LinkedHashSet<>(viewContent.getBaseUris());
 		if (viewContent.getFile() != null) {
-			String attributeValue = element.getAttribute(attributeName);
-			if (attributeValue != null && !attributeValue.trim().isEmpty()) {
-				try {
-					URI uri = new URI(attributeValue);
-					if (! uri.isAbsolute()) element.setAttribute(attributeName, 
-						new File(viewContent.getFile().getParentFile(), attributeValue).toURI() + "");
-				} catch (URISyntaxException e) {
+			baseUris.add(viewContent.getFile().toURI());
+		}
+		
+		String attributeValue = element.getAttribute(attributeName);
+		
+		if (attributeValue != null && !attributeValue.trim().isEmpty()) {
+			try {
+				java.net.URI uri = new java.net.URI(attributeValue);
+				if (!uri.isAbsolute()) {
+					for (java.net.URI baseUri : baseUris) {
+						java.net.URI fileUri = baseUri.resolve(attributeValue);
+						try (InputStream in = fileUri.toURL().openStream()){
+							if ("file".equals(fileUri.getScheme())) {
+								element.setAttribute(attributeName, fileUri.toString());
+							}
+							else {
+								Path temp = Files.createTempFile("picto", Paths.get(attributeValue).getFileName().toString());
+								Files.copy(in, temp, StandardCopyOption.REPLACE_EXISTING);
+								element.setAttribute(attributeName, temp.toAbsolutePath().toString());
+							}
+							break;
+						}
+						catch (Exception ex) {
+							// Try the next one
+						}
+					}
 				}
+			}
+			catch (Exception ex) {
+				// Ignored
 			}
 		}
 	}
 
-	
 }

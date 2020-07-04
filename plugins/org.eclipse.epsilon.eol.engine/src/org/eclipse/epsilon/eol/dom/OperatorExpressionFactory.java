@@ -20,7 +20,7 @@ public class OperatorExpressionFactory {
 				return new EqualsOperatorExpression();
 			case "==":
 				return new DoubleEqualsOperatorExpression();
-			case "<>":
+			case "<>": case "!=":
 				return new NotEqualsOperatorExpression();
 			case "+":
 				return new PlusOperatorExpression();
@@ -53,8 +53,10 @@ public class OperatorExpressionFactory {
 				return new PostfixOperatorExpression(true);
 			case "--":
 				return new PostfixOperatorExpression(false);
+			case "?:":
+				return new ElvisOperatorExpression();
 			default:
-				throw new RuntimeException("Unknown operator: " + operator);
+				throw new IllegalStateException("Unknown operator: " + operator);
 		}
 	}
 	

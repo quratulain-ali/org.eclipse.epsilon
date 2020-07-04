@@ -13,7 +13,8 @@ def getSlackMessage() {
     return message
 }
 
-def baseTriggers = '(pom\\.xml)|(Jenkinsfile)|(plugins\\/.*)|(pom[-]plain[.]xml)'
+def plainTriggers = '(plugins\\/.*)|(pom[-]plain[.]xml)'
+def baseTriggers = "${plainTriggers}|(pom\\.xml)|(Jenkinsfile)"
 def updateTriggers = "${baseTriggers}|(standalone\\/.*)|(features\\/.*)|(releng\\/.*(target|updatesite)\\/.*)"
 
 pipeline {
@@ -73,17 +74,6 @@ pipeline {
               sh 'mvn -B javadoc:aggregate'
             }
           }
-          stage('Plain Maven build') {
-            when {
-              anyOf {
-                changeset comparator: 'REGEXP', pattern: "${updateTriggers}"
-                expression { return currentBuild.number == 1 }
-              }
-            }
-            steps {
-              sh 'mvn -B -T 1C -f pom-plain.xml compile'
-            }
-          }
           stage('Update site') {
             when {
               allOf {
@@ -116,12 +106,33 @@ pipeline {
               }
             }
           }
+          /*stage('NEW VERSION') { 
+            // This stage should only be uncommented when creating a new release!
+            steps {
+              lock('download-area') {
+                sshagent (['projects-storage.eclipse.org-bot-ssh']) {
+                  sh 'cat "$WORKSPACE/releng/org.eclipse.epsilon.releng/new_version_tasks.sh" | ssh genie.epsilon@projects-storage.eclipse.org'
+                }
+              }
+            }
+          }*/
+          stage('Plain Maven build') {
+            when {
+              anyOf {
+                changeset comparator: 'REGEXP', pattern: "${plainTriggers}"
+                expression { return currentBuild.number == 1 }
+              }
+            }
+            steps {
+              sh 'mvn -B -T 1C -f pom-plain.xml compile'
+            }
+          }
           stage('Deploy to OSSRH') {
             when {
               allOf {
                 branch 'master'
                 anyOf {
-                  changeset comparator: 'REGEXP', pattern: "${updateTriggers}"
+                  changeset comparator: 'REGEXP', pattern: "${plainTriggers}"
                   expression { return currentBuild.number == 1 }
                 }
               }
@@ -144,16 +155,6 @@ pipeline {
           }
         }
       }
-      /*stage('NEW VERSION') { 
-        // This stage should only be uncommented when creating a new release.
-        steps {
-          lock('download-area') {
-            sshagent (['projects-storage.eclipse.org-bot-ssh']) {
-              sh 'cat "$WORKSPACE/releng/org.eclipse.epsilon.releng/new_version_tasks.sh" | ssh genie.epsilon@projects-storage.eclipse.org'
-            }
-          }
-        }
-      }*/
     }
     post {
       success {

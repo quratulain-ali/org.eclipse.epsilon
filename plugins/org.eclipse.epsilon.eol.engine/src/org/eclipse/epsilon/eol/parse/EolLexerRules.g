@@ -59,8 +59,8 @@ ARROW : '->';
 
 NAVIGATION : '?.';
 
-BOOLEAN :
-	('true' | 'false')
+BOOLEAN
+	:	'true' | 'false'
 	;
 	
 STRING
