@@ -200,7 +200,15 @@ public class FirstOrderOperationCallExpression extends FeatureCallExpression {
 				// TODO: Check that the type of the parameter is a subtype of the type of the
 				// collection
 				contextType = parameter.getCompilationType();
-				
+				EolType target = ((EolCollectionType)targetExpression.getResolvedType()).getContentType();
+				EolType param = contextType;
+				while (! (param.equals(target))) {
+						param = param.getParentType();
+						if(param instanceof EolAnyType) {
+						context.addErrorMarker(parameter, "The parameter must be instance of " + target.getName());
+							break;
+						}
+				}
 			} 
 			else {
 				//context.getFrameStack().put(parameter.getName(), contextType);
@@ -220,8 +228,9 @@ public class FirstOrderOperationCallExpression extends FeatureCallExpression {
 				parameter.getTypeExpression().type = parameter.getTypeExpression().resolvedType;
 				contextType = parameter.type;
 			}
-			parameter.putInStack(context);
-			//context.getFrameStack().put(parameter.getName(), contextType);
+			parameter.pushToStack(context);
+			
+			
 			Expression expression = expressions.get(0);
 			expression.compile(context);
 
