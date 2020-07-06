@@ -138,6 +138,10 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 		
 		// Operation contributor for model elements
 		OperationContributor operationContributor = null;
+		
+		// Method contributors that use the unevaluated AST
+		ObjectMethod objectMethod = null;
+		
 		try {
 			if (targetObject instanceof IOperationContributorProvider) {
 				operationContributor = ((IOperationContributorProvider) targetObject).getOperationContributor();
@@ -145,9 +149,6 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 			else if (owningModel != null && owningModel instanceof IOperationContributorProvider) {
 				operationContributor = ((IOperationContributorProvider) owningModel).getOperationContributor();
 			}
-			
-			// Method contributors that use the unevaluated AST
-			ObjectMethod objectMethod = null;
 			
 			if (operationContributor != null) {
 				objectMethod = operationContributor
