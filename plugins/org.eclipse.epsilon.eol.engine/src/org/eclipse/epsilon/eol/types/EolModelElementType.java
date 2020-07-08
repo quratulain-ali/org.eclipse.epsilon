@@ -17,7 +17,9 @@ import java.util.Objects;
 import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.common.util.CollectionUtil;
 import org.eclipse.epsilon.eol.IEolModule;
+import org.eclipse.epsilon.eol.compile.context.IEolCompilationContext;
 import org.eclipse.epsilon.eol.compile.m3.MetaClass;
+import org.eclipse.epsilon.eol.dom.ModelDeclaration;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.exceptions.models.EolModelElementTypeNotFoundException;
 import org.eclipse.epsilon.eol.exceptions.models.EolModelNotFoundException;
@@ -187,7 +189,14 @@ public class EolModelElementType extends EolType {
 	public IModel getModel() throws EolModelElementTypeNotFoundException {
 		return getModel(module.getContext().getModelRepository() != modelRepo);
 	}
-	
+	public IModel getModel(IEolCompilationContext context) throws EolModelElementTypeNotFoundException {
+		for (ModelDeclaration modelDeclaration : context.getModelDeclarations()) {
+			if (getModelName().isEmpty() || modelDeclaration.getNameExpression().getName().equals(getModelName())) {
+				return modelDeclaration.getModel();
+			}
+		}
+		return null;
+	}
 	/**
 	 * Fetches the model from the module's context.
 	 * 
@@ -216,6 +225,8 @@ public class EolModelElementType extends EolType {
 		
 		return cachedModelRef;
 	}
+	
+	
 	
 	public MetaClass getMetaClass() {
 		return metaClass;
