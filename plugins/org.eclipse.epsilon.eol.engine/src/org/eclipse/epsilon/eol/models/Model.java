@@ -201,10 +201,6 @@ public abstract class Model implements IModel{
 	public Metamodel getMetamodel(StringProperties properties, IRelativePathResolver resolver) {
 		return null;
 	}
-	
-	@Override
-	public void rewrite(IEolModule module, EolCompilationContext context) {
-	}
 
 	@Override
 	public boolean isPropertySet(Object instance, String property) throws EolRuntimeException {
