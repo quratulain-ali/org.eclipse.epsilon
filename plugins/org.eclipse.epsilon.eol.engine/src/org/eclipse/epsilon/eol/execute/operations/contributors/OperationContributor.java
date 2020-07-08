@@ -25,7 +25,7 @@ import org.eclipse.epsilon.eol.util.ReflectionUtil;
  * stateless, or if it contains state (i.e. fields)
  * then they are either immutable or ThreadLocal.
  */
-public abstract class OperationContributor {
+public abstract class OperationContributor implements AutoCloseable {
 	
 	private final ThreadLocal<Object> target = new ThreadLocal<>();
 	private final ThreadLocal<IEolContext> context = new ThreadLocal<>();
@@ -66,9 +66,17 @@ public abstract class OperationContributor {
 		}
 		
 		if (method != null) {
-			ObjectMethod objectMethod = new ObjectMethod(getReflectionTarget(target), method);
-			setTarget(target);
-			setContext(context);
+			Object reflectionTarget = getReflectionTarget(target);
+			ObjectMethod objectMethod = new ObjectMethod(reflectionTarget, method);
+
+			/*
+			 * If the reflection target is this contributor, then it will need to know about
+			 * the actual operand for the method and the intended context.
+			 */
+			if (reflectionTarget == this) {
+				setTarget(target);
+				setContext(context);
+			}
 			return objectMethod;
 		}
 		else return null;
@@ -118,7 +126,8 @@ public abstract class OperationContributor {
 	 * Clears the target and context.
 	 * @since 2.2
 	 */
-	public void dispose() {
+	@Override
+	public void close() {
 		target.remove();
 		context.remove();
 	}

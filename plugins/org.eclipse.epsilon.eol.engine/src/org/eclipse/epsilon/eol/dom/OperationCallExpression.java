@@ -100,6 +100,7 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 		}
 	}
 	
+	@SuppressWarnings("resource")
 	@Override
 	public Object execute(IEolContext context) throws EolRuntimeException {
 		Object targetObject;
@@ -218,7 +219,10 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 		finally {
 			// Clean up ThreadLocal
 			if (operationContributor != null) {
-				operationContributor.dispose();
+				operationContributor.close();
+			}
+			if (objectMethod != null) {
+				objectMethod.close();
 			}
 		}
 	}
