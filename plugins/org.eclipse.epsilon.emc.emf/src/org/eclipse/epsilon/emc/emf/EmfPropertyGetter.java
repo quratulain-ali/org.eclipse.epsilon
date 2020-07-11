@@ -24,6 +24,14 @@ public class EmfPropertyGetter extends AbstractPropertyGetter {
 	}
 	
 	@Override
+	public boolean hasProperty(Object object, String property, IEolContext context) {
+		if (object instanceof EObject) {
+			return EmfUtil.getEStructuralFeature(((EObject) object).eClass(), property) != null;
+		}
+		else return false;
+	}
+	
+	@Override
 	public Object invoke(Object object, String property, IEolContext context) throws EolRuntimeException {
 		EObject eObject = (EObject) object;
 		EStructuralFeature sf = EmfUtil.getEStructuralFeature(eObject.eClass(), property);
