@@ -22,7 +22,9 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.epsilon.common.dt.EpsilonCommonsPlugin;
 import org.eclipse.epsilon.common.dt.util.LogUtil;
 import org.eclipse.epsilon.picto.ViewRenderer.ZoomType;
+import org.eclipse.epsilon.picto.actions.BackAction;
 import org.eclipse.epsilon.picto.actions.CopyToClipboardAction;
+import org.eclipse.epsilon.picto.actions.ForwardAction;
 import org.eclipse.epsilon.picto.actions.LayersMenuAction;
 import org.eclipse.epsilon.picto.actions.LockAction;
 import org.eclipse.epsilon.picto.actions.PrintAction;
@@ -37,6 +39,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeSelection;
@@ -71,12 +74,14 @@ public class PictoView extends ViewPart {
 	protected IEditorPart renderedEditor = null;
 	protected boolean locked = false;
 	protected ToggleTreeViewerAction hideTreeAction;
-	protected HashMap<IEditorPart, ViewTree> selectionHistory = new HashMap<>();
+	protected HashMap<IEditorPart, ViewTree> activeViewHistory = new HashMap<>();
 	protected ViewTree activeView = null;
 	protected PictoSource source = null;
 	protected List<PictoSource> sources = new PictoSourceExtensionPointManager().getExtensions();
 	protected ViewTreeLabelProvider viewTreeLabelProvider;
+	protected FilteredViewTree filteredTree;
 	protected boolean renderVerbatimSources = false;
+	protected ViewTreeSelectionHistory viewTreeSelectionHistory = new ViewTreeSelectionHistory();
 	
 	@Override
 	public void createPartControl(Composite parent) {
@@ -90,7 +95,7 @@ public class PictoView extends ViewPart {
 				return wordMatches(viewTree.getName());
 			}
 		};
-		FilteredViewTree filteredTree = new FilteredViewTree(sashForm, SWT.MULTI | SWT.H_SCROLL
+		filteredTree = new FilteredViewTree(sashForm, SWT.MULTI | SWT.H_SCROLL
 				| SWT.V_SCROLL | SWT.BORDER, filter, true);
 		
 		treeViewer = filteredTree.getViewer();
@@ -98,14 +103,45 @@ public class PictoView extends ViewPart {
 		viewTreeLabelProvider = new ViewTreeLabelProvider();
 		treeViewer.setLabelProvider(viewTreeLabelProvider);
 		treeViewer.addSelectionChangedListener(event -> {
+			
 			ViewTree view = ((ViewTree)event.getStructuredSelection().getFirstElement());
 			if (view != null && view.getContent() != null) {
-				try {
-					selectionHistory.put(renderedEditor, view);
-					renderView(view);
-				} catch (Exception ex) {
-					viewRenderer.display(ex);
-				}
+				
+				activeViewHistory.put(renderedEditor, view);
+				
+				// If the selection happens as a result of undo/redo 
+				// we should not execute a new command
+				if (viewTreeSelectionHistory.isAutomatedSelection()) return;
+				
+				viewTreeSelectionHistory.execute(new Command() {
+					
+					protected List<String> path = null;
+					
+					@Override
+					public void execute() {
+						
+						if (path == null) {
+							path = view.getPath();
+							try {
+								renderView(view);
+							} catch (Exception ex) {
+								viewRenderer.display(ex);
+							}
+						}
+						else {
+							try {
+								viewTreeSelectionHistory.setAutomatedSelection(true);
+								selectViewTree(path);
+								renderView(getViewTree().forPath(path));
+							} catch (Exception ex) {
+								viewRenderer.display(ex);
+							}
+							finally {
+								viewTreeSelectionHistory.setAutomatedSelection(false);
+							}
+						}
+					}
+				});
 			}
 		});
 		treeViewer.addDoubleClickListener(event -> filteredTree.clearFilterText());
@@ -120,17 +156,9 @@ public class PictoView extends ViewPart {
 					
 					Object[] pathArray = (Object[]) arguments[0];
 					String[] pathStringArray = Arrays.copyOf(pathArray, pathArray.length, String[].class);
-					List<String> pathList = new ArrayList<>(Arrays.asList(pathStringArray));
-					pathList.add(0, getViewTree().getName());
-					
-					ViewTree viewTree = getViewTree().forPath(pathList);
-					List<ViewTree> path = new ArrayList<>();
-					while (viewTree != null) {
-						path.add(0, viewTree);
-						viewTree = viewTree.getParent();
-					}
-					treeViewer.setSelection(new TreeSelection(new TreePath(path.toArray())));
-					treeViewer.refresh();
+					List<String> path = new ArrayList<>(Arrays.asList(pathStringArray));
+					path.add(0, getViewTree().getName());
+					selectViewTree(path);
 				}
 				throw new RuntimeException();
 			};
@@ -188,6 +216,7 @@ public class PictoView extends ViewPart {
 				if (!(workbenchPart instanceof IEditorPart)) return;
 				
 				IEditorPart editorPart = (IEditorPart) workbenchPart;
+				activeViewHistory.remove(editorPart);
 				
 				if (locked) {
 					if (editor == editorPart) editor = null;
@@ -204,6 +233,9 @@ public class PictoView extends ViewPart {
 		};
 		
 		IToolBarManager toolbar = getViewSite().getActionBars().getToolBarManager();
+		toolbar.add(new BackAction(this));
+		toolbar.add(new ForwardAction(this));
+		toolbar.add(new Separator());
 		toolbar.add(new ZoomAction(ZoomType.IN, viewRenderer));
 		toolbar.add(new ZoomAction(ZoomType.ACTUAL, viewRenderer));
 		toolbar.add(new ZoomAction(ZoomType.OUT, viewRenderer));
@@ -214,7 +246,9 @@ public class PictoView extends ViewPart {
 		toolbar.add(new PrintAction(viewRenderer));
 		toolbar.add(new RefreshAction(this));
 		toolbar.add(new LockAction(this));
+		toolbar.add(new Separator());
 		toolbar.add(hideTreeAction);
+		toolbar.add(new MoveTreeAction());
 		toolbar.add(new Separator());
 		toolbar.add(new ViewContentsMenuAction(this));
 		
@@ -276,6 +310,16 @@ public class PictoView extends ViewPart {
 		browserContainer.setBorderVisible(visible);
 	}
 	
+	public void selectViewTree(List<String> path) {
+		ViewTree viewTree = getViewTree().forPath(path);
+		List<ViewTree> treePath = new ArrayList<>();
+		while (viewTree != null) {
+			treePath.add(0, viewTree);
+			viewTree = viewTree.getParent();
+		}
+		treeViewer.setSelection(new TreeSelection(new TreePath(treePath.toArray())));
+		treeViewer.refresh();
+	}
 	
 	public void renderEditorContent() {
 
@@ -286,6 +330,7 @@ public class PictoView extends ViewPart {
 			
 			boolean rerender = renderedEditor == editor;
 			renderedEditor = editor;
+			if (!rerender) viewTreeSelectionHistory = new ViewTreeSelectionHistory();
 			
 			final ViewTree viewTree = source.getViewTree(editor);
 			runInUIThread(new RunnableWithException() {
@@ -351,7 +396,7 @@ public class PictoView extends ViewPart {
 		} else {
 			
 			ViewTree selection = null;
-			ViewTree historicalView = selectionHistory.get(renderedEditor);
+			ViewTree historicalView = activeViewHistory.get(renderedEditor);
 			
 			if (historicalView != null) {
 				selection = viewTree.forPath(historicalView.getPath());
@@ -450,6 +495,43 @@ public class PictoView extends ViewPart {
 		}
 	}
 	
+	class MoveTreeAction extends Action {
+		
+		protected String position = "left";
+		
+		public MoveTreeAction() {
+			super();
+			setText(getText("right"));
+			setImageDescriptor(getImageDescriptor("right"));
+		}
+		
+		@Override
+		public void run() {
+			
+			if ("left".equals(position)) {
+				browserContainer.moveAbove(filteredTree);
+			}
+			else {
+				filteredTree.moveAbove(browserContainer);
+			}
+			
+			sashForm.layout(true);
+			
+			setText(getText(position));
+			setImageDescriptor(getImageDescriptor(position));
+			position = position.equalsIgnoreCase("left") ? "right" : "left";
+			
+		}
+		
+		protected String getText(String position) {
+			return "Move tree to the " + position;
+		}
+		
+		protected ImageDescriptor getImageDescriptor(String position) {
+			return PictoPlugin.getDefault().getImageDescriptor("icons/tree_" + position + ".png");
+		}
+	}
+	
 	class ClearViewTreeLabelProviderIconCacheAction extends Action {
 		public ClearViewTreeLabelProviderIconCacheAction() {
 			super("Clear tree icon cache");
@@ -523,6 +605,10 @@ public class PictoView extends ViewPart {
 	
 	public void setViewRenderer(ViewRenderer viewRenderer) {
 		this.viewRenderer = viewRenderer;
+	}
+	
+	public ViewTreeSelectionHistory getViewTreeSelectionHistory() {
+		return viewTreeSelectionHistory;
 	}
 
 }
