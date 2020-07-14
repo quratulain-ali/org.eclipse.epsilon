@@ -30,6 +30,7 @@ public class ModelDeclaration extends AbstractModuleElement implements ICompilab
 	protected NameExpression driverNameExpression;
 	protected List<ModelDeclarationParameter> modelDeclarationParameters = new ArrayList<>();
 	protected Metamodel metamodel = null;
+	protected IModel model;
 	
 	public ModelDeclaration() {}
 	
@@ -90,7 +91,7 @@ public class ModelDeclaration extends AbstractModuleElement implements ICompilab
 	@Override
 	public void compile(IEolCompilationContext context) {
 		if (context.getModelFactory() == null) return;
-		IModel model = context.getModelFactory().createModel(driverNameExpression.getName());
+		model = context.getModelFactory().createModel(driverNameExpression.getName());
 		if (model == null) {
 			context.addErrorMarker(driverNameExpression, "Unknown type of model: " + driverNameExpression.getName());
 		}
@@ -113,6 +114,10 @@ public class ModelDeclaration extends AbstractModuleElement implements ICompilab
 	
 	public Metamodel getMetamodel() {
 		return metamodel;
+	}
+	
+	public IModel getModel() {
+		return model;
 	}
 	
 }
