@@ -269,8 +269,4 @@ public class ModelReference implements IAdaptableModel, IWrapper, IOperationCont
 		return target.getMetamodel(properties, resolver);
 	}
 
-	@Override
-	public void rewrite(IEolModule module, EolCompilationContext context) {
-	}
-
 }

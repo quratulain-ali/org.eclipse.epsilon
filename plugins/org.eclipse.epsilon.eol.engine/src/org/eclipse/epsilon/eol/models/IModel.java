@@ -152,8 +152,6 @@ public interface IModel extends AutoCloseable {
 	
 	Metamodel getMetamodel(StringProperties properties, IRelativePathResolver resolver);
 	
-	void rewrite(IEolModule module, EolCompilationContext context);
-	
 	/**
 	 * @since 1.6
 	 */
