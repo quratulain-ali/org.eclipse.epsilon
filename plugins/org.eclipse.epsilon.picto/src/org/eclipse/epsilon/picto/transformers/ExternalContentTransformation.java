@@ -53,9 +53,12 @@ public class ExternalContentTransformation implements Runnable, Callable<byte[]>
 		
 		this.program = program;
 		
-		IPreferenceStore preferenceStore = EpsilonCommonsPlugin.getDefault().getPreferenceStore();
-		timeout = Duration.ofSeconds(preferenceStore.isDefault(PictoPreferencePage.TIMEOUT) ? 
-				PictoPreferencePage.DEFAULT_TIMEOUT : preferenceStore.getInt(PictoPreferencePage.TIMEOUT));
+		EpsilonCommonsPlugin plugin = EpsilonCommonsPlugin.getDefault();
+		if (plugin != null) {
+			IPreferenceStore preferenceStore = plugin.getPreferenceStore();
+			timeout = Duration.ofSeconds(preferenceStore.isDefault(PictoPreferencePage.TIMEOUT) ? 
+					PictoPreferencePage.DEFAULT_TIMEOUT : preferenceStore.getInt(PictoPreferencePage.TIMEOUT));
+		}
 	}
 	
 	public ExternalContentTransformation(Path outputFile, String program, Object... arguments) {
@@ -133,6 +136,9 @@ public class ExternalContentTransformation implements Runnable, Callable<byte[]>
 			Process process = pb.start();
 			if (process.waitFor(timeout != null ? timeout.toMillis() : Long.MAX_VALUE, TimeUnit.MILLISECONDS)) {
 				resultCode = process.exitValue();
+			}
+			else { // the process has timed out
+				return ("<html><body>Rendering the view timed out after " + timeout.getSeconds() + " seconds. You can increase the timeout threshold in the <a href=\"javascript:showPreferences()\">Picto preferences</a> page, and try to refresh the view.</body></html>").getBytes();
 			}
 		}
 		catch (InterruptedException ie) {
