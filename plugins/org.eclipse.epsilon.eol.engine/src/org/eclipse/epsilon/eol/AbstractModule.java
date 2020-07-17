@@ -13,6 +13,8 @@ package org.eclipse.epsilon.eol;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -138,12 +140,29 @@ public abstract class AbstractModule extends AbstractModuleElement implements IM
 	protected List<CommonToken> extractComments(CommonTokenStream stream) {
 		List<CommonToken> comments = new ArrayList<>();
 		
+		if (stream.getTokens().isEmpty()) {
+			try {
+				Method fill = stream.getClass().getMethod("fill");
+				if (fill != null) try {
+					fill.invoke(stream);
+				}
+				catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+					throw new IllegalStateException(ex);
+				}
+			}
+			catch (NoSuchMethodException | SecurityException ex) {
+				// ANTLR 3.2 probably
+			}
+		}
+		
 		for (Object t : stream.getTokens()) {
 			CommonToken token = (CommonToken) t;
-			if (token.getType() == EolLexer.COMMENT || token.getType() == EolParser.LINE_COMMENT) {
+			int type = token.getType();
+			if (type == EolLexer.COMMENT || type == EolParser.LINE_COMMENT) {
 				comments.add(token);
 			}
 		}
+		
 		return comments;
 	}
 	
