@@ -33,7 +33,7 @@ public class ExternalContentTransformation implements Runnable, Callable<byte[]>
 	
 	protected Path logFile, outputFile;
 	
-	private Exception exception;
+	private IOException exception;
 	
 	protected int resultCode = Integer.MIN_VALUE;
 	
@@ -75,7 +75,7 @@ public class ExternalContentTransformation implements Runnable, Callable<byte[]>
 	 * @throws IOException If the temp file couldn't be created.
 	 */
 	public static Path createTempFile(String extension, byte[] contents) throws IOException {
-		Path file = Files.createTempFile(Files.createTempDirectory("picto"), "picto-renderer", extension);
+		Path file = Files.createTempFile(Files.createTempDirectory("picto"), "picto-renderer", '.'+extension);
 		Path result = contents != null && contents.length > 0 ? Files.write(file, contents) : file;
 		return result.toAbsolutePath();
 	}
@@ -111,7 +111,7 @@ public class ExternalContentTransformation implements Runnable, Callable<byte[]>
 		try {
 			call();
 		}
-		catch (Exception ex) {
+		catch (IOException ex) {
 			this.exception = ex;
 		}
 		hasRun = true;
@@ -130,7 +130,7 @@ public class ExternalContentTransformation implements Runnable, Callable<byte[]>
 		}
 		
 		ProcessBuilder pb = new ProcessBuilder(programAndArgs);
-		logFile = createTempFile(".log", null);
+		logFile = createTempFile("log", null);
 		pb.redirectError(logFile.toFile());
 		try {
 			Process process = pb.start();
@@ -153,7 +153,7 @@ public class ExternalContentTransformation implements Runnable, Callable<byte[]>
 		return getResult();
 	}
 	
-	public Exception getException() {
+	public IOException getException() {
 		return exception;
 	}
 
