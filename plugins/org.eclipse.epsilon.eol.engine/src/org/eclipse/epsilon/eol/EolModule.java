@@ -10,6 +10,7 @@
 package org.eclipse.epsilon.eol;
 
 import java.io.File;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
@@ -625,7 +626,7 @@ public class EolModule extends AbstractModule implements IEolModule {
 		EolModule module = new EolModule();
 		
 		try {
-			module.parse("1.println();");
+			module.parse("if (true) var a = 0;");
 			module.compile();
 			module.execute();
 		} catch (Exception e) {
