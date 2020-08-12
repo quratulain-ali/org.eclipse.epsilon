@@ -31,6 +31,7 @@ import org.eclipse.epsilon.eol.types.EolSelf;
 import org.eclipse.epsilon.eol.types.EolSelfCollectionType;
 import org.eclipse.epsilon.eol.types.EolSelfContentType;
 import org.eclipse.epsilon.eol.types.EolSelfExpressionType;
+import org.eclipse.epsilon.eol.types.EolTupleType;
 import org.eclipse.epsilon.eol.types.EolType;
 
 public class TypeExpression extends Expression {
@@ -171,6 +172,8 @@ public class TypeExpression extends Expression {
 				return new EolSelfCollectionType();
 			case "Nothing": case "None":
 				return EolNoType.Instance;
+			case "Tuple":
+				return new EolTupleType();
 			default:
 				return null;
 		}

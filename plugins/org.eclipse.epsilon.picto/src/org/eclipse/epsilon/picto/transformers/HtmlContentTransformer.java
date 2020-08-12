@@ -114,7 +114,7 @@ public class HtmlContentTransformer implements ViewContentTransformer {
 	
 	protected Element getElementByName(Element parent, String name) {
 		NodeList nodeList = parent.getChildNodes();
-		for (int i=0;i<nodeList.getLength();i++) {
+		for (int i = 0; i < nodeList.getLength(); i++) {
 			Node node = nodeList.item(i);
 			if (node.getNodeName().equalsIgnoreCase(name)) return (Element) node;
 		}
@@ -229,7 +229,7 @@ public class HtmlContentTransformer implements ViewContentTransformer {
 		fileName = fileName.substring(0, fileName.lastIndexOf('.')+1);
 		Path pdfLocation = htmlAbsolute.getParent().resolve(fileName + "pdf");
 		ExternalContentTransformation ect = new ExternalContentTransformation(
-			pdfLocation, "wkhtmltopdf", document, pdfLocation
+			pdfLocation, "wkhtmltopdf", "--enable-local-file-access", document, pdfLocation
 		);
 		ect.call();
 		return pdfLocation;

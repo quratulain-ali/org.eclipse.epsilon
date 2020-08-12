@@ -31,13 +31,12 @@ public class MermaidContentTransformer implements ViewContentTransformer {
 	@Override
 	public ViewContent transform(ViewContent content, PictoView pictoView) throws Exception {
 		String html = "<div>" +
-			"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.6.0/mermaid.min.js\"></script>\n" + 
+			"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.6.0/mermaid.min.js\"/>\n" + 
 			"<script>\n" + "mermaid.initialize({startOnLoad:true});\n" + "</script>\n"+
 			"<div class=\"mermaid\">\n" + content.getText() + "</div></div>";
 		
 		return new ViewContent("svg", html, content);
 	}
-	
 	
 	
 	/**
@@ -85,14 +84,14 @@ public class MermaidContentTransformer implements ViewContentTransformer {
 	}
 	
 	protected static ExternalContentTransformation mermaid(Path mmd, String ext) {
-		Path svgTmp = mmd.getParent().resolve(mmd.getFileName()+"."+ext);
+		Path imgTmp = mmd.getParent().resolve(mmd.getFileName()+"."+ext);
 		String program = Paths.get(System.getProperty("user.home"))
 			.resolve("node_modules").resolve(".bin").resolve(
 				OperatingSystem.isWindows() ? "mmdc.cmd" : "mmdc"
 			).toString();
 			
 		return new ExternalContentTransformation(
-			svgTmp, program, "-i", mmd, "-o", svgTmp
+			imgTmp, program, "-i", mmd, "-o", imgTmp
 		);
 	}
 	

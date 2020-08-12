@@ -7,7 +7,7 @@
 *
 * SPDX-License-Identifier: EPL-2.0
 **********************************************************************/
-package org.eclipse.epsilon.picto.plantuml;
+package org.eclipse.epsilon.picto.transformers;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
@@ -17,8 +17,6 @@ import java.nio.file.Path;
 import org.eclipse.epsilon.common.util.StringUtil;
 import org.eclipse.epsilon.picto.PictoView;
 import org.eclipse.epsilon.picto.ViewContent;
-import org.eclipse.epsilon.picto.transformers.ExternalContentTransformation;
-import org.eclipse.epsilon.picto.transformers.ViewContentTransformer;
 import net.sourceforge.plantuml.FileFormat;
 import net.sourceforge.plantuml.FileFormatOption;
 import net.sourceforge.plantuml.SourceStringReader;
@@ -57,15 +55,16 @@ public class PlantUmlContentTransformer implements ViewContentTransformer {
 	}
 	
 	/**
-	 * Converts PlantUML diagram to a temporary PNG file.
+	 * Converts PlantUML diagram to a temporary image file.
 	 * 
 	 * @param plant The Plant UML description.
-	 * @return The path to the generated PNG.
+	 * @param imageExt The file extension (and therefore type) of the image.
+	 * @return The path to the generated image.
 	 * @throws IOException If writing to file fails.
 	 */
 	public static Path plantumlToImage(String plant, String imageExt) throws IOException {
 		SourceStringReader reader = new SourceStringReader(plant);
-		Path png = ExternalContentTransformation.createTempFile(imageExt.toLowerCase(), null);
+		Path png = ExternalContentTransformation.createTempFile(imageExt.toLowerCase());
 		try (FileOutputStream os = new FileOutputStream(png.toFile())) {
 			reader.outputImage(os, new FileFormatOption(FileFormat.valueOf(imageExt.toUpperCase())));
 		}
