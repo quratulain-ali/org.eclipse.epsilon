@@ -11,8 +11,6 @@ package org.eclipse.epsilon.picto.transformers;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import org.eclipse.epsilon.common.util.OperatingSystem;
 import org.eclipse.epsilon.picto.PictoView;
 import org.eclipse.epsilon.picto.ViewContent;
 
@@ -30,11 +28,16 @@ public class MermaidContentTransformer implements ViewContentTransformer {
 
 	@Override
 	public ViewContent transform(ViewContent content, PictoView pictoView) throws Exception {
-		String html = "<div>" +
-			"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.6.0/mermaid.min.js\"/>\n" + 
-			"<script>\n" + "mermaid.initialize({startOnLoad:true});\n" + "</script>\n"+
-			"<div class=\"mermaid\">\n" + content.getText() + "</div></div>";
-		
+		String html = null, mmd = content.getText();
+		try {
+			html = mermaidToRawSvg(mmd);
+		}
+		catch (IOException iox) {
+			html = "<div>\n" +
+				"<div class=\"mermaid\">\n" + mmd + "\n</div>\n" +
+				"<script src=\"https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js\"></script>\n" + 
+				"<script>mermaid.initialize({startOnLoad:true});</script>\n</div>";
+		}
 		return new ViewContent("svg", html, content);
 	}
 	
@@ -85,11 +88,7 @@ public class MermaidContentTransformer implements ViewContentTransformer {
 	
 	protected static ExternalContentTransformation mermaid(Path mmd, String ext) {
 		Path imgTmp = mmd.getParent().resolve(mmd.getFileName()+"."+ext);
-		String program = Paths.get(System.getProperty("user.home"))
-			.resolve("node_modules").resolve(".bin").resolve(
-				OperatingSystem.isWindows() ? "mmdc.cmd" : "mmdc"
-			).toString();
-			
+		String program = ExternalContentTransformation.resolveNodeProgram("mmdc");
 		return new ExternalContentTransformation(
 			imgTmp, program, "-i", mmd, "-o", imgTmp
 		);

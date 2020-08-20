@@ -9,16 +9,17 @@
 **********************************************************************/
 package org.eclipse.epsilon.picto.transformers;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import org.eclipse.epsilon.common.dt.EpsilonCommonsPlugin;
 import org.eclipse.epsilon.common.util.FileUtil;
+import org.eclipse.epsilon.common.util.OperatingSystem;
+import org.eclipse.epsilon.common.util.StringUtil;
 import org.eclipse.epsilon.picto.preferences.PictoPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
 
@@ -78,6 +79,18 @@ public class ExternalContentTransformation implements Runnable, Callable<byte[]>
 		return result.toAbsolutePath();
 	}
 	
+	/**
+	 * 
+	 * @param program The Node.js program name.
+	 * @return The absolute path of the command needed to invoke the program.
+	 */
+	public static String resolveNodeProgram(String program) {
+		return Paths.get(System.getProperty("user.home"))
+			.resolve("node_modules").resolve(".bin").resolve(
+				OperatingSystem.isWindows() ? program+".cmd" : program
+			).toString();
+	}
+	
 	public int getResultCode() {
 		screenRun();
 		return resultCode;
@@ -132,28 +145,21 @@ public class ExternalContentTransformation implements Runnable, Callable<byte[]>
 		pb.redirectError(logFile.toFile());
 		try {
 			Process process = pb.start();
-			try (BufferedReader processOutputReader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-				
-				StringBuilder output = new StringBuilder();
-	            for (String readLine;
-	            	(readLine = processOutputReader.readLine()) != null;
-	            	output.append(readLine + System.lineSeparator())
-	            );
-	            
-				if (process.waitFor(timeout != null ? timeout.toMillis() : Long.MAX_VALUE, TimeUnit.MILLISECONDS)) {
-					resultCode = process.exitValue();
-				}
-				else if (timeout != null) { // the process has timed out
-					return ("<html><body>"
-						+ "Rendering the view timed out after " + timeout.getSeconds() + " seconds."
-						+ "You can increase the timeout threshold in the <a href=\"javascript:showPreferences()\">"
-						+ "Picto preferences</a> page, and try to refresh the view."
-						+ "</body></html>"
-					).getBytes();
-				}
-				
-				this.processOutput = output.toString();
+            String output = StringUtil.inputStreamToString(process.getInputStream());
+			
+			if (process.waitFor(timeout != null ? timeout.toNanos() : Long.MAX_VALUE, TimeUnit.NANOSECONDS)) {
+				resultCode = process.exitValue();
 			}
+			else if (timeout != null) { // the process has timed out
+				return ("<html><body>"
+					+ "Rendering the view timed out after " + timeout.getSeconds() + " seconds."
+					+ "You can increase the timeout threshold in the <a href=\"javascript:showPreferences()\">"
+					+ "Picto preferences</a> page, and try to refresh the view."
+					+ "</body></html>"
+				).getBytes();
+			}
+			
+			this.processOutput = output.toString();
 		}
 		catch (InterruptedException ie) {
 			throw new IOException(ie);
