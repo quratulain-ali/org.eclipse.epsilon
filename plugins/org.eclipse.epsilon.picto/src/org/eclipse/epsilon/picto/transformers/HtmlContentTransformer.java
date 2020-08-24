@@ -14,20 +14,14 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
-
 import org.eclipse.epsilon.common.util.StringUtil;
 import org.eclipse.epsilon.picto.PictoView;
 import org.eclipse.epsilon.picto.ViewContent;
 import org.eclipse.epsilon.picto.XmlHelper;
-import org.eclipse.epsilon.picto.transformers.elements.AbsolutePathElementTransformer;
-import org.eclipse.epsilon.picto.transformers.elements.HtmlElementTransformer;
-import org.eclipse.epsilon.picto.transformers.elements.HtmlElementTransformerExtensionPointManager;
-import org.eclipse.epsilon.picto.transformers.elements.PictoViewElementTransformer;
-import org.eclipse.epsilon.picto.transformers.elements.RenderCodeElementTransformer;
+import org.eclipse.epsilon.picto.transformers.elements.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -45,7 +39,8 @@ public class HtmlContentTransformer implements ViewContentTransformer {
 			new AbsolutePathElementTransformer("script",  "src"),
 			new AbsolutePathElementTransformer("a",  "href"),
 			new PictoViewElementTransformer(), 
-			new RenderCodeElementTransformer()
+			new RenderCodeElementTransformer(),
+			new KatexAutorenderHeadAppender()
 		));
 		htmlElementTransformers.addAll(new HtmlElementTransformerExtensionPointManager().getExtensions());
 	}
@@ -85,7 +80,7 @@ public class HtmlContentTransformer implements ViewContentTransformer {
 				}
 			}
 			
-			return new FinalViewContent("html", xmlHelper.getXml(document), content);
+			return new FinalViewContent("html", "<!DOCTYPE html>"+xmlHelper.getXml(document), content);
 		}
 		catch (Exception ex) {
 			return null;

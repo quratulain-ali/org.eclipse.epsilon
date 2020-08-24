@@ -64,4 +64,10 @@ public class EolTupleType extends EolType {
 		return tuple;
 	}
 
+	@Override
+	public EolType getParentType() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

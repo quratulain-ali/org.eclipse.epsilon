@@ -135,6 +135,7 @@
     <module>plugins/org.eclipse.epsilon.emc.csv/pom-plain.xml</module>
     <module>plugins/org.eclipse.epsilon.emc.plainxml/pom-plain.xml</module>
     <module>plugins/org.eclipse.epsilon.eml.engine/pom-plain.xml</module>
+    <module>plugins/org.eclipse.epsilon.emg.engine/pom-plain.xml</module>
     <module>plugins/org.eclipse.epsilon.eol.engine/pom-plain.xml</module>
     <module>plugins/org.eclipse.epsilon.eol.tools/pom-plain.xml</module>
     <module>plugins/org.eclipse.epsilon.epl.engine/pom-plain.xml</module>
@@ -178,6 +179,7 @@
     <!-- Workflow component -->
     <module>plugins/org.eclipse.epsilon.ecl.dt/pom-plain.xml</module>
     <module>plugins/org.eclipse.epsilon.egl.dt/pom-plain.xml</module>
+    <module>plugins/org.eclipse.epsilon.emg.dt/pom-plain.xml</module>
     <module>plugins/org.eclipse.epsilon.eml.dt/pom-plain.xml</module>
     <module>plugins/org.eclipse.epsilon.eol.dt/pom-plain.xml</module>
     <module>plugins/org.eclipse.epsilon.epl.dt/pom-plain.xml</module>
@@ -595,34 +597,54 @@ same version of EMF / other bits always.
         <version>3.1</version>
       </dependency>
       <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-math3</artifactId>
+        <version>3.6.1</version>
+      </dependency>
+      <dependency>
         <groupId>commons-collections</groupId>
         <artifactId>commons-collections</artifactId>
         <version>3.2.2</version>
       </dependency>
       <dependency>
-        <groupId>dom4j</groupId>
-        <artifactId>dom4j</artifactId>
-        <version>1.6.1</version>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-collections4</artifactId>
+        <version>4.4</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>1.19</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.14</version>
       </dependency>
       <dependency>
         <groupId>org.apache.poi</groupId>
         <artifactId>poi</artifactId>
-        <version>3.10.1</version>
+        <version>4.1.1</version>
       </dependency>
       <dependency>
         <groupId>org.apache.poi</groupId>
         <artifactId>poi-ooxml</artifactId>
-        <version>3.10.1</version>
+        <version>4.1.1</version>
       </dependency>
       <dependency>
         <groupId>org.apache.poi</groupId>
         <artifactId>poi-ooxml-schemas</artifactId>
-        <version>3.10.1</version>
+        <version>4.1.1</version>
       </dependency>
       <dependency>
         <groupId>org.apache.xmlbeans</groupId>
         <artifactId>xmlbeans</artifactId>
-        <version>2.6.0</version>
+        <version>3.1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.virtuald</groupId>
+        <artifactId>curvesapi</artifactId>
+        <version>1.06</version>
       </dependency>
       <dependency>
         <groupId>com.google.gdata</groupId>
