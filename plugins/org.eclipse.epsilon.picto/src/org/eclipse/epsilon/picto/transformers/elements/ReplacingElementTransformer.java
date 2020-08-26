@@ -23,15 +23,24 @@ public abstract class ReplacingElementTransformer extends AbstractHtmlElementTra
 	protected XmlHelper xmlHelper = new XmlHelper();
 	
 	protected final void replace(Element element, ViewContent viewContent) {
-		replace(element, viewContent, true);
+		replace(element, viewContent, false);
 	}
 	
-	protected void replace(Element element, ViewContent viewContent, boolean inSameWindow) {
-		if (inSameWindow) try {
+	protected void replace(Element element, ViewContent viewContent, boolean iframe) {
+		Document owner = element.getOwnerDocument();
+		if (iframe) try {
+			Path tmp = ExternalContentTransformation.createTempFile("html", viewContent.getText().getBytes());
+			owner.renameNode(element, element.getNamespaceURI(), "iframe");
+			element.setAttribute("src", tmp.toAbsolutePath().toString());
+		}
+		catch (Exception ex) {
+			// Ignore
+		}
+		else try {
 			Document document = xmlHelper.parse(viewContent.getText());
 			Element svg = document.getDocumentElement();
-			element.getOwnerDocument().importNode(svg, true);
-			element.getOwnerDocument().adoptNode(svg);
+			owner.importNode(svg, true);
+			owner.adoptNode(svg);
 			element.getParentNode().replaceChild(svg, element);
 			
 			NamedNodeMap attributes = element.getAttributes();
@@ -43,17 +52,9 @@ public abstract class ReplacingElementTransformer extends AbstractHtmlElementTra
 			return;
 		}
 		catch (Exception e) {
-			element.getOwnerDocument().renameNode(element, element.getNamespaceURI(), "b");
+			owner.renameNode(element, element.getNamespaceURI(), "b");
 			element.setTextContent(e.getMessage());
 			return;
-		}
-		else try {
-			Path tmp = ExternalContentTransformation.createTempFile("html", viewContent.getText().getBytes());
-			element.getOwnerDocument().renameNode(element, element.getNamespaceURI(), "iframe");
-			element.setAttribute("src", tmp.toAbsolutePath().toString());
-		}
-		catch (Exception ex) {
-			// Ignore
 		}
 	}
 	
