@@ -9,11 +9,9 @@
  *********************************************************************/
 package org.eclipse.epsilon.pinset.engine.test.acceptance;
 
-import static org.junit.Assert.assertTrue;
-
+import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.io.IOException;
-
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.epsilon.common.util.FileUtil;
@@ -59,7 +57,9 @@ public class PinsetTests {
 			String expectedDataset = FileUtil.getFileContents(
 					getFile(String.format("expected/%s", generatedFile)));
 			String resultDataset = datasetRule.getDataset().toString(module.getSeparator());
-			assertTrue(generatedFile, expectedDataset.equals(resultDataset));
+			resultDataset = resultDataset.replace("\r\n", "\n");
+			expectedDataset = expectedDataset.replace("\r\n", "\n");
+			assertEquals(generatedFile, expectedDataset, resultDataset);
 			datasetRule.dispose();
 		}
 
