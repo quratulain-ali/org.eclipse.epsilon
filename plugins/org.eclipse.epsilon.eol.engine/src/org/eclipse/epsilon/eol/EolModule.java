@@ -483,7 +483,7 @@ public class EolModule extends AbstractModule implements IEolModule {
 			modelDeclaration.compile(compileContext);
 		}
 
-		String root = "/Users/quratulainali/Desktop/org.eclipse.epsilon/plugins/org.eclipse.epsilon.eol.engine/src/org/eclipse/epsilon/eol/";
+		String root = "/Users/quratulainali/git/org.eclipse.epsilon/plugins/org.eclipse.epsilon.eol.engine/src/org/eclipse/epsilon/eol/";
 		builtinModule = new BuiltinEolModule();
 
 		if (!(this instanceof BuiltinEolModule)) {

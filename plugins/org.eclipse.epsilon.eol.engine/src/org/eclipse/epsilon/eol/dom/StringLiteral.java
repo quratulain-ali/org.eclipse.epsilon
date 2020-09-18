@@ -24,6 +24,10 @@ public class StringLiteral extends LiteralExpression<String> {
 		super(value);
 	}
 	
+	public String getValue() {
+		return value;
+	}
+	
 	@Override
 	public void build(AST cst, IModule module) {
 		super.build(cst, module);
