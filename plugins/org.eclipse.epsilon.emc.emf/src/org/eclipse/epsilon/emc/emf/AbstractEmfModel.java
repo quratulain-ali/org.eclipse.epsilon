@@ -205,6 +205,18 @@ public abstract class AbstractEmfModel extends CachedModel<EObject> {
 		return getAllFromModel(eClass::isInstance);
 	}
 	
+	public Object getIndexedAllOfKindFromModel(String kind, String field, String value) throws EolModelElementTypeNotFoundException {
+		final EClass eClass = classForName(kind);
+		   HashMap<Object ,String> map=new HashMap<Object,String>();//Creating HashMap 
+		   for (EObject s : getAllFromModel(eClass::isInstance)) {
+		        System.out.println("value " + s.eGet(eClass.getEStructuralFeature(field)));
+		        System.out.println("key= " + getElementId(s));
+		        map.put(s.eGet(eClass.getEStructuralFeature(field)), getElementId(s));
+		        }
+		   System.out.println("Retrieved = "+getElementById(map.get(value)));
+		   return getElementById(map.get(value));
+	}
+	
 	@Override
 	public Object getCacheKeyForType(String type) throws EolModelElementTypeNotFoundException {
 		return classForName(type);
