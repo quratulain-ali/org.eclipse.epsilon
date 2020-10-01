@@ -30,17 +30,28 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EContentAdapter;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.XMLResource;
+import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.common.util.CollectionUtil;
 import org.eclipse.epsilon.common.util.StringProperties;
+import org.eclipse.epsilon.eol.IEolModule;
+import org.eclipse.epsilon.eol.compile.context.IEolCompilationContext;
 import org.eclipse.epsilon.eol.compile.m3.Metamodel;
+import org.eclipse.epsilon.eol.dom.Expression;
+import org.eclipse.epsilon.eol.dom.FirstOrderOperationCallExpression;
+import org.eclipse.epsilon.eol.dom.NameExpression;
+import org.eclipse.epsilon.eol.dom.OperationCallExpression;
+import org.eclipse.epsilon.eol.dom.PropertyCallExpression;
+import org.eclipse.epsilon.eol.dom.Statement;
+import org.eclipse.epsilon.eol.dom.StringLiteral;
 import org.eclipse.epsilon.eol.exceptions.models.EolModelElementTypeNotFoundException;
 import org.eclipse.epsilon.eol.exceptions.models.EolModelLoadingException;
 import org.eclipse.epsilon.eol.exceptions.models.EolNotAnEnumerationValueException;
 import org.eclipse.epsilon.eol.execute.introspection.IReflectivePropertySetter;
 import org.eclipse.epsilon.eol.models.IReflectiveModel;
 import org.eclipse.epsilon.eol.models.IRelativePathResolver;
+import org.eclipse.epsilon.eol.models.IRewriter;
 
-public class EmfModel extends AbstractEmfModel implements IReflectiveModel {
+public class EmfModel extends AbstractEmfModel implements IReflectiveModel,IRewriter {
 
 	/**
 	 * @deprecated {@link #PROPERTY_METAMODEL_URI} and {@link #PROPERTY_FILE_BASED_METAMODEL_URI} are now
@@ -686,5 +697,48 @@ public class EmfModel extends AbstractEmfModel implements IReflectiveModel {
 			e.printStackTrace();
 			return false;
 		}
+	}
+
+	@Override
+	public void rewrite(IEolModule module, IEolCompilationContext context) {
+		List<Statement> statements=module.getMain().getStatements();
+		HashSet<String> optimisableOperations = new HashSet<String>(Arrays.asList("select"));
+		HashSet<String> allOperations = new HashSet<String>(Arrays.asList("all", "allInstances"));
+		
+		for(Statement statement: statements) {
+			List<ModuleElement> asts = statement.getChildren();
+			int index = 0;
+			for(ModuleElement ast: asts) {
+				if(ast instanceof FirstOrderOperationCallExpression)
+				{
+					ModuleElement target = ast.getChildren().get(0);
+					if(target instanceof PropertyCallExpression) {
+						String operationName = ((NameExpression)target.getChildren().get(1)).getName();
+						if(allOperations.contains(operationName))
+						{
+							String operation=((FirstOrderOperationCallExpression) ast).getNameExpression().getName();
+							if(optimisableOperations.contains(operation))
+							{
+								NameExpression targetExp = new NameExpression(getName());
+								NameExpression operationExp = new NameExpression("getIndexedAllOfKindFromModel");
+								StringLiteral p1 = new StringLiteral("Account");
+								StringLiteral p2 = new StringLiteral("number");
+								StringLiteral p3 = new StringLiteral("4");
+								
+								OperationCallExpression rewritedQuery = new OperationCallExpression(targetExp, operationExp,p1,p2,p3);
+								
+								ast.getParent().getChildren().remove(index);
+								ast.getParent().getChildren().add(index, rewritedQuery);
+							}
+						}
+					}
+					index++;
+						//Expression check = ((FirstOrderOperationCallExpression)ast).getTargetExpression();
+					
+					
+				}
+			}
+		}
+		
 	}
 }
