@@ -721,9 +721,9 @@ public class EmfModel extends AbstractEmfModel implements IReflectiveModel,IRewr
 							{
 								NameExpression targetExp = new NameExpression(getName());
 								NameExpression operationExp = new NameExpression("getIndexedAllOfKindFromModel");
-								StringLiteral p1 = new StringLiteral("Account");
-								StringLiteral p2 = new StringLiteral("number");
-								StringLiteral p3 = new StringLiteral("4");
+								StringLiteral p1 = new StringLiteral("Person");
+								StringLiteral p2 = new StringLiteral("name");
+								StringLiteral p3 = new StringLiteral("Rachel");
 								
 								OperationCallExpression rewritedQuery = new OperationCallExpression(targetExp, operationExp,p1,p2,p3);
 								

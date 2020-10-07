@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="ASCII"?>
+<World xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns="friends" xmi:id="_ODda4Ab4Eeu63P7i5_5U2g">
+  <people xmi:id="_QRVAoAb4Eeu63P7i5_5U2g" name="Rachel" friendOf="_T87vsAb4Eeu63P7i5_5U2g" enemyOf="_Syn4sAb4Eeu63P7i5_5U2g"/>
+  <people xmi:id="_Syn4sAb4Eeu63P7i5_5U2g" name="Julie" friendOf="_T87vsAb4Eeu63P7i5_5U2g" enemyOf="_QRVAoAb4Eeu63P7i5_5U2g"/>
+  <people xmi:id="_T87vsAb4Eeu63P7i5_5U2g" name="Monica" friendOf="_QRVAoAb4Eeu63P7i5_5U2g" enemyOf="_WtvDYAb4Eeu63P7i5_5U2g"/>
+  <people xmi:id="_WtvDYAb4Eeu63P7i5_5U2g" name="Judy" friendOf="_Syn4sAb4Eeu63P7i5_5U2g" enemyOf="_T87vsAb4Eeu63P7i5_5U2g"/>
+</World>

@@ -1,4 +1,5 @@
 /*******************************************************************************
+
  * Copyright (c) 2008 The University of York.
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -483,12 +484,13 @@ public class EolModule extends AbstractModule implements IEolModule {
 			modelDeclaration.compile(compileContext);
 		}
 
-		String root = "/Users/quratulainali/git/org.eclipse.epsilon/plugins/org.eclipse.epsilon.eol.engine/src/org/eclipse/epsilon/eol/";
+		String root = "/Users/quratulainali/org.eclipse.epsilon/plugins/org.eclipse.epsilon.eol.engine/src/org/eclipse/epsilon/eol/";
 		builtinModule = new BuiltinEolModule();
 
 		if (!(this instanceof BuiltinEolModule)) {
 			try {
-				builtinModule.parse(new File(root+"builtin.eol"));
+				//builtinModule.parse(new File("./src/org/eclipse/epsilon/eol/builtin.eol"));
+				builtinModule.parse(new File(root+ "builtin.eol"));
 				operations.addAll(builtinModule.getDeclaredOperations());
 
 			} catch (Exception e) {
@@ -615,7 +617,8 @@ public class EolModule extends AbstractModule implements IEolModule {
 		EolModule module = new EolModule();
 		
 		try {
-			module.parse("if (true) var a = 0;");
+			//module.parse("if (true) var a = 0;");
+			module.parse(new File("./src/org/eclipse/epsilon/eol/emfTest.eol"));
 			module.compile();
 			module.execute();
 		} catch (Exception e) {
