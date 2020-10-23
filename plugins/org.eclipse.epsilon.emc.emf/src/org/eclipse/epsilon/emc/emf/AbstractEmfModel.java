@@ -214,7 +214,7 @@ public abstract class AbstractEmfModel extends CachedModel<EObject> {
 		for (EObject s : getAllFromModel(eClass::isInstance)) {
 		        index.put(s.eGet(eClass.getEStructuralFeature(field)), getElementId(s));
 		   }
-		System.out.println("Retrieved = "+getElementById(index.get(value)));
+		//System.out.println("Retrieved = "+getElementById(index.get(value)));
 		return getElementById(index.get(value));
 	}
 	

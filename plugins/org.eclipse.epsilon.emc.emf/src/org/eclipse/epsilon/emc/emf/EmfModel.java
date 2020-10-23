@@ -50,6 +50,8 @@ import org.eclipse.epsilon.eol.execute.introspection.IReflectivePropertySetter;
 import org.eclipse.epsilon.eol.models.IReflectiveModel;
 import org.eclipse.epsilon.eol.models.IRelativePathResolver;
 import org.eclipse.epsilon.eol.models.IRewriter;
+import org.eclipse.epsilon.eol.types.EolModelElementType;
+import org.eclipse.epsilon.eol.types.EolType;
 
 public class EmfModel extends AbstractEmfModel implements IReflectiveModel,IRewriter {
 
@@ -716,14 +718,18 @@ public class EmfModel extends AbstractEmfModel implements IReflectiveModel,IRewr
 						String operationName = ((NameExpression)target.getChildren().get(1)).getName();
 						if(allOperations.contains(operationName))
 						{
-							String operation=((FirstOrderOperationCallExpression) ast).getNameExpression().getName();
-							if(optimisableOperations.contains(operation))
+							FirstOrderOperationCallExpression operation=((FirstOrderOperationCallExpression) ast);
+							String firstoperationName=operation.getNameExpression().getName();
+							if(optimisableOperations.contains(firstoperationName))
 							{
-								NameExpression targetExp = new NameExpression(getName());
+								EolModelElementType model = ((EolModelElementType)((PropertyCallExpression)target).getTargetExpression().getResolvedType());
+								String modelName = model.getModelName();
+								
+								NameExpression targetExp = new NameExpression(modelName);
 								NameExpression operationExp = new NameExpression("getIndexedAllOfKindFromModel");
-								StringLiteral p1 = new StringLiteral("Person");
-								StringLiteral p2 = new StringLiteral("name");
-								StringLiteral p3 = new StringLiteral("Rachel");
+								StringLiteral p1 = new StringLiteral(model.getTypeName());
+								StringLiteral p2 = new StringLiteral(((NameExpression)operation.getExpressions().get(0).getChildren().get(0).getChildren().get(1)).getName());
+								StringLiteral p3 = new StringLiteral(((StringLiteral)operation.getExpressions().get(0).getChildren().get(1)).getValue());
 								
 								OperationCallExpression rewritedQuery = new OperationCallExpression(targetExp, operationExp,p1,p2,p3);
 								
