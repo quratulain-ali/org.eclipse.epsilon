@@ -22,3 +22,5 @@ Export-Package: org.eclipse.epsilon.eol.dt,
  org.eclipse.epsilon.eol.dt.wizards
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: org.eclipse.epsilon.eol.dt
+Import-Package: org.eclipse.epsilon.emc.emf,
+ org.eclipse.epsilon.emc.mysql

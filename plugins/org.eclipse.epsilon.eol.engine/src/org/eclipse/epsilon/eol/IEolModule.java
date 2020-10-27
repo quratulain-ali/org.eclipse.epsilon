@@ -54,6 +54,10 @@ public interface IEolModule extends IModule {
 	
 	void setContext(IEolContext context);
 	
+	void setText(String text);
+	
+	String getText();
+	
 	IEolCompilationContext getCompilationContext();
 	
 	@Override

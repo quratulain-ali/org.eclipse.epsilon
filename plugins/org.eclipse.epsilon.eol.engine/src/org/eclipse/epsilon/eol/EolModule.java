@@ -58,6 +58,7 @@ public class EolModule extends AbstractModule implements IEolModule {
 	private IEolModule parent;
 	private BuiltinEolModule builtinModule;
 	private IEolCompilationContext compileContext;
+	public String rewritedQuery;
 	
 	/**
 	 * The type of {@link #context} when using {@link #getContext()} and {@link #setContext(IEolContext)}.
@@ -86,6 +87,8 @@ public class EolModule extends AbstractModule implements IEolModule {
 		}
 		setContext(context != null ? context : new EolContext());
 	}
+	
+	
 	
 	@Override
 	public void build(AST cst, IModule module) {
@@ -617,6 +620,7 @@ public class EolModule extends AbstractModule implements IEolModule {
 	public static void main(String[] args) {
 		EolModule module = new EolModule();
 		
+		
 		try {
 			//module.parse("if (true) var a = 0;");
 			module.parse(new File("./src/org/eclipse/epsilon/eol/emfTest.eol"));
@@ -627,5 +631,16 @@ public class EolModule extends AbstractModule implements IEolModule {
 		}
 		
 		
+	}
+
+	@Override
+	public void setText(String text) {
+		rewritedQuery = text;
+		
+	}
+
+	@Override
+	public String getText() {
+		return rewritedQuery;
 	}
 }
