@@ -159,6 +159,7 @@ public class AssignmentStatement extends Statement {
 	public void setValueExpression(Expression valueExpression) {
 		this.valueExpression = valueExpression;
 	}
+
 	public boolean isCompatible(EolType targetType, EolType valueType) {
 
 		boolean ok = false;
@@ -262,5 +263,10 @@ public class AssignmentStatement extends Statement {
 					return true;
 			}
 		return false;
+	}
+
+	
+	public void accept(IEolVisitor visitor) {
+		visitor.visit(this);
 	}
 }

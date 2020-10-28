@@ -145,4 +145,27 @@ public class CollectionLiteralExpression<T> extends LiteralExpression<Collection
 	@Override
 	public void compile(IEolCompilationContext context) {}
 
+	public String getCollectionType() {
+		return collectionType;
+	}
+	
+	public void setCollectionType(String collectionType) {
+		this.collectionType = collectionType;
+	}
+	
+	public void accept(IEolVisitor visitor) {
+		visitor.visit(this);
+	}
+	
+	public List<Expression> getParameterExpressions() {
+		return parameterExpressions;
+	}
+	
+	public boolean isRange() {
+		return range;
+	}
+	
+	public void setRange(boolean range) {
+		this.range = range;
+	}
 }

@@ -201,4 +201,8 @@ public class PropertyCallExpression extends FeatureCallExpression {
 			
 		}
 	}
+	
+	public void accept(IEolVisitor visitor) {
+		visitor.visit(this);
+	}
 }

@@ -94,4 +94,8 @@ public class StringLiteral extends LiteralExpression<String> {
 		return out.toString();
 
 	}
+	
+	public void accept(IEolVisitor visitor) {
+		visitor.visit(this);
+	}
 }

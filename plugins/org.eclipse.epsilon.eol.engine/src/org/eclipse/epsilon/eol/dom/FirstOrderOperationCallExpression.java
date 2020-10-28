@@ -291,4 +291,9 @@ public class FirstOrderOperationCallExpression extends FeatureCallExpression {
 		return expressions;
 	}
 
+	
+	public void accept(IEolVisitor visitor) {
+		visitor.visit(this);
+	}
+
 }

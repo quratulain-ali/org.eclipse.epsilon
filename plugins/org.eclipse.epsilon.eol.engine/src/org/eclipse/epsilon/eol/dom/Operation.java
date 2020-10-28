@@ -342,4 +342,8 @@ public class Operation extends AnnotatableModuleElement implements ICompilableMo
 	public void setReturnTypeExpression(TypeExpression returnTypeExpression) {
 		this.returnTypeExpression = returnTypeExpression;
 	}
+	
+	public void accept(IEolVisitor visitor) {
+		visitor.visit(this);
+	}
 }

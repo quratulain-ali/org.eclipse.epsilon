@@ -497,6 +497,7 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 	public List<Expression> getParameterExpressions() {
 		return parameterExpressions;
 	}
+
 	public boolean isCompatible(EolType targetType, EolType valueType) {
 
 		boolean ok = false;
@@ -606,5 +607,9 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 	public ArrayList<Operation> getOperations() {
 		// TODO Auto-generated method stub
 		return operations;
+	}
+	
+	public void accept(IEolVisitor visitor) {
+		visitor.visit(this);
 	}
 }
