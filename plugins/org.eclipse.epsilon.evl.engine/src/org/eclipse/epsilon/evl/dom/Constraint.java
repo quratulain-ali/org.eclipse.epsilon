@@ -34,7 +34,7 @@ import org.eclipse.epsilon.evl.parse.EvlParser;
 public class Constraint extends NamedRule implements IExecutableModuleElementParameter,ICompilableModuleElement {
 	
 	protected boolean isCritique = false;
-	protected List<Fix> fixes;
+	protected List<Fix> fixes = new ArrayList<Fix>();
 	protected ConstraintContext constraintContext;
 	protected ExecutableBlock<Boolean> guardBlock;
 	protected ExecutableBlock<Boolean> checkBlock;
@@ -266,30 +266,35 @@ public class Constraint extends NamedRule implements IExecutableModuleElementPar
 			Objects.equals(this.isCritique, constraint.isCritique);
 	}
 	
-	@Override
-	public void compile(IEolCompilationContext context){
-		
-		ConstraintContext cc = (ConstraintContext)this.getParent();
-		context.getFrameStack().put(new Variable("self",cc.getTypeExpression().getResolvedType()));
-		 
-			
-		if (guardBlock!=null)
-			guardBlock.compile(context);
-		
-		if (checkBlock!=null)
-			checkBlock.compile(context);
-		
-		if (messageBlock!=null)
-			messageBlock.compile(context);
-		
-		for (Fix f : fixes)
-		{
-			if (f.bodyBlock!=null)
-			f.bodyBlock.compile(context);
-			if (f.guardBlock!=null)
-			f.guardBlock.compile(context);
-			if (f.titleBlock!=null)
-			f.titleBlock.compile(context); // Is it necessary?
-		}		
+	public ExecutableBlock<Boolean> getGuardBlock() {
+		return guardBlock;
+	}
+	
+	public void setGuardBlock(ExecutableBlock<Boolean> guardBlock) {
+		this.guardBlock = guardBlock;
+	}
+	
+	public ExecutableBlock<Boolean> getCheckBlock() {
+		return checkBlock;
+	}
+	
+	public void setCheckBlock(ExecutableBlock<Boolean> checkBlock) {
+		this.checkBlock = checkBlock;
+	}
+	
+	public ExecutableBlock<String> getMessageBlock() {
+		return messageBlock;
+	}
+	
+	public void setMessageBlock(ExecutableBlock<String> messageBlock) {
+		this.messageBlock = messageBlock;
+	}
+	
+	public List<Fix> getFixes() {
+		return fixes;
+	}
+	
+	public void accept(IEvlVisitor visitor) {
+		visitor.visit(this);
 	}
 }
