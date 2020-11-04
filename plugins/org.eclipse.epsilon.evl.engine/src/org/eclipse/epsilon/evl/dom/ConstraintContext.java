@@ -277,15 +277,15 @@ public class ConstraintContext extends AnnotatableModuleElement implements IExec
 			this.constraints.size() == cc.constraints.size();
 	}
 	
-	@Override
-	 public void compile(IEolCompilationContext context) {
-		 
-		 typeExpression.compile(context);
-		 
-			
-		 for (Constraint c : getConstraints())
-			 
-			 c.compile(context);
-		
-	 }
+	public void accept(IEvlVisitor visitor) {
+		visitor.visit(this);
+	}
+	
+	public ExecutableBlock<Boolean> getGuardBlock() {
+		return guardBlock;
+	}
+	
+	public void setGuardBlock(ExecutableBlock<Boolean> guardBlock) {
+		this.guardBlock = guardBlock;
+	}
 }
