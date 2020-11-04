@@ -178,4 +178,8 @@ public class ExecutableBlock<T> extends AbstractExecutableModuleElement {
 		ICompilableModuleElement body = (ICompilableModuleElement)getBody();
 		body.compile(context);
 	}
+	
+	public void accept(IEolVisitor visitor) {
+		visitor.visit(this);
+	}
 }

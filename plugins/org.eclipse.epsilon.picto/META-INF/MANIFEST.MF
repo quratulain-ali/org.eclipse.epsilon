@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Picto
 Bundle-SymbolicName: org.eclipse.epsilon.picto;singleton:=true
-Bundle-Version: 2.2.0.qualifier
+Bundle-Version: 2.3.0.qualifier
 Bundle-ClassPath: .
 Bundle-Vendor: Eclipse Modeling Project
 Bundle-Localization: plugin
@@ -37,11 +37,13 @@ Require-Bundle: org.eclipse.epsilon.flexmi,
  com.atlassian.commonmark-image-attributes,
  com.atlassian.commonmark-ins,
  com.atlassian.commonmark-task-list-items,
- com.atlassian.commonmark-yaml
+ com.atlassian.commonmark-yaml,
+ net.sourceforge.plantuml
 Bundle-Activator: org.eclipse.epsilon.picto.PictoPlugin
 Bundle-ActivationPolicy: lazy
 Export-Package: org.eclipse.epsilon.picto,
  org.eclipse.epsilon.picto.actions,
+ org.eclipse.epsilon.picto.browser,
  org.eclipse.epsilon.picto.dom,
  org.eclipse.epsilon.picto.dom.impl,
  org.eclipse.epsilon.picto.dom.util,

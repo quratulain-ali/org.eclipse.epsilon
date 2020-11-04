@@ -16,10 +16,12 @@ import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
 import org.eclipse.epsilon.eol.engine.test.acceptance.dom.*;
 import org.eclipse.epsilon.eol.engine.test.acceptance.equalityStatement.*;
+import org.eclipse.epsilon.eol.engine.test.acceptance.exceptions.ExceptionTests;
 import org.eclipse.epsilon.eol.engine.test.acceptance.firstOrder.*;
 import org.eclipse.epsilon.eol.engine.test.acceptance.firstOrder.lambda.*;
 import org.eclipse.epsilon.eol.engine.test.acceptance.firstOrder.nested.*;
 import org.eclipse.epsilon.eol.engine.test.acceptance.recording.*;
+import org.eclipse.epsilon.eol.engine.test.acceptance.unparser.UnparserTests;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -69,7 +71,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	LambdaExpressionTests.class,
 	LambdaExpressionExceptionTest.class,
 	ParallelStreamTests.class,
-	CommentsTests.class
+	CommentsTests.class,
+	UnparserTests.class
 })
 public class EolAcceptanceTestSuite {
 

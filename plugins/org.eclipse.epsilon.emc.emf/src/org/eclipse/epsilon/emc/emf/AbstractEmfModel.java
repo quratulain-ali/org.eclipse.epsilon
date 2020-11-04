@@ -135,15 +135,8 @@ public abstract class AbstractEmfModel extends CachedModel<EObject> {
 		
 		for (Object pkg : getPackageRegistry().values()) {
 
-			if (pkg instanceof EPackage /*|| pkg instanceof EPackage.Descriptor*/) {
-				EPackage ePackage = null;
-				
-				//if (pkg instanceof EPackage) {
-					ePackage = (EPackage) pkg;
-				//}
-				//else {
-				//	ePackage = ((EPackage.Descriptor) pkg).getEPackage();
-				//}
+			if (EmfUtil.isEPackageOrDescriptor(pkg)) {
+				EPackage ePackage = EmfUtil.toEPackage(pkg);
 				
 				for (EClassifier classifier : EmfUtil.getAllEClassifiers(ePackage)) {
 				//for (EClassifier classifier : ePackage.getEClassifiers()) {
@@ -210,6 +203,19 @@ public abstract class AbstractEmfModel extends CachedModel<EObject> {
 	protected Collection<EObject> getAllOfKindFromModel(String kind) throws EolModelElementTypeNotFoundException {
 		final EClass eClass = classForName(kind);
 		return getAllFromModel(eClass::isInstance);
+	}
+	
+	public Object getIndexedAllOfKindFromModel(String kind, String field, String value) throws EolModelElementTypeNotFoundException {
+		
+		final EClass eClass = classForName(kind);
+		
+		HashMap<Object ,String> index=new HashMap<Object,String>();//Creating HashMap 
+		  
+		for (EObject s : getAllFromModel(eClass::isInstance)) {
+		        index.put(s.eGet(eClass.getEStructuralFeature(field)), getElementId(s));
+		   }
+		//System.out.println("Retrieved = "+getElementById(index.get(value)));
+		return getElementById(index.get(value));
 	}
 	
 	@Override

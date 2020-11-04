@@ -11,6 +11,13 @@
             name="EOL Program">
       </launchConfigurationType>
    </extension>
+   <extension point="org.eclipse.ui.views">
+        <view id="org.eclipse.epsilon.eol.dt.QueryRewritingView"
+             name="Query Rewriting"
+             category="org.eclipse.epsilon.dt"
+          class="org.eclipse.epsilon.eol.dt.QueryRewritingView"
+          icon="icons/eol.png"/>
+</extension>
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTypeImages">
       <launchConfigurationTypeImage

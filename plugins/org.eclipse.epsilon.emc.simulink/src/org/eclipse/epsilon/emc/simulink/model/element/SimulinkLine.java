@@ -12,6 +12,7 @@ package org.eclipse.epsilon.emc.simulink.model.element;
 import org.eclipse.epsilon.emc.simulink.engine.MatlabEngine;
 import org.eclipse.epsilon.emc.simulink.exception.MatlabException;
 import org.eclipse.epsilon.emc.simulink.exception.MatlabRuntimeException;
+import org.eclipse.epsilon.emc.simulink.model.IGenericSimulinkModel;
 import org.eclipse.epsilon.emc.simulink.model.SimulinkModel;
 import org.eclipse.epsilon.emc.simulink.util.collection.SimulinkBlockCollection;
 import org.eclipse.epsilon.emc.simulink.util.collection.SimulinkPortCollection;
@@ -74,6 +75,7 @@ public class SimulinkLine extends SimulinkElement {
 	public boolean deleteElementInModel() throws EolRuntimeException {
 		try {
 			engine.eval(DELETE_LINE, getHandle());
+			engine.flush();
 			return true;
 		} catch (MatlabException e) {
 			return false;

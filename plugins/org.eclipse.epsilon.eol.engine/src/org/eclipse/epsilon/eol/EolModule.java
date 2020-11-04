@@ -1,4 +1,5 @@
 /*******************************************************************************
+
  * Copyright (c) 2008 The University of York.
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -10,6 +11,7 @@
 package org.eclipse.epsilon.eol;
 
 import java.io.File;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
@@ -56,6 +58,7 @@ public class EolModule extends AbstractModule implements IEolModule {
 	private IEolModule parent;
 	private BuiltinEolModule builtinModule;
 	private IEolCompilationContext compileContext;
+	public String rewritedQuery;
 	
 	/**
 	 * The type of {@link #context} when using {@link #getContext()} and {@link #setContext(IEolContext)}.
@@ -84,6 +87,8 @@ public class EolModule extends AbstractModule implements IEolModule {
 		}
 		setContext(context != null ? context : new EolContext());
 	}
+	
+	
 	
 	@Override
 	public void build(AST cst, IModule module) {
@@ -132,6 +137,7 @@ public class EolModule extends AbstractModule implements IEolModule {
 		
 		operations.addAll(this.getDeclaredOperations());
 		for (Import import_ : imports) {
+			import_.setContext(context);
 			if (import_.isLoaded() && import_.getModule() instanceof IEolModule) {
 				operations.addAll(((IEolModule)import_.getModule()).getOperations());
 			}
@@ -246,28 +252,17 @@ public class EolModule extends AbstractModule implements IEolModule {
 			case EolParser.Annotation: return new SimpleAnnotation();
 			case EolParser.EXECUTABLEANNOTATION: return new ExecutableAnnotation();
 			case EolParser.ANNOTATIONBLOCK: return new AnnotationBlock();
-			case EolParser.COLLECTION: {
+			case EolParser.COLLECTION: case EolParser.MAP: {
+				boolean isMap = cst.getType() == EolParser.MAP;
 				String typeName = cst.getText();
-				if (CollectionLiteralExpression.createCollection(typeName) != null) {
-					return new CollectionLiteralExpression();
-				}
-				else if (MapLiteralExpression.createMap(typeName) != null) {
-					return new MapLiteralExpression();
-				}
-				else {
-					getParseProblems().add(new ParseProblem("Unknown collection type: "+typeName, this));
-				}
-			}
-			case EolParser.MAP: {
-				String typeName = cst.getText();
-				if (MapLiteralExpression.createMap(typeName) != null) {
-					return new MapLiteralExpression();
+				if (isMap && MapLiteralExpression.createMap(typeName) != null) {
+					return new MapLiteralExpression<>();
 				}
 				else if (CollectionLiteralExpression.createCollection(typeName) != null) {
-					return new CollectionLiteralExpression();
+					return new CollectionLiteralExpression<>();
 				}
 				else {
-					getParseProblems().add(new ParseProblem("Unknown map type: "+typeName, this));
+					getParseProblems().add(new ParseProblem("Unknown "+(isMap ? "collection" : "map")+" type: "+typeName, this));
 				}
 			}
 			case EolParser.TYPE: return new TypeExpression();
@@ -499,7 +494,8 @@ public class EolModule extends AbstractModule implements IEolModule {
 
 		if (!(this instanceof BuiltinEolModule)) {
 			try {
-				builtinModule.parse(new File(root+"builtin.eol"));
+				//builtinModule.parse(new File("./src/org/eclipse/epsilon/eol/builtin.eol"));
+				builtinModule.parse(new File(root+ "builtin.eol"));
 				operations.addAll(builtinModule.getDeclaredOperations());
 
 			} catch (Exception e) {
@@ -625,8 +621,10 @@ public class EolModule extends AbstractModule implements IEolModule {
 	public static void main(String[] args) {
 		EolModule module = new EolModule();
 		
+		
 		try {
-			module.parse("1.println();");
+			//module.parse("if (true) var a = 0;");
+			module.parse(new File("./src/org/eclipse/epsilon/eol/emfTest.eol"));
 			module.compile();
 			module.execute();
 		} catch (Exception e) {
@@ -634,5 +632,16 @@ public class EolModule extends AbstractModule implements IEolModule {
 		}
 		
 		
+	}
+
+	@Override
+	public void setText(String text) {
+		rewritedQuery = text;
+		
+	}
+
+	@Override
+	public String getText() {
+		return rewritedQuery;
 	}
 }

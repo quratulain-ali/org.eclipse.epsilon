@@ -10,11 +10,18 @@
 package org.eclipse.epsilon.emc.simulink.model.element;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.lang.model.type.NullType;
 
 import org.eclipse.epsilon.emc.simulink.engine.MatlabEngine;
 import org.eclipse.epsilon.emc.simulink.exception.MatlabException;
 import org.eclipse.epsilon.emc.simulink.exception.MatlabRuntimeException;
 import org.eclipse.epsilon.emc.simulink.model.SimulinkModel;
+import org.eclipse.epsilon.emc.simulink.types.Struct;
 import org.eclipse.epsilon.emc.simulink.util.SimulinkUtil;
 import org.eclipse.epsilon.emc.simulink.util.collection.SimulinkPortCollection;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
@@ -95,6 +102,7 @@ public class SimulinkBlock extends SimulinkElement {
 	public SimulinkModelElement inspect() throws EolRuntimeException {
 		try {
 			engine.eval(INSPECT_HANDLE, handle);
+			engine.flush();
 			return this;
 		} catch (MatlabException e) {
 			throw e.toEolRuntimeException();
@@ -105,6 +113,7 @@ public class SimulinkBlock extends SimulinkElement {
 	public boolean deleteElementInModel() throws EolRuntimeException {
 		try {
 			engine.eval(DELETE_BLOCK, getHandle());
+			engine.flush();
 			return true;
 		} catch (MatlabException e) {
 			throw e.toEolRuntimeException();
@@ -117,6 +126,7 @@ public class SimulinkBlock extends SimulinkElement {
 		try {
 			engine.eval("sf = sfroot();" + "block = sf.find('Path','?','-isa','Stateflow.EMChart');"
 					+ "block.Script = sprintf('?');", getPath(), script);
+			engine.flush();
 		} catch (MatlabException e) {
 			throw e.toEolRuntimeException();
 		}
@@ -172,10 +182,25 @@ public class SimulinkBlock extends SimulinkElement {
 		try {
 			engine.eval(command, getHandle(), other.getHandle(), create ? CREATE : DELETE, getParentPath(), outPort,
 					inPort);
+			engine.flush();
 		} catch (MatlabException ex) {
 			throw ex.toEolRuntimeException();
 		}
 	}
+	
+	public SimulinkPortCollection getPorts() throws EolRuntimeException {
+		try {
+			Struct portHandles  = (Struct) engine.evalWithSetupAndResult("handle = ?;",  "get_param(handle, 'PortHandles');",
+					this.handle);
+			Collection<?> values = portHandles.values();
+			values.removeIf(Objects::isNull);
+			List<?> list = values.stream().collect(Collectors.toList());
+			return new SimulinkPortCollection(list, ((SimulinkModel)model));
+		} catch (MatlabException e) {
+			throw e.toEolRuntimeException();
+		}
+	}
+	
 
 	public SimulinkPortCollection getOutports() throws EolRuntimeException {
 		try {

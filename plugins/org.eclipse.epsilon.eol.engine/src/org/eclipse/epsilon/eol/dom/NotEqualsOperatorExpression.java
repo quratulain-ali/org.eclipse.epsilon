@@ -26,4 +26,8 @@ public class NotEqualsOperatorExpression extends EagerOperatorExpression {
 		return !EolObjectComparator.equals(o1, o2);
 	}
 	
+	public void accept(IEolVisitor visitor) {
+		visitor.visit(this);
+	}
+	
 }

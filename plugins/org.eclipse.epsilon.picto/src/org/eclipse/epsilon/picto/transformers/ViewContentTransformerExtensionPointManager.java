@@ -12,7 +12,7 @@ package org.eclipse.epsilon.picto.transformers;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.epsilon.common.dt.extensions.ExtensionPointManager;
 
-public class ViewContentTransformerExtensionPointManager extends ExtensionPointManager<ViewContentTransformer>{
+public class ViewContentTransformerExtensionPointManager extends ExtensionPointManager<ViewContentTransformer> {
 	
 	@Override
 	protected ViewContentTransformer parse(IConfigurationElement element) throws Exception {

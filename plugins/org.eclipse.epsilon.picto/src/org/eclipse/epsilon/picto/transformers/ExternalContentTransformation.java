@@ -12,10 +12,14 @@ package org.eclipse.epsilon.picto.transformers;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import org.eclipse.epsilon.common.dt.EpsilonCommonsPlugin;
+import org.eclipse.epsilon.common.util.FileUtil;
+import org.eclipse.epsilon.common.util.OperatingSystem;
+import org.eclipse.epsilon.common.util.StringUtil;
 import org.eclipse.epsilon.picto.preferences.PictoPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
 
@@ -28,18 +32,13 @@ import org.eclipse.jface.preference.IPreferenceStore;
 public class ExternalContentTransformation implements Runnable, Callable<byte[]> {
 
 	protected final String program, args[];
-	
 	protected Duration timeout = null;
-	
 	protected Path logFile, outputFile;
-	
 	private IOException exception;
-	
 	protected int resultCode = Integer.MIN_VALUE;
-	
 	protected boolean hasRun = false;
-	
 	protected byte[] result;
+	protected String processOutput;
 
 	protected ExternalContentTransformation(String program, Object... arguments) {
 		if (arguments == null) {
@@ -74,10 +73,22 @@ public class ExternalContentTransformation implements Runnable, Callable<byte[]>
 	 * @return The absolute path of the temporary file.
 	 * @throws IOException If the temp file couldn't be created.
 	 */
-	public static Path createTempFile(String extension, byte[] contents) throws IOException {
-		Path file = Files.createTempFile(Files.createTempDirectory("picto"), "picto-renderer", '.'+extension);
+	public static Path createTempFile(String extension, byte... contents) throws IOException {
+		Path file = FileUtil.createTempFile("picto-renderer"+System.currentTimeMillis(), '.'+extension).toPath();
 		Path result = contents != null && contents.length > 0 ? Files.write(file, contents) : file;
 		return result.toAbsolutePath();
+	}
+	
+	/**
+	 * 
+	 * @param program The Node.js program name.
+	 * @return The absolute path of the command needed to invoke the program.
+	 */
+	public static String resolveNodeProgram(String program) {
+		return Paths.get(System.getProperty("user.home"))
+			.resolve("node_modules").resolve(".bin").resolve(
+				OperatingSystem.isWindows() ? program+".cmd" : program
+			).toString();
 	}
 	
 	public int getResultCode() {
@@ -134,7 +145,9 @@ public class ExternalContentTransformation implements Runnable, Callable<byte[]>
 		pb.redirectError(logFile.toFile());
 		try {
 			Process process = pb.start();
-			if (process.waitFor(timeout != null ? timeout.toMillis() : Long.MAX_VALUE, TimeUnit.MILLISECONDS)) {
+            String output = StringUtil.inputStreamToString(process.getInputStream());
+			
+			if (process.waitFor(timeout != null ? timeout.toNanos() : Long.MAX_VALUE, TimeUnit.NANOSECONDS)) {
 				resultCode = process.exitValue();
 			}
 			else if (timeout != null) { // the process has timed out
@@ -145,11 +158,18 @@ public class ExternalContentTransformation implements Runnable, Callable<byte[]>
 					+ "</body></html>"
 				).getBytes();
 			}
+			
+			this.processOutput = output.toString();
 		}
 		catch (InterruptedException ie) {
 			throw new IOException(ie);
 		}
 		hasRun = true;
+		
+		if (resultCode != 0) {
+			throw new IOException("Program "+program+" exited with "+resultCode);
+		}
+		
 		return getResult();
 	}
 	
@@ -187,5 +207,15 @@ public class ExternalContentTransformation implements Runnable, Callable<byte[]>
 
 	public String[] getArgs() {
 		return args;
+	}
+	
+	/**
+	 * 
+	 * @return The stdout of the invoked program.
+	 * @throws IllegalStateException If the program hasn't been run yet.
+	 */
+	public String getProcessOutput() {
+		screenRun();
+		return processOutput;
 	}
 }

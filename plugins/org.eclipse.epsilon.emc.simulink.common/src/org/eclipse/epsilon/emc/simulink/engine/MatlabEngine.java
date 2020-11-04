@@ -25,9 +25,15 @@ import org.eclipse.epsilon.emc.simulink.exception.MatlabException;
 import org.eclipse.epsilon.emc.simulink.exception.MatlabRuntimeException;
 import org.eclipse.epsilon.emc.simulink.model.IGenericSimulinkModel;
 import org.eclipse.epsilon.emc.simulink.util.MatlabEngineUtil;
+import org.eclipse.epsilon.profiling.Stopwatch;
 
 @SuppressWarnings("unchecked")
 public class MatlabEngine {
+
+	/**
+	 * 
+	 */
+	private static final String NL = System.lineSeparator();
 
 	/* MATHWOWRKS CLASS */
 	private static final String MATLAB_ENGINE_CLASS = "com.mathworks.engine.MatlabEngine";
@@ -89,7 +95,10 @@ public class MatlabEngine {
 	
 	protected String project;
 	protected Set<IGenericSimulinkModel> models = new HashSet<>();
+	protected StringBuilder evalCommandQueue = new StringBuilder();
 	protected Boolean tryCatchEnabled = true;
+	protected StringBuilder sb;
+	protected Stopwatch stopWatch;
 
 	public boolean isDisconnected() throws Exception{
 		Field declaredField = engine_class.getDeclaredField("fDisconnected");
@@ -98,8 +107,23 @@ public class MatlabEngine {
 		return disconnected.get();
 	}
 	
+	/**
+	 * @return the stopWatch
+	 */
+	public Stopwatch getStopWatch() {
+		return stopWatch;
+	}
+	
 	public static void setEngineClass(Class<?> matlabEngineClass) {
 		engine_class = matlabEngineClass;
+	}
+	
+	public void trackApi(boolean track){
+		sb = (track) ? new StringBuilder() : null;
+	}
+	
+	public StringBuilder getStream(){
+		return sb;
 	}
 	
 	public void setProject(String project) throws MatlabException {
@@ -176,6 +200,13 @@ public class MatlabEngine {
 		return getVariable(RESULT);
 	}
 
+	/**
+	 * This method is now lazily executed. All commands are stored in a queue and are only dispatched when 
+	 * the method {@link #flush()} is invoked.
+	 * @param cmd
+	 * @param parameters
+	 * @throws MatlabException
+	 */
 	public void eval(String cmd, Object... parameters) throws MatlabException {
 		cmd = " " + cmd + " ";
 		String[] parts = cmd.split(PARAM_REGEX);
@@ -191,7 +222,7 @@ public class MatlabEngine {
 		eval(cmd);
 	}
 
-	/** CLASS HELPERS */
+	// CLASS HELPERS 
 	public static boolean is(Object obj) {
 		return (getMatlabClass() == null) ? false : getMatlabClass().isInstance(obj);  
 	}
@@ -282,6 +313,26 @@ public class MatlabEngine {
 		} 
 	}
 		
+	private void start() {
+		if (sb !=null) {
+			if (stopWatch == null) {
+				stopWatch = new Stopwatch();
+			} else {
+				stopWatch.resume();
+			}
+		}
+	}
+	
+	private void stop() {
+		if (sb !=null) {
+			stopWatch.pause();
+		}
+	}
+	
+	public void resetTimer() {
+		stopWatch = null;
+	}
+	
 	// OBJECT METHODS
 	
 	public void eval(String cmd) throws MatlabException {
@@ -292,16 +343,13 @@ public class MatlabEngine {
 				throw new EpsilonSimulinkInternalException(e);
 			}
 		}
-		try {
-			if (isTryCatchEnabled()) {				
-				cmd = "try\n" + cmd + "\n catch ME \n e = MException(ME.identifier,ME.message); throw(e); \n end";
-			}
-			evalMethod.invoke(engine, cmd);
-		} catch (InvocationTargetException e) {
-			throw new MatlabException(e);
-		} catch (ReflectiveOperationException | IllegalArgumentException e) {
-			throw new EpsilonSimulinkInternalException(e);
-		} 
+		if (isTryCatchEnabled()) {				
+			cmd = "try\n" + cmd + "\ncatch ME \ne = MException(ME.identifier,ME.message); throw(e); \nend\n";
+		}
+		if (sb !=null) {
+			sb.append("%eval").append(NL).append(cmd).append(NL);
+		}
+		evalCommandQueue.append(cmd);
 	}
 	
 	public Future<Void> evalAsync(String cmd) throws MatlabException {
@@ -312,13 +360,20 @@ public class MatlabEngine {
 				throw new EpsilonSimulinkInternalException(e);
 			}
 		}
+		flush();
 		try {
+			if (sb !=null) {
+				sb.append("%evalAsync").append(NL).append(cmd).append(NL);
+			}
+			start();
 			return (Future<Void>) evalAsyncMethod.invoke(engine, cmd);
 		} catch (InvocationTargetException e) {
 			throw new MatlabException(e);
 		} catch (ReflectiveOperationException | IllegalArgumentException e) {
 			throw new EpsilonSimulinkInternalException(e);
-		} 
+		} finally {
+			stop();
+		}
 	}
 	
 	public Object getVariable(String variable) throws MatlabException {
@@ -329,8 +384,15 @@ public class MatlabEngine {
 				throw new EpsilonSimulinkInternalException(e);
 			}
 		}
+		flush();
 		try {
-			return MatlabEngineUtil.parseMatlabEngineVariable(getVariableMethod.invoke(engine, variable));
+			if (sb !=null) {
+				sb.append("%getVariable").append(NL).append(variable).append(NL);
+			}
+			start();
+			Object invoke = getVariableMethod.invoke(engine, variable);
+			stop();
+			return MatlabEngineUtil.parseMatlabEngineVariable(invoke);
 		} catch (InvocationTargetException e) {
 			String className= (String)evalWithResult("class(?);", variable);
 			if (className.equals("Simulink.SimulationOutput")) {
@@ -363,7 +425,9 @@ public class MatlabEngine {
 			throw new MatlabException(e);
 		} catch (ReflectiveOperationException | IllegalArgumentException e) {
 			throw new EpsilonSimulinkInternalException(e);
-		} 
+		} finally {
+			stop();
+		}
 	}
 
 	public Object fevalWithResult(int numberOfOutputs, String function, Object...handles) throws MatlabException {
@@ -374,8 +438,12 @@ public class MatlabEngine {
 				throw new EpsilonSimulinkInternalException(e);
 			}
 		}
+		flush();
 		try {
-			Object res = fevalWithVariableOutputsMethod.invoke(engine, numberOfOutputs, function, processInputObject(handles));
+			Object[] processInputObject = processInputObject(handles);
+			start();
+			Object res = fevalWithVariableOutputsMethod.invoke(engine, numberOfOutputs, function, processInputObject);
+			stop();
 			if (res != null) {
 				return MatlabEngineUtil.parseMatlabEngineVariable(res);
 			}
@@ -384,7 +452,9 @@ public class MatlabEngine {
 			throw new MatlabException(e);
 		} catch (ReflectiveOperationException | IllegalArgumentException e) {
 			throw new EpsilonSimulinkInternalException(e);
-		} 
+		} finally {
+			stop();
+		}
 	}
 
 	public void feval(int numberOfOutputs, String function, Object...handles) throws MatlabException {
@@ -395,13 +465,18 @@ public class MatlabEngine {
 				throw new EpsilonSimulinkInternalException(e);
 			}
 		}
+		flush();
 		try {
-			fevalWithVariableOutputsMethod.invoke(engine, numberOfOutputs, function, processInputObject(handles));
+			Object[] processInputObject = processInputObject(handles);
+			start();
+			fevalWithVariableOutputsMethod.invoke(engine, numberOfOutputs, function, processInputObject);
 		} catch (InvocationTargetException e) {
 			throw new MatlabException(e);
 		} catch (ReflectiveOperationException | IllegalArgumentException e) {
 			throw new EpsilonSimulinkInternalException(e);
-		} 
+		} finally {
+			stop();
+		}
 	}
 	
 	public Object fevalWithResult(String function, Object... handles) throws MatlabException {
@@ -412,15 +487,20 @@ public class MatlabEngine {
 				throw new EpsilonSimulinkInternalException(e);
 			}
 		}
-		Object[] processInputObject = processInputObject(handles);
+		flush();
 		try {
+			Object[] processInputObject = processInputObject(handles);
+			start();
 			Object res = fevalMethod.invoke(engine, function, processInputObject);
+			stop();
 			return MatlabEngineUtil.parseMatlabEngineVariable(res);
 		} catch (InvocationTargetException e) {
 			throw new MatlabException(e);
 		} catch (ReflectiveOperationException | IllegalArgumentException e) {
 			throw new EpsilonSimulinkInternalException(e);
-		} 
+		} finally {
+			stop();
+		}
 	}
 	
 	public void feval(String function, Object... handles) throws MatlabException {
@@ -431,13 +511,18 @@ public class MatlabEngine {
 				throw new EpsilonSimulinkInternalException(e);
 			}
 		}
+		flush();
 		try {
-			fevalMethod.invoke(engine, function, processInputObject(handles));
+			Object[] processInputObject = processInputObject(handles);
+			start();
+			fevalMethod.invoke(engine, function, processInputObject);
 		} catch (InvocationTargetException e) {
 			throw new MatlabException(e);
 		} catch (ReflectiveOperationException | IllegalArgumentException e) {
 			throw new EpsilonSimulinkInternalException(e);
-		} 
+		} finally {
+			stop();
+		}
 	}
 	
 	public void putVariable(String variableName, Object value) throws MatlabException {
@@ -448,13 +533,18 @@ public class MatlabEngine {
 				throw new EpsilonSimulinkInternalException(e);
 			}
 		}
+		flush();
 		try {
-			putVariableMethod.invoke(engine, variableName, processInputObject(value));
+			Object processInputObject = processInputObject(value);
+			start();
+			putVariableMethod.invoke(engine, variableName, processInputObject);
 		} catch (InvocationTargetException e) {
 			throw new MatlabException(e);
 		} catch (ReflectiveOperationException | IllegalArgumentException e) {
 			throw new EpsilonSimulinkInternalException(e);
-		} 
+		} finally {
+			stop();
+		}
 	}
 	
 	public void fevalAsync(String function, Object... handles) throws MatlabException {
@@ -465,13 +555,17 @@ public class MatlabEngine {
 				throw new EpsilonSimulinkInternalException(e);
 			}
 		}
+		flush();
 		try {
+			start();
 			fevalAsyncMethod.invoke(engine, function, handles);
 		} catch (InvocationTargetException e) {
 			throw new MatlabException(e);
 		} catch (ReflectiveOperationException | IllegalArgumentException e) {
 			throw new EpsilonSimulinkInternalException(e);
-		} 
+		} finally {
+			stop();
+		}
 	}
 	
 	public void close() throws MatlabException {
@@ -482,13 +576,17 @@ public class MatlabEngine {
 				throw new EpsilonSimulinkInternalException(e);
 			}
 		}
+		flush();
 		try {
+			start();
 			closeMethod.invoke(engine);
 		}  catch (InvocationTargetException e) {
 			throw new MatlabException(e);
 		} catch (ReflectiveOperationException | IllegalArgumentException e) {
 			throw new EpsilonSimulinkInternalException(e);
-		} 
+		} finally {
+			stop();
+		}
 	}
 	
 	public void quit() throws MatlabException {
@@ -499,13 +597,17 @@ public class MatlabEngine {
 				throw new EpsilonSimulinkInternalException(e);
 			}
 		}
+		flush();
 		try {
+			start();
 			quitMethod.invoke(engine);
 		}  catch (InvocationTargetException e) {
 			throw new MatlabException(e);
 		} catch (ReflectiveOperationException | IllegalArgumentException e) {
 			throw new EpsilonSimulinkInternalException(e);
-		} 
+		} finally {
+			stop();
+		}
 	}
 	
 	public void disconnect() throws MatlabException {
@@ -516,32 +618,38 @@ public class MatlabEngine {
 				throw new EpsilonSimulinkInternalException(e);
 			}
 		}
+		flush();
 		try {
+			start();
 			disconnectMethod.invoke(engine);
 		} catch (InvocationTargetException e) {
 			throw new MatlabException(e);
 		} catch (ReflectiveOperationException | IllegalArgumentException e) {
 			throw new EpsilonSimulinkInternalException(e);
-		} 
+		} finally {
+			stop();
+		}
 	}
-	
-	/*
-	// FIXME
-	public <T> Future<T> fAsync(String variable) throws MatlabException {
-		if (getVariableAsyncMethod == null) {
-			try {
-				getVariableAsyncMethod = engine.getClass().getMethod(GET_VARIABLE_ASYNC_METHOD, String.class);
-			} catch (Exception e) {
-				throw new MatlabException(e);
-			}
-		}
+
+	/**
+	 * Executes all commands to be executed in the eval method that have been stored in a queue.
+	 * @throws MatlabException
+	 */
+	public void flush() throws MatlabException {
+		String cmd = evalCommandQueue.toString();
 		try {
-			Future<T> response = (Future<T>) getVariableAsyncMethod.invoke(engine, variable);
-			// TODO Parse into T
-			return (Future<T>) response;
-		} catch (Exception e) {
+			if (!cmd.isEmpty()) {				
+				start();
+				evalMethod.invoke(engine, cmd);
+			}
+		} catch (InvocationTargetException e) {
 			throw new MatlabException(e);
+		} catch (ReflectiveOperationException | IllegalArgumentException e) {
+			throw new EpsilonSimulinkInternalException(e);
+		} finally {
+			stop();
+			evalCommandQueue = new StringBuilder();
 		}
-	}*/
+	}
 	
 }

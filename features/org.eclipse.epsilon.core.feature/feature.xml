@@ -2,7 +2,7 @@
 <feature
       id="org.eclipse.epsilon.core.feature"
       label="Epsilon Core"
-      version="2.2.0.qualifier"
+      version="2.3.0.qualifier"
       provider-name="Eclipse Modeling Project"
       license-feature="org.eclipse.license"
       license-feature-version="0.0.0">
@@ -19,10 +19,15 @@
    </copyright>
 
    <url>
-      <discovery label="Epsilon (Stable)" url="http://download.eclipse.org/epsilon/updates"/>
-      <discovery label="Epsilon (Interim)" url="http://download.eclipse.org/epsilon/interim"/>
-      <discovery label="Orbit (2020-06)" url="http://download.eclipse.org/tools/orbit/downloads/drops/R20200529191137/repository"/>
+      <discovery label="Orbit" url="http://download.eclipse.org/tools/orbit/downloads/drops/R20200831200620/repository"/>
    </url>
+
+    <plugin
+         id="org.eclipse.epsilon.common"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
 
    <plugin
          id="org.eclipse.epsilon.ecl.engine"
@@ -88,42 +93,7 @@
          unpack="false"/>
 
    <plugin
-         id="org.eclipse.epsilon.emc.composite"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.epsilon.emc.plainxml"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.eclipse.epsilon.flock.engine"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.epsilon.egl.traceability.fine"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.epsilon.emc.bibtex"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.epsilon.profiling"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -144,7 +114,57 @@
          unpack="false"/>
 
    <plugin
-         id="org.eclipse.epsilon.common"
+         id="org.eclipse.epsilon.emg.engine"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+   
+   <plugin
+         id="org.eclipse.epsilon.emg.engine"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+         
+   <plugin
+         id="org.eclipse.epsilon.pinset.engine"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+	<plugin
+         id="org.eclipse.epsilon.egl.traceability.fine"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+	
+   <plugin
+         id="org.eclipse.epsilon.emc.composite"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.epsilon.emc.plainxml"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.epsilon.emc.bibtex"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.epsilon.profiling"
          download-size="0"
          install-size="0"
          version="0.0.0"

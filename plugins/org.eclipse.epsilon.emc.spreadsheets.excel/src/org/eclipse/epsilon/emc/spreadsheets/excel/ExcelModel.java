@@ -17,16 +17,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.openxml4j.opc.PackageAccess;
 import org.apache.poi.poifs.crypt.Decryptor;
 import org.apache.poi.poifs.crypt.EncryptionInfo;
-import org.apache.poi.poifs.crypt.EncryptionMode;
 import org.apache.poi.poifs.crypt.Encryptor;
+//import org.apache.poi.poifs.crypt.Encryptor;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -46,14 +48,11 @@ import org.eclipse.epsilon.eol.exceptions.models.EolModelLoadingException;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
 import org.eclipse.epsilon.eol.models.IRelativePathResolver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 public class ExcelModel extends SpreadsheetModel {
-	private static final Logger LOGGER = LoggerFactory.getLogger(ExcelModel.class);
-
+	
 	/*
 	 * Public identifiers used for receiving parameters from Epsilon Development
 	 * Tools
@@ -108,15 +107,12 @@ public class ExcelModel extends SpreadsheetModel {
 	}
 
 	public void setSpreadsheetFile(final String pathToSpreadsheet) {
-		LOGGER.debug("Inside setSpreadsheetFile() method");
-		LOGGER.debug("File path: '" + pathToSpreadsheet + "'");
-
+		
 		if (!StringUtil.isEmpty(pathToSpreadsheet)) {
 			this.spreadsheetFile = new File(pathToSpreadsheet);
 		}
 		else {
 			final String message = "Spreadsheet File must be provided";
-			LOGGER.error(message);
 			throw new IllegalArgumentException(message);
 		}
 	}
@@ -153,7 +149,6 @@ public class ExcelModel extends SpreadsheetModel {
 			this.setPassword(properties.getProperty(ExcelModel.SPREADSHEET_PASSWORD));
 		}
 		catch (Exception e) {
-			LOGGER.error(e.getMessage());
 			throw new EolModelLoadingException(e, this);
 		}
 		this.load();
@@ -165,7 +160,6 @@ public class ExcelModel extends SpreadsheetModel {
 		for (int i = 0; i < this.workbook.getNumberOfSheets(); i++) {
 			final Sheet sheet = this.workbook.getSheetAt(i);
 			final ExcelWorksheet worksheet = new ExcelWorksheet(this, sheet, true);
-			LOGGER.debug("Loaded worksheet from file: '" + worksheet.getName() + "'");
 			this.addWorksheet(worksheet);
 		}
 	}
@@ -186,7 +180,6 @@ public class ExcelModel extends SpreadsheetModel {
 			}
 			else {
 				final String message = "Cannot load password protected XLS files";
-				LOGGER.error(message);
 				throw new UnsupportedOperationException(message);
 			}
 		}
@@ -208,7 +201,6 @@ public class ExcelModel extends SpreadsheetModel {
 		}
 		catch (Exception e) {
 			final String message = "Failed to open file with the given password: " + e.getMessage();
-			LOGGER.error(message);
 			throw new RuntimeException(message);
 		}
 	}
@@ -247,7 +239,6 @@ public class ExcelModel extends SpreadsheetModel {
 			return true;
 		}
 		catch (Exception e) {
-			LOGGER.error("Failed to write to workbook '" + this.name + "' " + e.getMessage());
 			return false;
 		}
 	}
@@ -285,7 +276,7 @@ public class ExcelModel extends SpreadsheetModel {
 	private void encryptFile() throws Exception {
 		if (!StringUtil.isEmpty(this.password) && this.getIsXlsxFile()) {
 			final POIFSFileSystem fs = new POIFSFileSystem();
-			final EncryptionInfo info = new EncryptionInfo(fs, EncryptionMode.agile);
+			final EncryptionInfo info = new EncryptionInfo(fs);
 
 			final Encryptor enc = info.getEncryptor();
 			enc.confirmPassword(this.password);

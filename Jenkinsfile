@@ -18,31 +18,31 @@ def baseTriggers = "${plainTriggers}|(pom\\.xml)|(Jenkinsfile)"
 def updateTriggers = "${baseTriggers}|(standalone\\/.*)|(features\\/.*)|(releng\\/.*(target|updatesite)\\/.*)"
 
 pipeline {
-    agent any
+    agent {
+      kubernetes {
+        label 'migration'
+      }
+    }
     options {
       disableConcurrentBuilds()
       buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '2', daysToKeepStr: '14', numToKeepStr: ''))
     }
     tools {
         maven 'apache-maven-latest'
-        jdk 'adoptopenjdk-hotspot-jdk8-latest'
+        jdk 'openjdk-jdk11-latest'
     }
     triggers {
         pollSCM('H/5 * * * *')
     }
     stages {
       stage('Main') {
-        agent {
-          kubernetes {
-            label 'migration'
-          }
-        }
         stages {
           stage('Build') {
             when {
               anyOf {
                 changeset comparator: 'REGEXP', pattern: "${updateTriggers}|(tests\\/.*)"
                 expression { return currentBuild.number == 1 }
+                triggeredBy 'UserIdCause'
               }
             } 
             steps {
@@ -54,6 +54,7 @@ pipeline {
               anyOf {
                 changeset comparator: 'REGEXP', pattern: "${baseTriggers}|(tests\\/.*)"
                 expression { return currentBuild.number == 1 }
+                triggeredBy 'UserIdCause'
               }
             }
             steps {
@@ -68,6 +69,7 @@ pipeline {
               anyOf {
                 changeset comparator: 'REGEXP', pattern: "${baseTriggers}"
                 expression { return currentBuild.number == 1 }
+                triggeredBy 'UserIdCause'
               }
             }
             steps {
@@ -81,6 +83,7 @@ pipeline {
                 anyOf {
                   changeset comparator: 'REGEXP', pattern: "${updateTriggers}"
                   expression { return currentBuild.number == 1 }
+                  triggeredBy 'UserIdCause'
                 }
               }
             }
@@ -90,6 +93,7 @@ pipeline {
                 sshagent (['projects-storage.eclipse.org-bot-ssh']) {
                   sh '''
                     INTERIM=/home/data/httpd/download.eclipse.org/epsilon/interim
+                    JAVADOC=/home/data/httpd/download.eclipse.org/epsilon/interim-javadoc
                     SITEDIR="$WORKSPACE/releng/org.eclipse.epsilon.updatesite/target"
                     if [ -d "$SITEDIR" ]; then
                       ssh genie.epsilon@projects-storage.eclipse.org rm -rf $INTERIM
@@ -98,8 +102,8 @@ pipeline {
                     fi
                     JAVADOCDIR="$WORKSPACE/target/site/apidocs"
                     if [ -d "$JAVADOCDIR" ]; then
-                      ssh genie.epsilon@projects-storage.eclipse.org "rm -rf $INTERIM/javadoc"
-                      scp -r "$JAVADOCDIR" genie.epsilon@projects-storage.eclipse.org:$INTERIM/javadoc
+                      ssh genie.epsilon@projects-storage.eclipse.org "rm -rf $JAVADOC"
+                      scp -r "$JAVADOCDIR" genie.epsilon@projects-storage.eclipse.org:$JAVADOC
                     fi
                   '''
                 }
@@ -121,6 +125,8 @@ pipeline {
               anyOf {
                 changeset comparator: 'REGEXP', pattern: "${plainTriggers}"
                 expression { return currentBuild.number == 1 }
+                branch 'maven-*'
+                triggeredBy 'UserIdCause'
               }
             }
             steps {
@@ -129,12 +135,16 @@ pipeline {
           }
           stage('Deploy to OSSRH') {
             when {
-              allOf {
-                branch 'master'
-                anyOf {
-                  changeset comparator: 'REGEXP', pattern: "${plainTriggers}"
-                  expression { return currentBuild.number == 1 }
+              anyOf {
+                allOf {
+                   branch 'master'
+                   anyOf {
+                     changeset comparator: 'REGEXP', pattern: "${plainTriggers}"
+                     expression { return currentBuild.number == 1 }
+                     triggeredBy 'UserIdCause'
+                   }
                 }
+                branch 'maven-*'
               }
             }
             environment {

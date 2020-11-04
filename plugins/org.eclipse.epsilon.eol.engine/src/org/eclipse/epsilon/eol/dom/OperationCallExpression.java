@@ -17,6 +17,7 @@ import org.eclipse.epsilon.eol.EolModule;
 import org.eclipse.epsilon.eol.IEolModule;
 import org.eclipse.epsilon.eol.compile.context.IEolCompilationContext;
 import org.eclipse.epsilon.eol.exceptions.EolIllegalOperationException;
+import org.eclipse.epsilon.eol.exceptions.EolIllegalPropertyException;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.exceptions.EolUndefinedVariableException;
 import org.eclipse.epsilon.eol.execute.ExecutorFactory;
@@ -111,7 +112,7 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 			try {
 				targetObject = executorFactory.execute(targetExpression, context);
 			}
-			catch (EolUndefinedVariableException npe) {
+			catch (EolUndefinedVariableException | EolIllegalPropertyException npe) {
 				switch (operationName) {
 					default: throw npe;
 					case "isDefined": case "isUndefined": case "ifDefined": case "ifUndefined": {
@@ -496,6 +497,7 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 	public List<Expression> getParameterExpressions() {
 		return parameterExpressions;
 	}
+
 	public boolean isCompatible(EolType targetType, EolType valueType) {
 
 		boolean ok = false;
@@ -605,5 +607,9 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 	public ArrayList<Operation> getOperations() {
 		// TODO Auto-generated method stub
 		return operations;
+	}
+	
+	public void accept(IEolVisitor visitor) {
+		visitor.visit(this);
 	}
 }

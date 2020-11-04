@@ -9,8 +9,6 @@
 **********************************************************************/
 package org.eclipse.epsilon.picto.transformers.elements;
 
-import java.util.Collections;
-
 import org.eclipse.epsilon.picto.ViewContent;
 import org.w3c.dom.Element;
 
@@ -18,26 +16,26 @@ public class RenderCodeElementTransformer extends ReplacingElementTransformer {
 	
 	@Override
 	public String getXPath() {
-		return "//code[starts-with(@class,'language-render')]";
+		return "//code[starts-with(@class,'language-')]";
 	}
 	
 	@Override
 	public void transform(Element element) {
 		
 		String text = element.getChildNodes().item(0).getTextContent();
-		String format = element.getAttribute("class").substring("language-render-".length());
-		ViewContent viewContent = new ViewContent(format, text, null, Collections.emptyList(), Collections.emptyList(), Collections.emptySet());
-		ViewContent svgContent = null;
+		String format = element.getAttribute("class").substring("language-".length());
+		String render = "render-";
+		if (format.startsWith(render)) {
+			format = format.substring(render.length());
+		}
 		ViewContent lastContent = null;
-		
-		while (viewContent != null) {
-			if ("svg".equals(viewContent.getFormat())) {
-				svgContent = viewContent;
+		boolean iframe = true;
+
+		for (ViewContent viewContent = new ViewContent(format, text); viewContent != null; viewContent = viewContent.getNext(picto)) {
+			lastContent = viewContent;
+			if (viewContent.isImage()) {
+				iframe = false;
 				break;
-			}
-			else {
-				lastContent = viewContent;
-				viewContent = viewContent.getNext(picto);
 			}
 		}
 		
@@ -45,11 +43,6 @@ public class RenderCodeElementTransformer extends ReplacingElementTransformer {
 			element = (Element) element.getParentNode();
 		}
 		
-		if (svgContent != null) {
-			replace(element, svgContent, true);
-		}
-		else {
-			replace(element, lastContent, false);
-		}
+		replace(element, lastContent, iframe);
 	}
 }

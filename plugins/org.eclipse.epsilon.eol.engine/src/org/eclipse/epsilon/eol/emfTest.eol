@@ -1,0 +1,5 @@
+model earth driver EMF{
+nsuri = "friends"
+};
+
+earth!Person.all.select(b|b.name = "Rachel");

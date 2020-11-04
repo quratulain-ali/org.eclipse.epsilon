@@ -33,14 +33,15 @@ public class PictoPreferencePage extends PreferencePage implements IWorkbenchPre
 	protected final ArrayList<FieldEditor> fieldEditors = new ArrayList<>();
 	protected IPreferenceStore preferences = EpsilonCommonsPlugin.getDefault().getPreferenceStore();
 	
+	public PictoPreferencePage() {
+		preferences.setDefault(TIMEOUT, DEFAULT_TIMEOUT);
+	}
+	
 	@Override
 	protected Control createContents(Composite parent) {
-		
-		preferences.setDefault(TIMEOUT, DEFAULT_TIMEOUT);
-		
 		final Composite composite = new Composite(parent, SWT.FILL);
 		
-		final IntegerFieldEditor timeoutEditor = new IntegerFieldEditor(TIMEOUT, "Rendering timeout (sec)", composite);
+		final IntegerFieldEditor timeoutEditor = new IntegerFieldEditor(TIMEOUT, "Rendering timeout (seconds)", composite);
 		final BooleanFieldEditor verbatimBooleanEditor = new BooleanFieldEditor(PROPERTY_RENDER_VERBATIM, "Render verbatim sources", composite);
 		
 		fieldEditors.add(verbatimBooleanEditor);
@@ -62,16 +63,10 @@ public class PictoPreferencePage extends PreferencePage implements IWorkbenchPre
 	}
 	
 	@Override
-	protected void performApply() {
-		
-	}
-	
-	@Override
 	public boolean performOk() {
 		for (FieldEditor fieldEditor : fieldEditors) {
 			fieldEditor.store();
 		}
-		
 		return true;
 	}
 

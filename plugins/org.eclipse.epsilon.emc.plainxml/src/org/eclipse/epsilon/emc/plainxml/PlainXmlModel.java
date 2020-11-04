@@ -9,6 +9,7 @@
  ******************************************************************************/
 package org.eclipse.epsilon.emc.plainxml;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.StringWriter;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -25,7 +27,9 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
 import org.eclipse.epsilon.common.util.StringProperties;
+import org.eclipse.epsilon.common.util.StringUtil;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.exceptions.models.EolEnumerationValueNotFoundException;
 import org.eclipse.epsilon.eol.exceptions.models.EolModelElementTypeNotFoundException;
@@ -371,7 +375,7 @@ public class PlainXmlModel extends CachedModel<Element> {
 					document = documentBuilder.parse(this.uri);
 				}
 				else {
-					document = documentBuilder.parse(new StringInputStream(xml));
+					document = documentBuilder.parse(new ByteArrayInputStream(xml.getBytes()));
 				}
 			}
 			else {
@@ -390,8 +394,8 @@ public class PlainXmlModel extends CachedModel<Element> {
 		
 		String filePath = properties.getProperty(PlainXmlModel.PROPERTY_FILE);
 		
-		if (filePath != null && filePath.trim().length() > 0) {
-			file = new File(resolver.resolve(filePath));
+		if (!StringUtil.isEmpty(filePath)) {
+			file = new File(resolver != null ? resolver.resolve(filePath) : filePath);
 		}
 		else {
 			uri = properties.getProperty(PlainXmlModel.PROPERTY_URI);

@@ -13,6 +13,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
+
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -168,11 +170,14 @@ public class FlexmiResource extends ResourceImpl implements Handler {
 	
 	@Override
 	public EObject getEObject(String uriFragment) {
-		EObject eObject = super.getEObject(uriFragment);
-		if (eObject == null && uriFragment.indexOf(".") > -1) {
+		if (getIntrinsicIDToEObjectMap().containsKey(uriFragment)) {
+			return getIntrinsicIDToEObjectMap().get(uriFragment);
+		}
+		else if (fullyQualifiedIDs.containsKey(uriFragment)) {
+			// prevents a full model sweep
 			return fullyQualifiedIDs.get(uriFragment);
 		}
-		return eObject;
+		return super.getEObject(uriFragment);
 	}
 	
 	@Override
@@ -405,7 +410,7 @@ public class FlexmiResource extends ResourceImpl implements Handler {
 	@Override
 	public void endDocument(Document document) {
 		resolveReferences();
-		
+
 		for (EObject content : getContents()) {
 			performActions(content);
 		}
@@ -505,12 +510,22 @@ public class FlexmiResource extends ResourceImpl implements Handler {
 	
 	public void handleVarAttribute(String attribute, VariableDeclarationType type, NamedNodeMap attributes, EObject eObject) {
 		
-		// Find the _var attribute, create a variable declaration and remove it from the node
+		// Find the :var/:global/:local attribute, create a variable declaration and remove it from the node
 		Node varAttribute = attributes.getNamedItem(Template.PREFIX + attribute);
 		if (varAttribute != null) {
+			
 			for (String variable : varAttribute.getNodeValue().split(",")) {
-				actionMap.addAction(eObject, new VariableDeclaration(eObject, variable.trim(), type));
+				VariableDeclaration variableDeclaration = new VariableDeclaration(eObject, variable.trim(), type);
+				if (type == VariableDeclarationType.GLOBAL) {
+					try {
+						variableDeclaration.perform(this);
+					} catch (Exception e) {}
+				}
+				else {
+					actionMap.addAction(eObject, variableDeclaration);
+				}
 			}
+			
 			attributes.removeNamedItem(varAttribute.getNodeName());
 		}
 	}
@@ -526,7 +541,8 @@ public class FlexmiResource extends ResourceImpl implements Handler {
 		handleVarAttribute("local", VariableDeclarationType.LOCAL, attributes, eObject);
 		handleVarAttribute("global", VariableDeclarationType.GLOBAL, attributes, eObject);
 		
-		Map<Node, EStructuralFeature> allocation = new AttributeStructuralFeatureAllocator().allocate(attributes, eStructuralFeatures);
+		Map<Node, EStructuralFeature> allocation =
+				new AttributeStructuralFeatureAllocator(eObject.eClass()).allocate(attributes, eStructuralFeatures);
 		
 		for (Node attribute : allocation.keySet()) {
 			String name = attribute.getNodeName();
@@ -624,15 +640,30 @@ public class FlexmiResource extends ResourceImpl implements Handler {
 	}
 	
 	protected List<EClass> getAllSubtypes(EClass eClass) {
+
 		List<EClass> allSubtypes = allSubtypesCache.get(eClass);
 		if (allSubtypes == null) {
-			allSubtypes = new ArrayList<>();
-			for (EClass candidate : getAllConcreteEClasses()) {
-				if (candidate.getEAllSuperTypes().contains(eClass)) {
-					allSubtypes.add(candidate);
-				}
+			// use all EcorePackage concrete classes (EObject does not appear as Ecore supertype)
+			if (eClass.getName().equals("EObject")
+					&& eClass.getEPackage().getNsURI().equals(EcorePackage.eINSTANCE.getNsURI())) {
+
+				allSubtypes = eClass.getEPackage().getEClassifiers()
+						.stream()
+						.filter(ecl -> ecl instanceof EClass && !((EClass) ecl).isAbstract())
+						.map(ecl -> (EClass) ecl)
+						.collect(Collectors.toList());
 			}
-			if (!eClass.isAbstract()) allSubtypes.add(eClass);
+			// search for concrete subclasses the conventional way
+			else {
+				allSubtypes = new ArrayList<>();
+				for (EClass candidate : getAllConcreteEClasses()) {
+					if (candidate.getEAllSuperTypes().contains(eClass)) {
+						allSubtypes.add(candidate);
+					}
+				}
+				if (!eClass.isAbstract())
+					allSubtypes.add(eClass);
+			}
 			allSubtypesCache.put(eClass, allSubtypes);
 		}
 		return allSubtypes;
@@ -698,10 +729,6 @@ public class FlexmiResource extends ResourceImpl implements Handler {
 	public List<EObject> getOrderedChildren(EObject parent) {
 		if (orderedChildren.containsKey(parent)) return orderedChildren.get(parent);
 		else return Collections.emptyList(); 
-	}
-	
-	protected boolean isTemplateElement(Element element) {
-		return objectStack.isEmpty() && Template.NODE_NAME.equals(element.getNodeName());
 	}
 	
 	public FrameStack getFrameStack() {

@@ -14,20 +14,14 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
-
 import org.eclipse.epsilon.common.util.StringUtil;
 import org.eclipse.epsilon.picto.PictoView;
 import org.eclipse.epsilon.picto.ViewContent;
 import org.eclipse.epsilon.picto.XmlHelper;
-import org.eclipse.epsilon.picto.transformers.elements.AbsolutePathElementTransformer;
-import org.eclipse.epsilon.picto.transformers.elements.HtmlElementTransformer;
-import org.eclipse.epsilon.picto.transformers.elements.HtmlElementTransformerExtensionPointManager;
-import org.eclipse.epsilon.picto.transformers.elements.PictoViewElementTransformer;
-import org.eclipse.epsilon.picto.transformers.elements.RenderCodeElementTransformer;
+import org.eclipse.epsilon.picto.transformers.elements.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -45,7 +39,9 @@ public class HtmlContentTransformer implements ViewContentTransformer {
 			new AbsolutePathElementTransformer("script",  "src"),
 			new AbsolutePathElementTransformer("a",  "href"),
 			new PictoViewElementTransformer(), 
-			new RenderCodeElementTransformer()
+			new RenderCodeElementTransformer(),
+			new KatexAutorenderHeadAppender(),
+			new MermaidRendererHeadAppender()
 		));
 		htmlElementTransformers.addAll(new HtmlElementTransformerExtensionPointManager().getExtensions());
 	}
@@ -85,7 +81,7 @@ public class HtmlContentTransformer implements ViewContentTransformer {
 				}
 			}
 			
-			return new FinalViewContent("html", xmlHelper.getXml(document), content);
+			return new FinalViewContent("html", "<!DOCTYPE html>"+xmlHelper.getXml(document), content);
 		}
 		catch (Exception ex) {
 			return null;
@@ -114,7 +110,7 @@ public class HtmlContentTransformer implements ViewContentTransformer {
 	
 	protected Element getElementByName(Element parent, String name) {
 		NodeList nodeList = parent.getChildNodes();
-		for (int i=0;i<nodeList.getLength();i++) {
+		for (int i = 0; i < nodeList.getLength(); i++) {
 			Node node = nodeList.item(i);
 			if (node.getNodeName().equalsIgnoreCase(name)) return (Element) node;
 		}
@@ -139,12 +135,13 @@ public class HtmlContentTransformer implements ViewContentTransformer {
 	 * 
 	 * @param html The raw HTML text.
 	 * @param outputExt The output file format.
+	 * @param additionalArgs Other arguments to pass to Pandoc.
 	 * @return The raw output of the file as a String.
 	 * @throws IOException If invoking Pandoc fails.
 	 */
-	public static String pandocRaw(String html, String outputExt) throws IOException {
+	public static String pandocRaw(String html, String outputExt, Object... additionalArgs) throws IOException {
 		Path htmlDocument = ExternalContentTransformation.createTempFile("html", html.getBytes());
-		ExternalContentTransformation ect = invokePandoc(htmlDocument, outputExt);
+		ExternalContentTransformation ect = invokePandoc(htmlDocument, outputExt, additionalArgs);
 		return new String(ect.call());
 	}
 	
@@ -153,11 +150,12 @@ public class HtmlContentTransformer implements ViewContentTransformer {
 	 * 
 	 * @param html The raw HTML text.
 	 * @param outputExt The output file format.
+	 * @param additionalArgs Other arguments to pass to Pandoc.
 	 * @return The output file.
 	 * @throws IOException If invoking Pandoc fails.
 	 */
-	public static Path pandoc(String html, String outputExt) throws IOException {
-		return pandoc(ExternalContentTransformation.createTempFile("html", html.getBytes()), outputExt);
+	public static Path pandoc(String html, String outputExt, Object... additionalArgs) throws IOException {
+		return pandoc(ExternalContentTransformation.createTempFile("html", html.getBytes()), outputExt, additionalArgs);
 	}
 	
 	/**
@@ -165,11 +163,12 @@ public class HtmlContentTransformer implements ViewContentTransformer {
 	 * 
 	 * @param document The HTML file.
 	 * @param outputExt The output file format.
+	 * @param additionalArgs Other arguments to pass to Pandoc.
 	 * @return The output file.
 	 * @throws IOException If invoking Pandoc fails.
 	 */
-	public static Path pandoc(Path document, String outputExt) throws IOException {
-		ExternalContentTransformation ect = invokePandoc(document, outputExt);
+	public static Path pandoc(Path document, String outputExt, Object... additionalArgs) throws IOException {
+		ExternalContentTransformation ect = invokePandoc(document, outputExt, additionalArgs);
 		ect.call();
 		return ect.getOutputFile();
 	}
@@ -179,17 +178,27 @@ public class HtmlContentTransformer implements ViewContentTransformer {
 	 * 
 	 * @param html The HTML file.
 	 * @param outputExt The output file format.
+	 * @param additionalArgs Other arguments to pass to Pandoc.
 	 * @return The transformation, prior to running it.
 	 * @throws IOException If invoking Pandoc fails.
 	 */
-	protected static ExternalContentTransformation invokePandoc(Path document, String outputExt) throws IOException {
+	protected static ExternalContentTransformation invokePandoc(Path document, String outputExt, Object... additionalArgs) throws IOException {
 		Path htmlAbsolute = document.toAbsolutePath();
 		String fileName = htmlAbsolute.getFileName().toString();
 		fileName = fileName.substring(0, fileName.lastIndexOf('.')+1);
 		Path outputLocation = htmlAbsolute.getParent().resolve(fileName + outputExt);
-		return new ExternalContentTransformation(
-			outputLocation, "pandoc", "-o", outputLocation, htmlAbsolute
-		);
+		Object[] basicArgs = {"-o", outputLocation, htmlAbsolute}, allArgs;
+		if (additionalArgs != null && additionalArgs.length > 0) {
+			allArgs = new Object[basicArgs.length + additionalArgs.length];
+			for (int i = 0; i < allArgs.length; i++) {
+				allArgs[i] = i < basicArgs.length ? basicArgs[i] : additionalArgs[i - basicArgs.length];
+			}
+		}
+		else {
+			allArgs = basicArgs;
+		}
+		
+		return new ExternalContentTransformation(outputLocation, "pandoc", allArgs);
 	}
 	
 	/**
@@ -216,7 +225,7 @@ public class HtmlContentTransformer implements ViewContentTransformer {
 		fileName = fileName.substring(0, fileName.lastIndexOf('.')+1);
 		Path pdfLocation = htmlAbsolute.getParent().resolve(fileName + "pdf");
 		ExternalContentTransformation ect = new ExternalContentTransformation(
-			pdfLocation, "wkhtmltopdf", document, pdfLocation
+			pdfLocation, "wkhtmltopdf", "--enable-local-file-access", document, pdfLocation
 		);
 		ect.call();
 		return pdfLocation;

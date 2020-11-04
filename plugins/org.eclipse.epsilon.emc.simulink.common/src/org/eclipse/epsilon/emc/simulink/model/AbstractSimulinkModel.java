@@ -14,12 +14,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+
 import org.eclipse.epsilon.common.util.StringProperties;
 import org.eclipse.epsilon.common.util.StringUtil;
 import org.eclipse.epsilon.emc.simulink.engine.MatlabEngine;
 import org.eclipse.epsilon.emc.simulink.engine.MatlabEnginePool;
 import org.eclipse.epsilon.emc.simulink.exception.MatlabException;
-import org.eclipse.epsilon.emc.simulink.exception.MatlabRuntimeException;
 import org.eclipse.epsilon.emc.simulink.introspection.java.SimulinkPropertyGetter;
 import org.eclipse.epsilon.emc.simulink.introspection.java.SimulinkPropertySetter;
 import org.eclipse.epsilon.emc.simulink.model.element.ISimulinkModelElement;
@@ -44,14 +44,14 @@ public abstract class AbstractSimulinkModel extends CachedModel<ISimulinkModelEl
 	public static final String PROPERTY_MATLAB_PATH = "matlab_path";
 	public static final String PROPERTY_LIBRARY_PATH = "library_path";
 	public static final String PROPERTY_ENGINE_JAR_PATH = "engine_jar_path";
-	//public static final String PROPERTY_MUST_CONNECT = "must_connect";
-	//public static final String PROPERTY_ENGINE_SHARED_SESSION_NAME = "engine_session_to_connect_to";
 	public static final String PROPERTY_SIMULINK_PROJECT= "project";
 	public static final String PROPERTY_OPEN_ON_LOAD= "openOnLoad";
 	public static final String PROPERTY_CLOSE_ON_DISPOSE = "closeOnDispose";
 	public static final String PROPERTY_ENABLE_TRY_CATCH = "tryCatch";
 	public static final String PROPERTY_CURRENT_SIMULINK_PROJECT= "use_current_project";
 	public static final String PROPERTY_ENGINE_POOL_SIZE = "engine_max_pool_size";
+	public static final String PROPERTY_TRACK_API = "track_API";
+
 	public static final String ENV_MATLAB_PATH = ENV_PREFIX + PROPERTY_MATLAB_PATH;
 	public static final String ENV_LIBRARY_PATH = ENV_PREFIX + PROPERTY_LIBRARY_PATH;
 	public static final String ENV_ENGINE_JAR_PATH = ENV_PREFIX + PROPERTY_ENGINE_JAR_PATH;
@@ -61,21 +61,30 @@ public abstract class AbstractSimulinkModel extends CachedModel<ISimulinkModelEl
 	protected String libraryPath;
 	protected String engineJarPath;
 	protected MatlabEngine engine;
-	//protected Boolean mustConnect = false;
-	//protected String engineSharedSessionName = "";
 	protected File simulinkProject;
 	protected boolean useCurrentProject = false;
 	protected boolean openOnLoad = false;
 	protected boolean closeOnDispose = false;
-	protected boolean enableTryCatch = false;
+	protected boolean enableTryCatch = true;
 	protected Integer enginePoolSize = 2;
-	
+	boolean trackApi = false;
+
 	protected File workingDir = null;
 	protected List<String> paths = new ArrayList<>();
 
 	public AbstractSimulinkModel() {
 		propertyGetter = new SimulinkPropertyGetter();
 		propertySetter = new SimulinkPropertySetter();
+	}
+	
+	public void flush() throws EolRuntimeException {
+		if (engine != null) {
+			try {				
+				engine.flush();
+			} catch (Exception e) {
+				throw new EolRuntimeException(e);
+			}
+		}
 	}
 	
 	@Override
@@ -85,6 +94,7 @@ public abstract class AbstractSimulinkModel extends CachedModel<ISimulinkModelEl
 			
 			if (isUseCurrentProject()) {
 				engine = MatlabEnginePool.getInstance().getEngineForProject("current");
+				engine.trackApi(trackApi);
 				engine.enableTryCatch(isEnableTryCatch());
 				engine.addModel(this);
 			} else {
@@ -99,11 +109,14 @@ public abstract class AbstractSimulinkModel extends CachedModel<ISimulinkModelEl
 			}
 			if (engine == null) {				
 				engine = MatlabEnginePool.getInstance().getMatlabEngine();
+				engine.enableTryCatch(isEnableTryCatch());
+				engine.trackApi(trackApi);
 			}
 			if (!isUseCurrentProject() && getProject() == null) {
 				if ((getWorkingDir() != null && getWorkingDir().exists())) {
 					try {
 						engine.eval("cd '?';", getWorkingDir());
+						engine.flush();
 					} catch (Exception ex) {
 						ex.printStackTrace();
 					}
@@ -126,8 +139,9 @@ public abstract class AbstractSimulinkModel extends CachedModel<ISimulinkModelEl
 			closeMatlabModel();
 		}
 		try {
+			engine.flush();
 			engine.release(this);
-		} catch (MatlabRuntimeException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -201,6 +215,16 @@ public abstract class AbstractSimulinkModel extends CachedModel<ISimulinkModelEl
 	@Override
 	public void setMatlabPath(String matlabPath) {
 		this.matlabPath = matlabPath;
+	}
+	
+	@Override
+	public void setTrackApi(boolean track){
+		this.trackApi = track;
+	}
+	
+	@Override
+	public boolean isTrackApi() {
+		return trackApi;
 	}
 	
 	/*

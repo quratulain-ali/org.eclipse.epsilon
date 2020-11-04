@@ -21,6 +21,7 @@ import org.eclipse.epsilon.eol.types.EolCollectionType;
 import org.eclipse.epsilon.eol.types.EolMapType;
 import org.eclipse.epsilon.eol.types.EolModelElementType;
 import org.eclipse.epsilon.eol.types.EolPrimitiveType;
+import org.eclipse.epsilon.eol.types.EolTupleType;
 import org.eclipse.epsilon.eol.types.EolType;
 
 public abstract class TypeInitialiser extends Expression {
@@ -39,21 +40,16 @@ public abstract class TypeInitialiser extends Expression {
 			
 			ExecutorFactory executorFactory = context.getExecutorFactory();
 			
-			ArrayList<Object> parameterValues = new ArrayList<>();
+			final ArrayList<Object> parameterValues = new ArrayList<>();
 			for (Expression parameter : parameters) {
-				if (!(parameter.getClass() == EqualsOperatorExpression.class)) {
+				if (parameter.getClass() != EqualsOperatorExpression.class) {
 					parameterValues.add(executorFactory.execute(parameter, context));
 				}
 			}
 			
 			Object instance = null;
 			
-			if (parameterValues.isEmpty()) {
-				instance = type.createInstance();
-			}
-			else {
-				instance = type.createInstance(parameterValues);
-			}
+			instance = parameterValues.isEmpty() ? type.createInstance() : type.createInstance(parameterValues);
 			
 			for (Expression parameter : parameters) {
 				if (parameter.getClass() == EqualsOperatorExpression.class) {
@@ -82,7 +78,12 @@ public abstract class TypeInitialiser extends Expression {
 			}
 			return instance;
 		}
+		else if (type instanceof EolTupleType) {
+			return type.createInstance();
+		}
 		return null;
 	}
+	
+	public abstract void accept(IEolVisitor visitor);
 	
 }

@@ -89,9 +89,14 @@ public class AssignmentStatement extends Statement {
 			}
 		}
 		else {
-			Object targetExpressionResult = targetExpression instanceof NameExpression ?
-				((NameExpression) targetExpression).execute(context, true) :
-				executorFactory.execute(targetExpression, context);
+			Object targetExpressionResult;
+			if (targetExpression instanceof NameExpression) {
+				NameExpression ne = (NameExpression) targetExpression;
+				targetExpressionResult = ne.execute(context, true);
+			}
+			else {
+				targetExpressionResult = executorFactory.execute(targetExpression, context);
+			}
 			
 			if (targetExpressionResult instanceof Variable) {
 				Variable variable = (Variable) targetExpressionResult;
@@ -154,6 +159,7 @@ public class AssignmentStatement extends Statement {
 	public void setValueExpression(Expression valueExpression) {
 		this.valueExpression = valueExpression;
 	}
+
 	public boolean isCompatible(EolType targetType, EolType valueType) {
 
 		boolean ok = false;
@@ -257,5 +263,10 @@ public class AssignmentStatement extends Statement {
 					return true;
 			}
 		return false;
+	}
+
+	
+	public void accept(IEolVisitor visitor) {
+		visitor.visit(this);
 	}
 }
