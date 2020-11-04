@@ -5,11 +5,9 @@ Bundle-SymbolicName: org.eclipse.epsilon.eol.dt;singleton:=true
 Bundle-Version: 2.3.0.qualifier
 Bundle-Vendor: Eclipse Modeling Project
 Bundle-Activator: org.eclipse.epsilon.eol.dt.EolPlugin
-Require-Bundle: org.eclipse.jface.text,
- org.eclipse.ui.console,
- org.eclipse.ui.workbench.texteditor,
- org.eclipse.ui.ide,
- org.eclipse.epsilon.common.dt
+Require-Bundle: org.eclipse.epsilon.common.dt,
+ org.eclipse.jface.text,
+ org.eclipse.ui.ide
 Bundle-ActivationPolicy: lazy
 Export-Package: org.eclipse.epsilon.eol.dt,
  org.eclipse.epsilon.eol.dt.debug,
@@ -22,5 +20,4 @@ Export-Package: org.eclipse.epsilon.eol.dt,
  org.eclipse.epsilon.eol.dt.wizards
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: org.eclipse.epsilon.eol.dt
-Import-Package: org.eclipse.epsilon.emc.emf,
- org.eclipse.epsilon.emc.mysql
+Import-Package: org.eclipse.epsilon.emc.emf

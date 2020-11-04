@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: StaticAnalyser
+Bundle-SymbolicName: org.eclipse.epsilon.eol.staticanalyser
+Bundle-Version: 1.0.0.qualifier
+Automatic-Module-Name: org.eclipse.epsilon.eol.staticanalyser
+Bundle-RequiredExecutionEnvironment: JavaSE-14
