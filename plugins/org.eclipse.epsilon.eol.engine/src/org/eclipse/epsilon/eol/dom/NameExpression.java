@@ -96,6 +96,11 @@ public class NameExpression extends Expression {
 		return execute(context, false);
 	}
 	
+	public Variable getVariable(String name, IEolCompilationContext context ) {
+		Variable variable = context.getFrameStack().get(name);
+		return variable;
+	}
+	
 	@Override
 	public void compile(IEolCompilationContext context) {
 		EolModelElementType modelElementType;
