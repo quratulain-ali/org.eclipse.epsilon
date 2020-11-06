@@ -21,7 +21,7 @@ public abstract class Expression extends AbstractExecutableModuleElement {
 	}
 	
 	public void setResolvedType(EolType resolvedType) {
-		this.resolvedType =resolvedType;
+		this.resolvedType = resolvedType;
 	}
 	
 	public boolean hasResolvedType() {
