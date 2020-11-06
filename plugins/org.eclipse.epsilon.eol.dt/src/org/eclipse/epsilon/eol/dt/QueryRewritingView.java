@@ -2,7 +2,6 @@ package org.eclipse.epsilon.eol.dt;
 
 import java.io.File;
 import org.eclipse.epsilon.emc.emf.SubEmfModelFactory;
-import org.eclipse.epsilon.emc.mysql.SubModelFactory;
 import org.eclipse.epsilon.eol.EolModule;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;

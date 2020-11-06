@@ -5,6 +5,7 @@ import java.util.List;
 import org.eclipse.epsilon.common.module.IModule;
 import org.eclipse.epsilon.common.module.IModuleValidator;
 import org.eclipse.epsilon.common.module.ModuleMarker;
+import org.eclipse.epsilon.common.module.String;
 import org.eclipse.epsilon.eol.dom.AbortStatement;
 import org.eclipse.epsilon.eol.dom.AndOperatorExpression;
 import org.eclipse.epsilon.eol.dom.AnnotationBlock;
@@ -437,15 +438,20 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 	}
 
 	@Override
-	public List<ModuleMarker> validate(IModule module) {
+	public org.eclipse.epsilon.common.module.List<ModuleMarker> validate(IModule module) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public String getMarkerType() {
+	public java.lang.String getMarkerType() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
+	public org.eclipse.epsilon.common.module.List<ModuleMarker> validate(IModule module) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
