@@ -83,6 +83,8 @@ public interface IEolVisitor {
 	public void visit(NotOperatorExpression notOperatorExpression);
 
 	public void visit(Operation operation);
+	
+	public void visit(OperatorExpression operatorExpression);
 
 	public void visit(OperationCallExpression operationCallExpression);
 

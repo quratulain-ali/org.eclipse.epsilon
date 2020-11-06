@@ -11,12 +11,7 @@
 package org.eclipse.epsilon.eol;
 
 import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.*;
-
-import javax.xml.crypto.dsig.keyinfo.RetrievalMethod;
 
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.Lexer;
@@ -41,7 +36,7 @@ import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.eol.models.IRewriter;
 import org.eclipse.epsilon.eol.parse.EolLexer;
 import org.eclipse.epsilon.eol.parse.EolParser;
-import org.eclipse.epsilon.eol.parse.Eol_EolParserRules.returnStatement_return;
+
 import org.eclipse.epsilon.eol.tools.EolSystem;
 
 public class EolModule extends AbstractModule implements IEolModule {
@@ -58,7 +53,7 @@ public class EolModule extends AbstractModule implements IEolModule {
 	private IEolModule parent;
 	private BuiltinEolModule builtinModule;
 	private IEolCompilationContext compileContext;
-	public String rewritedQuery;
+	public ArrayList<String> rewritedQuery= new ArrayList<>();
 	
 	/**
 	 * The type of {@link #context} when using {@link #getContext()} and {@link #setContext(IEolContext)}.
@@ -532,43 +527,44 @@ public class EolModule extends AbstractModule implements IEolModule {
 	}
 	@Override
 	public List<ModuleMarker> compile() {
+		//new EolStaticAnalyser(this);
 		preCompile();
-		mainCompile();
-		postCompile();
+//		mainCompile();
+//		postCompile();
 		return compileContext.getMarkers();
 		
 	}
-	public List<ModuleMarker> mainCompile(){
-		compileContext = getCompilationContext();
-
-		if (main != null) {
-			main.compile(compileContext);
-		}
-
-		for (Operation operation : getDeclaredOperations()) {
-			operation.compile(compileContext);
-		}
-
-		
-		return compileContext.getMarkers();
-	}
-	public List<ModuleMarker> postCompile(){
-		
-		compileContext = getCompilationContext();
-
-		if (!(this instanceof BuiltinEolModule))
-			operations.removeAll(builtinModule.getDeclaredOperations());
-		
-		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
-
-			IModel model = modelDeclaration.getModel();
-			if(model instanceof IRewriter)
-			{
-				((IRewriter)model).rewrite(this, compileContext);
-			}
-		}
-		return compileContext.getMarkers();
-	}
+//	public List<ModuleMarker> mainCompile(){
+//		compileContext = getCompilationContext();
+//
+//		if (main != null) {
+//			main.compile(compileContext);
+//		}
+//
+//		for (Operation operation : getDeclaredOperations()) {
+//			operation.compile(compileContext);
+//		}
+//
+//		
+//		return compileContext.getMarkers();
+//	}
+//	public List<ModuleMarker> postCompile(){
+//		
+//		compileContext = getCompilationContext();
+//
+//		if (!(this instanceof BuiltinEolModule))
+//			operations.removeAll(builtinModule.getDeclaredOperations());
+//		
+//		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
+//
+//			IModel model = modelDeclaration.getModel();
+//			if(model instanceof IRewriter)
+//			{
+//				((IRewriter)model).rewrite(this, compileContext);
+//			}
+//		}
+//		return compileContext.getMarkers();
+//	}
 	
 	@Override
 	public List<Statement> getPostOperationStatements() {
@@ -634,13 +630,13 @@ public class EolModule extends AbstractModule implements IEolModule {
 	}
 
 	@Override
-	public void setText(String text) {
-		rewritedQuery = text;
+	public void addTranslatedQueries(String text) {
+		rewritedQuery.add(text);
 		
 	}
 
 	@Override
-	public String getText() {
+	public ArrayList<String> getTranslatedQueries() {
 		return rewritedQuery;
 	}
 }

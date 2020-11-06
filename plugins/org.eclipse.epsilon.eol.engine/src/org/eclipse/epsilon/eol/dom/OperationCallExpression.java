@@ -47,15 +47,15 @@ public class OperationCallExpression extends FeatureCallExpression {
 	// using when the function is a target
 	// expression
 	//public ArrayList<BuiltinOperations> builtin = new ArrayList<BuiltinOperations>(0); // Importing from eol file
-	boolean success = false; // for find at least one perfect match/ It doesn't change for every mismatch
+	boolean matched = false; // for find at least one perfect match/ It doesn't change for every mismatch
 	// because one match is enough
 	protected boolean contextless;
 	protected int count = 0;
 	protected EolType contextType = EolAnyType.Instance;
 
-int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=parameters type
-// mismatch 4 =undefined Operation // 5 = No-type as target // 6 = No-type as
-// parameter
+	int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=parameters type
+	// mismatch 4 =undefined Operation // 5 = No-type as target // 6 = No-type as
+	// parameter
 	
 	public OperationCallExpression() {
 		this(false);
@@ -304,7 +304,7 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 
 			
 				//
-			if (!contextless && !success) {
+			if (!contextless && !matched) {
 
 				contextType = targetExpression.getResolvedType();
 				op.contextTypeExpression.compile(context);
@@ -346,7 +346,7 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 					}
 
 					else {
-						success = false;
+						matched = false;
 						errorCode = 5;
 						goForward = false;
 						break;
@@ -355,7 +355,7 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 
 				else {
 				
-					success = false;
+					matched = false;
 					errorCode = 1;
 					goForward = false;
 				}
@@ -376,7 +376,7 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 
 							parameterExpression.getTypeExpression().compile(context);
 							if (parameterExpressions.get(index) instanceof OperationCallExpression
-									&& ((OperationCallExpression) parameterExpressions.get(index)).success) {
+									&& ((OperationCallExpression) parameterExpressions.get(index)).matched) {
 
 								ArrayList<EolType> matchTypes = new ArrayList<EolType>();
 								matchTypes = ((OperationCallExpression) parameterExpressions
@@ -403,12 +403,12 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 							EolType provPrameter = parameterExpressions.get(index).getResolvedType();
 
 							if (isCompatible(reqParameter, provPrameter)) {
-								success = true;
+								matched = true;
 								successMatch = true;
 								errorCode = 0;
 
 							} else if (canBeCompatible(reqParameter, provPrameter)) {
-								success = true;
+								matched = true;
 								successMatch = true;
 								context.addWarningMarker(nameExpression, " Parameter " + provPrameter
 										+ " might not match, as it requires " + reqParameter);
@@ -416,14 +416,14 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 								// Bcz if we found the perfect match before, no need to make success false at
 								// the end
 								errorCode = 3;
-								success = false;
+								matched = false;
 								break;
 							}
 
 							index++;
 						}
 
-						if (success) {
+						if (matched) {
 							if (!(op.returnFlag))
 								resolvedType = EolNoType.Instance;
 							else {
@@ -436,7 +436,7 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 
 					}
 				} else if (parameterExpressions.size() == 0 && errorCode == 0) {
-					success = true;
+					matched = true;
 					successMatch = true;
 					
 					if (successMatch) {
@@ -458,7 +458,7 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 				matchedoperations.add(op);
 		}
 
-		if (!success || operations.size() == 0)
+		if (!matched || operations.size() == 0)
 			switch (errorCode) {
 			case 1:
 				context.addErrorMarker(targetExpression,
@@ -605,8 +605,23 @@ int errorCode = 0; // 1 = mismatch Target 2=number of parameters mismatch 3=para
 	}
 
 	public ArrayList<Operation> getOperations() {
-		// TODO Auto-generated method stub
 		return operations;
+	}
+	
+	public boolean isMatched() {
+		return matched;
+	} 
+	
+	public List<Operation> getMatchedOperations() {
+		return matchedoperations;
+	}
+	
+	public List<EolType> getMatchedReturnTypes() {
+		return matchedReturnType;
+	}
+	
+	public void setMatched(boolean matched) {
+		this.matched = matched;
 	}
 	
 	public void accept(IEolVisitor visitor) {

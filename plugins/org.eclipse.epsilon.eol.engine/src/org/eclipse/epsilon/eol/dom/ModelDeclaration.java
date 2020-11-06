@@ -116,9 +116,16 @@ public class ModelDeclaration extends AbstractModuleElement implements ICompilab
 		return metamodel;
 	}
 	
+	public void setMetamodel(Metamodel metamodel) {
+		 this.metamodel = metamodel;
+	}
 
 	public IModel getModel() {
 		return model;
+	}
+	
+	public void setModel(IModel model) {
+		this.model = model;
 	}
 
 	public void accept(IEolVisitor visitor) {

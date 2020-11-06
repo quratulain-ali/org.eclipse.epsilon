@@ -88,7 +88,13 @@ public class Parameter extends AbstractModuleElement implements ICompilableModul
 		}
 		return type;
 	}
-
+	
+	public void setType(EolType type) {
+		this.type = type;
+	}
+	public EolType getType() {
+		return type;
+	}
 	/**
 	 * Clear any cached information. This is useful for running EUnit, which has to rerun
 	 * the same EOL script with different sets of models without reparsing it.
@@ -112,7 +118,7 @@ public class Parameter extends AbstractModuleElement implements ICompilableModul
 		
 	}
 	public EolType getCompilationType() {
-		if (typeExpression != null) return typeExpression.getCompilationType();
+		if (typeExpression != null) return typeExpression.getResolvedType();
 		else return EolAnyType.Instance;
 	}
 	

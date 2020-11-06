@@ -139,4 +139,8 @@ public abstract class OperatorExpression extends Expression {
 	public void setSecondOperand(Expression secondOperand) {
 		this.secondOperand = secondOperand;
 	}
+	
+	public void accept(IEolVisitor visitor) {
+		visitor.visit(this);
+	}
 }
