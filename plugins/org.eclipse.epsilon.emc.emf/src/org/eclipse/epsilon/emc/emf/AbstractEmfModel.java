@@ -205,7 +205,7 @@ public abstract class AbstractEmfModel extends CachedModel<EObject> {
 		return getAllFromModel(eClass::isInstance);
 	}
 	
-	public Object getIndexedAllOfKindFromModel(String kind, String field, String value) throws EolModelElementTypeNotFoundException {
+	public Object findByIndex(String kind, String field, String value) throws EolModelElementTypeNotFoundException {
 		
 		final EClass eClass = classForName(kind);
 		
