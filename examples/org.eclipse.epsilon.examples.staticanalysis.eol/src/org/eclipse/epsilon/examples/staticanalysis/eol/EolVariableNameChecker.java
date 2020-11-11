@@ -185,6 +185,7 @@ public class EolVariableNameChecker implements IModuleValidator, IEolVisitor {
 
 	public void visitOperatorExpression(OperatorExpression exp) {
 		exp.getFirstOperand().accept(this);
+		if(exp.getSecondOperand()!=null)
 		exp.getSecondOperand().accept(this);
 	}
 	
@@ -255,6 +256,7 @@ public class EolVariableNameChecker implements IModuleValidator, IEolVisitor {
 	public void visit(IfStatement ifStatement) {
 		ifStatement.getConditionExpression().accept(this);
 		ifStatement.getThenStatementBlock().accept(this);
+		if(ifStatement.getElseStatementBlock()!= null)
 		ifStatement.getElseStatementBlock().accept(this);
 	}
 
@@ -437,13 +439,5 @@ public class EolVariableNameChecker implements IModuleValidator, IEolVisitor {
 	public void visit(XorOperatorExpression xorOperatorExpression) {
 		visitOperatorExpression(xorOperatorExpression);
 	}
-
-	@Override
-	public void visit(OperatorExpression operatorExpression) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
 
 }
