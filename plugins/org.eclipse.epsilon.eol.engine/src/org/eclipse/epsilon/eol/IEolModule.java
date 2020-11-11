@@ -10,6 +10,7 @@
 package org.eclipse.epsilon.eol;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -54,9 +55,9 @@ public interface IEolModule extends IModule {
 	
 	void setContext(IEolContext context);
 	
-	void setText(String text);
+	void addTranslatedQueries(String text);
 	
-	String getText();
+	ArrayList<String> getTranslatedQueries();
 	
 	IEolCompilationContext getCompilationContext();
 	
