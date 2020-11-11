@@ -7,16 +7,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
 **********************************************************************/
-package org.eclipse.epsilon.evl.dom;
+package org.eclipse.epsilon.egl.dom;
 
 import org.eclipse.epsilon.erl.dom.IErlVisitor;
 
-public interface IEvlVisitor extends IErlVisitor {
+public interface IEgxVisitor extends IErlVisitor {
 
-	public void visit(ConstraintContext constraintContext);
-
-	public void visit(Constraint constraint);
-
-	public void visit(Fix fix);
+	public void visit(GenerationRule rule);
 	
 }
