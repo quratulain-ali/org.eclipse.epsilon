@@ -10,6 +10,7 @@ import org.eclipse.epsilon.emc.emf.SubEmfModelFactory;
 import org.eclipse.epsilon.eol.EolModule;
 import org.eclipse.epsilon.eol.dom.ModelDeclaration;
 import org.eclipse.epsilon.eol.parse.EolUnparser;
+import org.eclipse.epsilon.eol.staticanalyser.EolStaticAnalyser;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -71,17 +72,18 @@ public class QueryRewritingView extends ViewPart {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		for(ModelDeclaration modeldeclaration: module.getDeclaredModelDeclarations()) {
-			
-			if(modeldeclaration.getDriverNameExpression().getName().equals("MySQL"))
-				module.getCompilationContext().setModelFactory(new SubModelFactory());
-			else
-				module.getCompilationContext().setModelFactory(new SubEmfModelFactory());
-		}
-		//module.compile();
-		//viewer.setInput(module.getTranslatedQueries());
-		String string = new EolUnparser().unparse(module);
-		viewer.setInput(Arrays.asList(string.split(System.lineSeparator())));
+//		for(ModelDeclaration modeldeclaration: module.getDeclaredModelDeclarations()) {
+//			
+//			if(modeldeclaration.getDriverNameExpression().getName().equals("MySQL"))
+//				module.getCompilationContext().setModelFactory(new SubModelFactory());
+//			else
+//				module.getCompilationContext().setModelFactory(new SubEmfModelFactory());
+//		}
+		module.compile();
+		new EolStaticAnalyser().validate(module);
+	    viewer.setInput(module.getTranslatedQueries());
+//		String string = new EolUnparser().unparse(module);
+//		viewer.setInput(Arrays.asList(string.split(System.lineSeparator())));
 	}
 
 	public class MyLabelProvider extends LabelProvider implements IColorProvider {
@@ -102,7 +104,7 @@ public class QueryRewritingView extends ViewPart {
 	
 	@Override
 	public void setFocus() {
-		label.setFocus();
+		//label.setFocus();
 
 	}
 	public IEditorPart getEditor() {
@@ -131,8 +133,9 @@ public class QueryRewritingView extends ViewPart {
 			else
 				module.getCompilationContext().setModelFactory(new SubEmfModelFactory());
 		}
-		String string = new EolUnparser().unparse(module);
-		viewer.setInput(Arrays.asList(string.split(System.lineSeparator())));
+		module.compile();
+		new EolStaticAnalyser().validate(module);
+		viewer.setInput(module.getTranslatedQueries());
 		}
 	
 

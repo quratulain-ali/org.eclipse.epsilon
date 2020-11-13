@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.epsilon.common.dt.editor.AbstractModuleEditor;
+import org.eclipse.epsilon.common.dt.editor.ModelTypeExtensionFactory;
 import org.eclipse.epsilon.common.module.IModule;
 import org.eclipse.epsilon.common.module.IModuleValidator;
 import org.eclipse.epsilon.common.module.ModuleElement;
@@ -14,8 +15,10 @@ import org.eclipse.epsilon.common.module.ModuleMarker;
 import org.eclipse.epsilon.common.module.ModuleMarker.Severity;
 import org.eclipse.epsilon.common.util.StringProperties;
 import org.eclipse.epsilon.common.util.StringUtil;
+import org.eclipse.epsilon.emc.emf.SubEmfModelFactory;
 import org.eclipse.epsilon.eol.BuiltinEolModule;
 import org.eclipse.epsilon.eol.EolModule;
+import org.eclipse.epsilon.eol.IEolModule;
 import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
 import org.eclipse.epsilon.eol.compile.m3.MetaClass;
 import org.eclipse.epsilon.eol.compile.m3.StructuralFeature;
@@ -1301,17 +1304,25 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 		
 		if (!(module instanceof BuiltinEolModule))
 			module.getOperations().removeAll(builtinModule.getDeclaredOperations());
-
+		
+		invokeRewriters(module);
+		return errors;
+	}
+	
+	public void invokeRewriters(IEolModule module) {
 		for (ModelDeclaration modelDeclaration : module.getDeclaredModelDeclarations()) {
+			
+		if(modelDeclaration.getDriverNameExpression().getName().equals("MySQL"))
+				module.getCompilationContext().setModelFactory(new ModelTypeExtensionFactory());
 
+			modelDeclaration.accept(this);
+			
 			IModel model = modelDeclaration.getModel();
 			if(model instanceof IRewriter)
 			{
 				((IRewriter)model).rewrite(module, context);
 			}
 		}
-
-		return errors;
 	}
 
 	@Override
