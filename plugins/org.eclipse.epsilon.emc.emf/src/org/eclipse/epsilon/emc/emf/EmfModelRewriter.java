@@ -2,6 +2,7 @@ package org.eclipse.epsilon.emc.emf;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -27,12 +28,14 @@ public class EmfModelRewriter extends EmfModel implements IRewriter{
 		List<Statement> statements=module.getMain().getStatements();
 		HashSet<String> optimisableOperations = new HashSet<String>(Arrays.asList("select"));
 		HashSet<String> allOperations = new HashSet<String>(Arrays.asList("all", "allInstances"));
+		HashMap<String, List<String>> indexedElements = new HashMap<>();
 		
 		for(Statement statement: statements) {
 			
 			List<ModuleElement> asts = statement.getChildren();
 			List<ModuleElement> decomposedAsts =new ArrayList<ModuleElement>();
 			int index = 0;
+			boolean indexExists = false;
 			for(ModuleElement ast: asts) {
 				if(ast instanceof FirstOrderOperationCallExpression)
 				{
@@ -50,7 +53,10 @@ public class EmfModelRewriter extends EmfModel implements IRewriter{
 								
 								NameExpression targetExp = new NameExpression(modelName);
 								NameExpression operationExp = new NameExpression("findByIndex");
-								StringLiteral p1 = new StringLiteral(model.getTypeName());
+								StringLiteral modelElementName = new StringLiteral(model.getTypeName());
+								
+								if(indexedElements.get(modelElementName.getValue())==null)
+								indexedElements.put(modelElementName.getValue(),new ArrayList<String>());
 								
 								Expression parameterAst = operation.getExpressions().get(0);
 								
@@ -59,12 +65,24 @@ public class EmfModelRewriter extends EmfModel implements IRewriter{
 									decomposedAsts = decomposeAST(parameterAst);
 									if(cascaded)
 									decomposedAsts.add(((OrOperatorExpression) parameterAst).getSecondOperand());
+									
 									for(ModuleElement firstOperand : decomposedAsts) {
-										StringLiteral p2 = new StringLiteral(((NameExpression)firstOperand.getChildren().get(0).getChildren().get(1)).getName());
-										StringLiteral p3 = new StringLiteral(((StringLiteral)firstOperand.getChildren().get(1)).getValue());
+										
+										StringLiteral indexField = new StringLiteral(((NameExpression)firstOperand.getChildren().get(0).getChildren().get(1)).getName());
+										StringLiteral indexValue = new StringLiteral(((StringLiteral)firstOperand.getChildren().get(1)).getValue());
+										
+										indexExists = false;
+										if(indexedElements.get(modelElementName.getValue()).contains(indexField.getValue())){
+											indexExists = true;
+										}
+										else
+											indexedElements.get(modelElementName.getValue()).add(indexField.getValue());
+										
 										module.addTranslatedQueries(targetExp.getName()+"."+operationExp.getName()
-										+"("+p1.getValue()+","+p2.getValue()+","+p3.getValue()+")");
-										OperationCallExpression rewritedQuery = new OperationCallExpression(targetExp, operationExp,p1,p2,p3);
+										+"("+modelElementName.getValue()+","+indexField.getValue()+","+indexValue.getValue()+")");
+										
+										
+										OperationCallExpression rewritedQuery = new OperationCallExpression(targetExp, operationExp,modelElementName,indexField,indexValue,new StringLiteral(String.valueOf(indexExists)));
 										
 										ast.getParent().getChildren().remove(index);
 										ast.getParent().getChildren().add(index, rewritedQuery);
@@ -73,12 +91,12 @@ public class EmfModelRewriter extends EmfModel implements IRewriter{
 								else
 								{
 								
-								StringLiteral p2 = new StringLiteral(((NameExpression)operation.getExpressions().get(0).getChildren().get(0).getChildren().get(1)).getName());
-								StringLiteral p3 = new StringLiteral(((StringLiteral)operation.getExpressions().get(0).getChildren().get(1)).getValue());
+								StringLiteral indexField = new StringLiteral(((NameExpression)operation.getExpressions().get(0).getChildren().get(0).getChildren().get(1)).getName());
+								StringLiteral indexValue = new StringLiteral(((StringLiteral)operation.getExpressions().get(0).getChildren().get(1)).getValue());
 								module.addTranslatedQueries(targetExp.getName()+"."+operationExp.getName()
-								+"("+p1.getValue()+","+p2.getValue()+","+p3.getValue()+")");
-								OperationCallExpression rewritedQuery = new OperationCallExpression(targetExp, operationExp,p1,p2,p3);
-								
+								+"("+modelElementName.getValue()+","+indexField.getValue()+","+indexValue.getValue()+")");
+								OperationCallExpression rewritedQuery = new OperationCallExpression(targetExp, operationExp,modelElementName,indexField,indexValue);
+								indexedElements.get(modelElementName.getValue()).add(indexField.getValue());
 								ast.getParent().getChildren().remove(index);
 								ast.getParent().getChildren().add(index, rewritedQuery);
 								}
