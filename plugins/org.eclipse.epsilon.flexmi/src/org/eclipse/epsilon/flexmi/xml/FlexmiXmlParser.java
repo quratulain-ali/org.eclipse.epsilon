@@ -27,6 +27,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.epsilon.flexmi.FlexmiDiagnostic;
+import org.eclipse.epsilon.flexmi.FlexmiParser;
 import org.eclipse.epsilon.flexmi.FlexmiResource;
 import org.eclipse.epsilon.flexmi.templates.Template;
 import org.eclipse.epsilon.flexmi.templates.TemplateFactory;
@@ -37,7 +38,7 @@ import org.w3c.dom.ProcessingInstruction;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
-public class PseudoSAXParser {
+public class FlexmiXmlParser implements FlexmiParser {
 	
 	protected FlexmiResource resource;
 	protected URI uri;
@@ -48,19 +49,8 @@ public class PseudoSAXParser {
 	
 	public void parse(FlexmiResource resource, URI uri, InputStream inputStream, Handler handler, boolean processDocument) throws Exception  {
 		
-		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-		TransformerFactory transformerFactory = TransformerFactory.newInstance();
-		Transformer transformer = transformerFactory.newTransformer();
-
-		DocumentBuilder docBuilder = documentBuilderFactory.newDocumentBuilder();
-		Document document = docBuilder.newDocument();
-		document.setStrictErrorChecking(false);
+		Document document = parse(inputStream);
 		
-		SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
-		SAXParser saxParser = saxParserFactory.newSAXParser();
-		XMLReader xmlReader = saxParser.getXMLReader();
-		
-		transformer.transform(new SAXSource(new LocationRecorder(xmlReader,document), new InputSource(inputStream)), new DOMResult(document));
 		this.resource = resource;
 		this.uri = uri;
 		
@@ -82,11 +72,72 @@ public class PseudoSAXParser {
 		visit(document, handler);
 		if (processDocument) handler.endDocument(document);
 	}
+	
+	protected Document parse(InputStream inputStream) throws Exception {
+		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+		TransformerFactory transformerFactory = TransformerFactory.newInstance();
+		Transformer transformer = transformerFactory.newTransformer();
 
+		DocumentBuilder docBuilder = documentBuilderFactory.newDocumentBuilder();
+		Document document = docBuilder.newDocument();
+		document.setStrictErrorChecking(false);
+		
+		SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+		SAXParser saxParser = saxParserFactory.newSAXParser();
+		XMLReader xmlReader = saxParser.getXMLReader();
+		
+		transformer.transform(new SAXSource(new LocationRecorder(xmlReader,document), new InputSource(inputStream)), new DOMResult(document));
+		return document;
+	}
+	
 	protected void visit(Node node, Handler handler) throws Exception {
 		Template template = null;
-		
-		if (node instanceof Element) {
+
+		if (node instanceof ProcessingInstruction) {
+			ProcessingInstruction processingInstruction = (ProcessingInstruction) node;
+			String key = processingInstruction.getTarget();
+			String value = processingInstruction.getData();
+			
+			if (key.equalsIgnoreCase("include")) {
+				try {
+					URI includedURI = URI.createURI(value).resolve(uri);
+					InputStream includedInputStream = resource.getResourceSet().getURIConverter().createInputStream(includedURI);
+					resource.startProcessingFragment(includedURI);
+					new FlexmiXmlParser().parse(resource, includedURI, includedInputStream, handler, false);
+					resource.endProcessingFragment();
+				}
+				catch (Exception ex) {
+					resource.getWarnings().add(new FlexmiDiagnostic(ex.getMessage(), uri, resource.getLineNumber(processingInstruction)));
+				}
+			}
+			else if (key.equalsIgnoreCase("import")) {
+				try {
+					URI importedURI = URI.createURI(value).resolve(uri);
+					Resource importedResource = resource.getResourceSet().getResource(importedURI, false);
+					if (importedResource == null) {
+						importedResource = resource.getResourceSet().createResource(importedURI);
+						if (!importedResource.isLoaded()) importedResource.load(null);
+						if (importedResource instanceof FlexmiResource) {
+							((FlexmiResource) importedResource).setImportedFrom(resource);
+						}
+					}
+					else if (!resource.getResourceSet().getResources().contains(importedResource)){
+						// e.g. importing a metamodel in the EPackage.Registry
+						Resource copy = new ResourceImpl(importedURI);
+						copy.getContents().addAll(EcoreUtil.copyAll(importedResource.getContents()));
+						resource.getResourceSet().getResources().add(copy);
+					}
+					
+				}
+				catch (Exception ex) {
+					resource.getWarnings().add(new FlexmiDiagnostic(ex.getMessage(), uri, resource.getLineNumber(processingInstruction)));					
+				}
+			}
+			else {
+				handler.processingInstruction((ProcessingInstruction) node);
+			}
+		}
+		else if (node instanceof Element) {
 			Element element = (Element) node;
 			if (!isFlexmiRootNode(element)) {
 				String templateName = element.getNodeName();
@@ -122,50 +173,6 @@ public class PseudoSAXParser {
 				if (template == null) {
 					handler.startElement(element);
 				}			
-			}
-		}
-		if (node instanceof ProcessingInstruction) {
-			ProcessingInstruction processingInstruction = (ProcessingInstruction) node;
-			String key = processingInstruction.getTarget();
-			String value = processingInstruction.getData();
-			
-			if (key.equalsIgnoreCase("include")) {
-				try {
-					URI includedURI = URI.createURI(value).resolve(uri);
-					InputStream includedInputStream = resource.getResourceSet().getURIConverter().createInputStream(includedURI);
-					resource.startProcessingFragment(includedURI);
-					new PseudoSAXParser().parse(resource, includedURI, includedInputStream, handler, false);
-					resource.endProcessingFragment();
-				}
-				catch (Exception ex) {
-					resource.getWarnings().add(new FlexmiDiagnostic(ex.getMessage(), uri, resource.getLineNumber(processingInstruction)));
-				}
-			}
-			else if (key.equalsIgnoreCase("import")) {
-				try {
-					URI importedURI = URI.createURI(value).resolve(uri);
-					Resource importedResource = resource.getResourceSet().getResource(importedURI, false);
-					if (importedResource == null) {
-						importedResource = resource.getResourceSet().createResource(importedURI);
-						if (!importedResource.isLoaded()) importedResource.load(null);
-						if (importedResource instanceof FlexmiResource) {
-							((FlexmiResource) importedResource).setImportedFrom(resource);
-						}
-					}
-					else if (!resource.getResourceSet().getResources().contains(importedResource)){
-						// e.g. importing a metamodel in the EPackage.Registry
-						Resource copy = new ResourceImpl(importedURI);
-						copy.getContents().addAll(EcoreUtil.copyAll(importedResource.getContents()));
-						resource.getResourceSet().getResources().add(copy);
-					}
-					
-				}
-				catch (Exception ex) {
-					resource.getWarnings().add(new FlexmiDiagnostic(ex.getMessage(), uri, resource.getLineNumber(processingInstruction)));					
-				}
-			}
-			else {
-				handler.processingInstruction((ProcessingInstruction) node);
 			}
 		}
 		
