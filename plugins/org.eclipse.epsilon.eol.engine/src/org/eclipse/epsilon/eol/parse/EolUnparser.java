@@ -677,5 +677,11 @@ public class EolUnparser implements IEolVisitor {
 			annotatableModuleElement.getAnnotationBlock().accept(this);
 		}
 	}
+
+	@Override
+	public void visit(OperatorExpression operatorExpression) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

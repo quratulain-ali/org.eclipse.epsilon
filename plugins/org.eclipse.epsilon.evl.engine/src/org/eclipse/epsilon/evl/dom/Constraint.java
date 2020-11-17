@@ -300,7 +300,28 @@ public class Constraint extends NamedRule implements IExecutableModuleElementPar
 
 	@Override
 	public void compile(IEolCompilationContext context) {
-		// TODO Auto-generated method stub
+		ConstraintContext cc = (ConstraintContext)this.getParent();
+		context.getFrameStack().put(new Variable("self",cc.getTypeExpression().getResolvedType()));
+		 
+			
+		if (guardBlock!=null)
+			guardBlock.compile(context);
+		
+		if (checkBlock!=null)
+			checkBlock.compile(context);
+		
+		if (messageBlock!=null)
+			messageBlock.compile(context);
+		
+		for (Fix f : fixes)
+		{
+			if (f.bodyBlock!=null)
+			f.bodyBlock.compile(context);
+			if (f.guardBlock!=null)
+			f.guardBlock.compile(context);
+			if (f.titleBlock!=null)
+			f.titleBlock.compile(context); // Is it necessary?
+		}	
 		
 	}
 }

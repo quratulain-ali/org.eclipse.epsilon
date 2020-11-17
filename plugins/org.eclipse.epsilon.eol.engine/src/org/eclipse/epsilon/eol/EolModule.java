@@ -530,32 +530,32 @@ public class EolModule extends AbstractModule implements IEolModule {
 	public List<ModuleMarker> compile() {
 		//new EolStaticAnalyser(this);
 		preCompile();
-//		mainCompile();
-//		postCompile();
+		mainCompile();
+		postCompile();
 		return compileContext.getMarkers();
 		
 	}
-//	public List<ModuleMarker> mainCompile(){
-//		compileContext = getCompilationContext();
-//
-//		if (main != null) {
-//			main.compile(compileContext);
-//		}
-//
-//		for (Operation operation : getDeclaredOperations()) {
-//			operation.compile(compileContext);
-//		}
-//
-//		
-//		return compileContext.getMarkers();
-//	}
-//	public List<ModuleMarker> postCompile(){
-//		
-//		compileContext = getCompilationContext();
-//
-//		if (!(this instanceof BuiltinEolModule))
-//			operations.removeAll(builtinModule.getDeclaredOperations());
-//		
+	public List<ModuleMarker> mainCompile(){
+		compileContext = getCompilationContext();
+
+		if (main != null) {
+			main.compile(compileContext);
+		}
+
+		for (Operation operation : getDeclaredOperations()) {
+			operation.compile(compileContext);
+		}
+
+		
+		return compileContext.getMarkers();
+	}
+	public List<ModuleMarker> postCompile(){
+		
+		compileContext = getCompilationContext();
+
+		if (!(this instanceof BuiltinEolModule))
+			operations.removeAll(builtinModule.getDeclaredOperations());
+		
 //		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
 //
 //			IModel model = modelDeclaration.getModel();
@@ -564,8 +564,8 @@ public class EolModule extends AbstractModule implements IEolModule {
 //				((IRewriter)model).rewrite(this, compileContext);
 //			}
 //		}
-//		return compileContext.getMarkers();
-//	}
+		return compileContext.getMarkers();
+	}
 	
 	@Override
 	public List<Statement> getPostOperationStatements() {
@@ -630,14 +630,26 @@ public class EolModule extends AbstractModule implements IEolModule {
 		
 	}
 
-	@Override
+
 	public void addTranslatedQueries(String text) {
 		rewritedQuery.add(text);
 		
 	}
 
-	@Override
+	
 	public ArrayList<String> getTranslatedQueries() {
 		return rewritedQuery;
+	}
+
+	@Override
+	public void setText(String text) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String getText() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
