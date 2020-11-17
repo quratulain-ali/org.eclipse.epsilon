@@ -76,6 +76,8 @@ public abstract class AbstractEmfModel extends CachedModel<EObject> {
 	 */
 	boolean parallelAllOf;
 	
+	HashMap<String, HashMap> indices = new HashMap<>();
+	
 	public AbstractEmfModel() {
 		propertyGetter = new EmfPropertyGetter();
 		propertySetter = new EmfPropertySetter();
@@ -205,16 +207,29 @@ public abstract class AbstractEmfModel extends CachedModel<EObject> {
 		return getAllFromModel(eClass::isInstance);
 	}
 	
-	public Object getIndexedAllOfKindFromModel(String kind, String field, String value) throws EolModelElementTypeNotFoundException {
+	public Object findByIndex(String kind, String field, String value, boolean indexExists) throws EolModelElementTypeNotFoundException {
+		
+		if(indexExists){
+			return find(indices.get(kind), value);
+		}
+		else
+			return find(createIndex(kind, field), value);
+	}
+	
+	public HashMap<Object ,String> createIndex(String kind, String field) throws EolModelElementTypeNotFoundException {
 		
 		final EClass eClass = classForName(kind);
 		
-		HashMap<Object ,String> index=new HashMap<Object,String>();//Creating HashMap 
+		HashMap<Object ,String> index=new HashMap<Object,String>(); //Creating HashMap 
 		  
 		for (EObject s : getAllFromModel(eClass::isInstance)) {
 		        index.put(s.eGet(eClass.getEStructuralFeature(field)), getElementId(s));
 		   }
-		//System.out.println("Retrieved = "+getElementById(index.get(value)));
+		indices.put(kind, index);
+		return index;
+	}
+	
+   public Object find(HashMap<Object ,String> index, String value) throws EolModelElementTypeNotFoundException {
 		return getElementById(index.get(value));
 	}
 	
