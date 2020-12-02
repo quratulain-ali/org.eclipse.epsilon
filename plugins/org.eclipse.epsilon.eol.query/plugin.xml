@@ -8,5 +8,11 @@
              class="org.eclipse.epsilon.eol.query.QueryRewritingView"
              icon="icons/eol.png"/>
 </extension>
+	<extension
+         point="org.eclipse.epsilon.eol.dt.launchConfigurationExtension">
+      <launchConfigurationExtension
+            listener="org.eclipse.epsilon.eol.query.EolQueryRewriter">
+      </launchConfigurationExtension>
+   </extension>
 
 </plugin>

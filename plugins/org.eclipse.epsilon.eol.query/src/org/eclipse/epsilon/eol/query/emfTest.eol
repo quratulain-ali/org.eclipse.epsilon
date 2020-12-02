@@ -1,0 +1,40 @@
+model earth driver EMF{
+nsuri = "friends"
+};
+
+var check : Boolean = true;
+
+if(check){
+	earth!Person.all.select(b|b.name = "Judy").println();
+}
+else {
+	for(p in earth!Person.all) {
+		earth!Person.all.select(b|b.name = "Judy").println();
+	}
+}
+earth!Person.all.select(b|b.name = "Judy").println();
+
+var exists : Boolean = true;
+
+if(exists) {
+	if(exists) {
+		earth!Person.all.select(b|b.name = "Judy" or b.name = "Julie").println();
+	}
+	earth!Person.all.select(b|b.name = "Judy").println();
+}
+else {
+	if(exists) {
+		earth!Person.all.select(b|b.name = "Judy").println();
+	}
+	earth!Person.all.select(b|b.name = "Julie" ).println();
+}
+for (p in earth!Person.all) {
+	if(exists) {
+		earth!Person.all.select(b|b.name = "Judy").println();
+	}
+	earth!Person.all.select(b|b.name = "Judy").println();
+	earth!Person.all.select(b|b.name = "Julie" ).println();
+}
+
+earth!Person.all.select(b|b.name = "Monica").println();
+earth!Person.all.select(b|b.name = "Rachel" ).println();
