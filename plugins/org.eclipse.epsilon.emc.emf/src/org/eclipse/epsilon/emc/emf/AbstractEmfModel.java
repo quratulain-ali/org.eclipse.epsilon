@@ -207,9 +207,9 @@ public abstract class AbstractEmfModel extends CachedModel<EObject> {
 		return getAllFromModel(eClass::isInstance);
 	}
 	
-	public Object findByIndex(String kind, String field, String value, boolean indexExists) throws EolModelElementTypeNotFoundException {
+	public Object findByIndex(String kind, String field, String value, String indexExists) throws EolModelElementTypeNotFoundException {
 		
-		if(indexExists){
+		if(indexExists.equals("true")){
 			return find(indices.get(kind), value);
 		}
 		else

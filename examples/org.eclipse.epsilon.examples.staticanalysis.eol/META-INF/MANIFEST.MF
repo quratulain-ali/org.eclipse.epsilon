@@ -6,6 +6,5 @@ Bundle-Version: 1.0.0.qualifier
 Automatic-Module-Name: org.eclipse.epsilon.examples.staticanalysis.eol
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: org.eclipse.epsilon.common.dt,
- org.eclipse.epsilon.eol.dt,
  org.eclipse.epsilon.eol.dt
 Export-Package: org.eclipse.epsilon.examples.staticanalysis.eol
