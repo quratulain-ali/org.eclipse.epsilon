@@ -53,7 +53,6 @@ public class EolModule extends AbstractModule implements IEolModule {
 	private IEolModule parent;
 	private BuiltinEolModule builtinModule;
 	private IEolCompilationContext compileContext;
-	public ArrayList<String> rewritedQuery= new ArrayList<>();
 	
 	/**
 	 * The type of {@link #context} when using {@link #getContext()} and {@link #setContext(IEolContext)}.
@@ -527,44 +526,44 @@ public class EolModule extends AbstractModule implements IEolModule {
 	}
 	@Override
 	public List<ModuleMarker> compile() {
-		//new EolStaticAnalyser(this);
-		preCompile();
+		compileContext = getCompilationContext();
+//		preCompile();
 //		mainCompile();
 //		postCompile();
 		return compileContext.getMarkers();
 		
 	}
-//	public List<ModuleMarker> mainCompile(){
-//		compileContext = getCompilationContext();
-//
-//		if (main != null) {
-//			main.compile(compileContext);
-//		}
-//
-//		for (Operation operation : getDeclaredOperations()) {
-//			operation.compile(compileContext);
-//		}
-//
-//		
-//		return compileContext.getMarkers();
-//	}
-//	public List<ModuleMarker> postCompile(){
-//		
-//		compileContext = getCompilationContext();
-//
-//		if (!(this instanceof BuiltinEolModule))
-//			operations.removeAll(builtinModule.getDeclaredOperations());
-//		
-//		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
-//
-//			IModel model = modelDeclaration.getModel();
-//			if(model instanceof IRewriter)
-//			{
-//				((IRewriter)model).rewrite(this, compileContext);
-//			}
-//		}
-//		return compileContext.getMarkers();
-//	}
+	public List<ModuleMarker> mainCompile(){
+		compileContext = getCompilationContext();
+
+		if (main != null) {
+			main.compile(compileContext);
+		}
+
+		for (Operation operation : getDeclaredOperations()) {
+			operation.compile(compileContext);
+		}
+
+		
+		return compileContext.getMarkers();
+	}
+	public List<ModuleMarker> postCompile(){
+		
+		compileContext = getCompilationContext();
+
+		if (!(this instanceof BuiltinEolModule))
+			operations.removeAll(builtinModule.getDeclaredOperations());
+		
+		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
+
+			IModel model = modelDeclaration.getModel();
+			if(model instanceof IRewriter)
+			{
+				((IRewriter)model).rewrite(this, compileContext);
+			}
+		}
+		return compileContext.getMarkers();
+	}
 	
 	@Override
 	public List<Statement> getPostOperationStatements() {
@@ -619,7 +618,6 @@ public class EolModule extends AbstractModule implements IEolModule {
 		
 		try {
 			//module.parse("if (true) var a = 0;");
-			module.parse(new File("./src/org/eclipse/epsilon/eol/emfTest.eol"));
 			module.compile();
 			module.execute();
 		} catch (Exception e) {
@@ -627,16 +625,5 @@ public class EolModule extends AbstractModule implements IEolModule {
 		}
 		
 		
-	}
-
-	@Override
-	public void addTranslatedQueries(String text) {
-		rewritedQuery.add(text);
-		
-	}
-
-	@Override
-	public ArrayList<String> getTranslatedQueries() {
-		return rewritedQuery;
 	}
 }

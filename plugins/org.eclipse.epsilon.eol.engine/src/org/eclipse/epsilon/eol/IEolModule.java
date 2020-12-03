@@ -55,10 +55,6 @@ public interface IEolModule extends IModule {
 	
 	void setContext(IEolContext context);
 	
-	void addTranslatedQueries(String text);
-	
-	ArrayList<String> getTranslatedQueries();
-	
 	IEolCompilationContext getCompilationContext();
 	
 	@Override
