@@ -9,6 +9,7 @@
 **********************************************************************/
 package org.eclipse.epsilon.ewl.dt.editor.outline;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.eol.dt.editor.outline.EolModuleContentProvider;
@@ -18,17 +19,19 @@ public class EwlModuleContentProvider extends EolModuleContentProvider {
 	
 	@Override
 	public List<ModuleElement> getVisibleChildren(ModuleElement moduleElement) {
-		List<ModuleElement> visible = super.getVisibleChildren(moduleElement);
 		
 		if (moduleElement instanceof IEwlModule) {
 			IEwlModule module = (IEwlModule) moduleElement;
+			List<ModuleElement> visible = new ArrayList<>();
 			visible.addAll(module.getImports());
 			visible.addAll(module.getDeclaredModelDeclarations());
 			visible.addAll(module.getWizards());
 			visible.addAll(module.getDeclaredOperations());
+			return visible;
 		}
-		
-		return visible;
+		else {
+			return super.getVisibleChildren(moduleElement);
+		}
 	}
 	
 }

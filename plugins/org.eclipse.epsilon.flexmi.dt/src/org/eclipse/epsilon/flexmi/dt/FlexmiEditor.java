@@ -11,6 +11,7 @@ package org.eclipse.epsilon.flexmi.dt;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,13 +32,19 @@ import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource.Diagnostic;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.epsilon.common.dt.util.LogUtil;
 import org.eclipse.epsilon.common.dt.util.ThemeChangeListener;
+import org.eclipse.epsilon.flexmi.FlexmiParseException;
 import org.eclipse.epsilon.flexmi.FlexmiResource;
 import org.eclipse.epsilon.flexmi.FlexmiResourceFactory;
 import org.eclipse.epsilon.flexmi.dt.xml.XMLConfiguration;
 import org.eclipse.epsilon.flexmi.dt.xml.XMLDocumentProvider;
 import org.eclipse.epsilon.flexmi.dt.yaml.YamlConfiguration;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentExtension3;
+import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
+import org.eclipse.jface.text.source.ICharacterPairMatcher;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.ISourceViewerExtension2;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
@@ -54,6 +61,7 @@ import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.MarkerUtilities;
+import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.xml.sax.SAXParseException;
 
@@ -133,10 +141,6 @@ public class FlexmiEditor extends TextEditor {
 	
 	public void refreshText() {
 		ISourceViewer viewer= getSourceViewer();
-		//if (!(viewer instanceof ISourceViewerExtension2))
-		//	return;
-		//((ISourceViewerExtension2)viewer).unconfigure();
-		
 		setSourceViewerConfiguration(createSourceViewerConfiguration(highlightingManager));
 		viewer.configure(getSourceViewerConfiguration());
 	}
@@ -144,6 +148,25 @@ public class FlexmiEditor extends TextEditor {
 	protected SourceViewerConfiguration createSourceViewerConfiguration(FlexmiHighlightingManager highlightingManager) {
 		if (flexmiFlavour == FlexmiFlavour.XML) return new XMLConfiguration(highlightingManager);
 		else return new YamlConfiguration(highlightingManager);
+	}
+	
+	public final static String EDITOR_MATCHING_BRACKETS = "matchingBrackets";
+	public final static String EDITOR_MATCHING_BRACKETS_COLOR= "matchingBracketsColor";
+	
+	@Override
+	protected void configureSourceViewerDecorationSupport(
+			SourceViewerDecorationSupport support) {
+
+		super.configureSourceViewerDecorationSupport(support);
+		char[] matchChars = {'[', ']', '{', '}'}; 		
+		ICharacterPairMatcher matcher = new DefaultCharacterPairMatcher(matchChars ,
+				IDocumentExtension3.DEFAULT_PARTITIONING);
+		support.setCharacterPairMatcher(matcher);
+		support.setMatchingCharacterPainterPreferenceKeys(EDITOR_MATCHING_BRACKETS,EDITOR_MATCHING_BRACKETS_COLOR);
+		
+		IPreferenceStore store = getPreferenceStore();
+		store.setDefault(EDITOR_MATCHING_BRACKETS, true);
+		store.setDefault(EDITOR_MATCHING_BRACKETS_COLOR, "128,128,128");
 	}
 	
 	private IDocumentProvider createDocumentProvider() {
@@ -178,18 +201,14 @@ public class FlexmiEditor extends TextEditor {
 		String code = doc.get();
 		
 		// Detect the flavour of the Flexmi document and refresh the configuration accordingly
-		boolean xmlFlavour = FlexmiResource.isXml(new BufferedInputStream(new ByteArrayInputStream(code.getBytes())));
-		if (xmlFlavour && flexmiFlavour == FlexmiFlavour.YAML) {
-			flexmiFlavour = FlexmiFlavour.XML;
-			Display.getDefault().asyncExec(() -> refreshText());
-		}
-		else if (!xmlFlavour && flexmiFlavour == FlexmiFlavour.XML) {
-			flexmiFlavour = FlexmiFlavour.YAML;
+		FlexmiFlavour detectedFlavour = FlexmiResource.isXml(new BufferedInputStream(new ByteArrayInputStream(code.getBytes()))) ? FlexmiFlavour.XML : FlexmiFlavour.YAML;
+		if ((detectedFlavour != flexmiFlavour)) {
+			flexmiFlavour = detectedFlavour;
 			Display.getDefault().asyncExec(() -> refreshText());
 		}
 		
 		code = code.replaceAll("\t", "  ");
-		SAXParseException parseException = null;
+		FlexmiParseException parseException = null;
 		
 		ResourceSet resourceSet = new ResourceSetImpl();
 		
@@ -199,18 +218,13 @@ public class FlexmiEditor extends TextEditor {
 			resource = (FlexmiResource) resourceSet.createResource(URI.createFileURI(file.getLocation().toOSString()));
 			resource.load(new ByteArrayInputStream(code.getBytes()), null);
 		}
-		catch (Exception ex) {
-				
-				if (ex instanceof RuntimeException) {
-					if (ex.getCause() instanceof TransformerException) {
-						if (ex.getCause().getCause() instanceof SAXParseException) {
-							parseException = (SAXParseException) ex.getCause().getCause();
-						}
-					}
-				}
-				else {
-					ex.printStackTrace();
-				}
+		catch (IOException ex) {
+			if (ex instanceof FlexmiParseException) {
+				parseException = (FlexmiParseException) ex;
+			}
+			else {
+				LogUtil.log(ex);
+			}
 		}
 		
 		final String markerType = "org.eclipse.epsilon.flexmi.dt.problemmarker";
