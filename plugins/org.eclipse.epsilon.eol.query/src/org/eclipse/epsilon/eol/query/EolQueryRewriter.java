@@ -33,7 +33,7 @@ public class EolQueryRewriter implements EpsilonLaunchConfigurationDelegateListe
 		
 		if (module.getMain() == null) return;
         
-		//new QueryRewriter().invokeRewriters(module);
+		new QueryRewriter().invokeRewriters(module);
 		
 		System.err.println(new EolUnparser().unparse((EolModule)module));
 		
