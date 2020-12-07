@@ -1,15 +1,20 @@
 package org.eclipse.epsilon.eol.query;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.eol.IEolModule;
 import org.eclipse.epsilon.eol.compile.context.IEolCompilationContext;
+import org.eclipse.epsilon.eol.dom.AssignmentStatement;
+import org.eclipse.epsilon.eol.dom.Expression;
 import org.eclipse.epsilon.eol.dom.ExpressionStatement;
+import org.eclipse.epsilon.eol.dom.FirstOrderOperationCallExpression;
 import org.eclipse.epsilon.eol.dom.ForStatement;
 import org.eclipse.epsilon.eol.dom.IfStatement;
 import org.eclipse.epsilon.eol.dom.NameExpression;
 import org.eclipse.epsilon.eol.dom.OperationCallExpression;
+import org.eclipse.epsilon.eol.dom.OperatorExpression;
 import org.eclipse.epsilon.eol.dom.PropertyCallExpression;
 import org.eclipse.epsilon.eol.dom.Statement;
 import org.eclipse.epsilon.eol.dom.StatementBlock;
@@ -23,10 +28,12 @@ public class MySqlQueryRewriter {
 	String tablename;
 	String features;
 	String conditions;
+	String conditionOperator;
 	String parameters;
 	String limit;
 	boolean optimisable;
 	boolean injectPrintln = false;
+	StringLiteral printParameter ;
 	
 	public void rewrite(IModel model, IEolModule module, IEolCompilationContext context) {
 
@@ -55,7 +62,19 @@ public class MySqlQueryRewriter {
 					List<Statement> elseStatements = ((IfStatement) statement).getElseStatementBlock().getStatements();
 					optimiseStatementBlock(model, module, elseStatements, context);
 				}
-			} else {
+			}
+			
+			else if (statement instanceof AssignmentStatement) {
+				Expression target = ((AssignmentStatement)statement).getTargetExpression();
+				Expression value = ((AssignmentStatement)statement).getValueExpression();
+				
+				List<ModuleElement> targetAsts = Arrays.asList(statement.getChildren().get(0));
+				optimiseAST(model, targetAsts, context);
+				
+				List<ModuleElement> valueAsts = Arrays.asList(statement.getChildren().get(1));
+				optimiseAST(model, valueAsts, context);		
+			}
+			else {
 				List<ModuleElement> asts = statement.getChildren();
 				optimiseAST(model, asts, context);
 			}
@@ -73,12 +92,14 @@ public class MySqlQueryRewriter {
 				OperationCallExpression rewritedQuery = new OperationCallExpression(target, operation, p);
 
 				if (injectPrintln) {
-					rewritedQuery = new OperationCallExpression(rewritedQuery, new NameExpression("println"));
+					rewritedQuery = new OperationCallExpression(rewritedQuery, new NameExpression("println"),printParameter);
 				}
 
 				if (ast.getParent() instanceof ExpressionStatement)
 					((ExpressionStatement) ast.getParent()).setExpression(rewritedQuery);
 
+				else if(ast.getParent() instanceof AssignmentStatement)
+					((AssignmentStatement) ast.getParent()).setValueExpression(rewritedQuery);
 				else
 					((OperationCallExpression) ast.getParent()).setTargetExpression(rewritedQuery);
 
@@ -104,6 +125,9 @@ public class MySqlQueryRewriter {
 
 				if (astChild instanceof PropertyCallExpression)
 					astToSql(model, (PropertyCallExpression) astChild, context);
+				
+				if (astChild instanceof FirstOrderOperationCallExpression)
+					astToSql(model, (FirstOrderOperationCallExpression) astChild, context);
 			}
 			astToSql(model, (OperationCallExpression) ast, context);
 		}
@@ -121,6 +145,23 @@ public class MySqlQueryRewriter {
 			}
 			astToSql(model, (PropertyCallExpression) ast, context);
 		}
+		
+		if (ast instanceof FirstOrderOperationCallExpression) {
+			if (!(((FirstOrderOperationCallExpression) ast).getTargetExpression() instanceof NameExpression)) {
+
+				for (ModuleElement astChild : ast.getChildren()) {
+					if (astChild instanceof OperationCallExpression)
+						astToSql(model, (OperationCallExpression) astChild, context);
+
+					if (astChild instanceof PropertyCallExpression)
+						astToSql(model, (PropertyCallExpression) astChild, context);
+					
+					if (astChild instanceof FirstOrderOperationCallExpression)
+						astToSql(model, (FirstOrderOperationCallExpression) astChild, context);
+				}
+			}
+			astToSql(model, (FirstOrderOperationCallExpression) ast, context);
+		}
 
 		if (optimisable) {
 			if (tablename.isEmpty())
@@ -132,7 +173,7 @@ public class MySqlQueryRewriter {
 				return "SELECT " + features + " FROM " + tablename + " limit " + limit;
 
 			else
-				return "SELECT " + features + " FROM " + tablename + " WHERE " + conditions + " = " + parameters;
+				return "SELECT " + features + " FROM " + tablename + " WHERE " + conditions + conditionOperator + "'" +parameters + "'";
 
 		} else
 			return "Not optimisable";
@@ -146,6 +187,9 @@ public class MySqlQueryRewriter {
 
 				if (astChild instanceof PropertyCallExpression)
 					astToSql(model, (PropertyCallExpression) astChild, context);
+				
+				if (astChild instanceof FirstOrderOperationCallExpression)
+					astToSql(model, (FirstOrderOperationCallExpression) astChild, context);
 			}
 			if (ast.getName().equals("size"))
 				features = "COUNT(" + features + ")";
@@ -156,7 +200,32 @@ public class MySqlQueryRewriter {
 			}
 			if (ast.getName().equals("println")) {
 				injectPrintln = true;
+				if(!(ast.getParameterExpressions().isEmpty()))
+				printParameter = (StringLiteral)ast.getParameterExpressions().get(0);
 			}
+		}
+	}
+	
+	public void astToSql(IModel model, FirstOrderOperationCallExpression ast, IEolCompilationContext context) {
+		if (!(ast.getTargetExpression() instanceof NameExpression) || (ast.getChildren() != null)) {
+			for (ModuleElement astChild : ast.getChildren()) {
+				if (astChild instanceof OperationCallExpression)
+					astToSql(model, (OperationCallExpression) astChild, context);
+
+				if (astChild instanceof PropertyCallExpression)
+					astToSql(model, (PropertyCallExpression) astChild, context);
+			}
+			
+			if (ast.getName().equals("select")) {
+				OperatorExpression iterator = (OperatorExpression)ast.getExpressions().get(0);
+				conditionOperator = " "+iterator.getOperator()+" ";
+				if(iterator.getFirstOperand() instanceof PropertyCallExpression) {
+				conditions = ((PropertyCallExpression)iterator.getFirstOperand()).getName();
+				parameters = ((StringLiteral)iterator.getSecondOperand()).getValue();
+				}
+				
+			}
+			
 		}
 	}
 
