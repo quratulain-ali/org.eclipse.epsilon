@@ -11,6 +11,8 @@ package org.eclipse.epsilon.eol.dom;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import org.eclipse.epsilon.common.module.IModule;
 import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.common.parse.AST;
@@ -63,7 +65,10 @@ public class StatementBlock extends AbstractExecutableModuleElement {
 		
 		for (Statement statement : statements) {
 			frameStack.setCurrentStatement(statement);
+			long startTime = System.nanoTime();
 			Object result = executorFactory.execute(statement, context);
+			long estimatedTime = (System.nanoTime() - startTime);
+			System.err.println("Execution Time: "+ estimatedTime + " milliseconds");
 			if (result instanceof Return) {
 				return (Return) result;
 			}
