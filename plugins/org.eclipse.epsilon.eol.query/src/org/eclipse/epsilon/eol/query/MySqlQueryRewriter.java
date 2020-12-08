@@ -7,7 +7,6 @@ import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.eol.IEolModule;
 import org.eclipse.epsilon.eol.compile.context.IEolCompilationContext;
 import org.eclipse.epsilon.eol.dom.AssignmentStatement;
-import org.eclipse.epsilon.eol.dom.Expression;
 import org.eclipse.epsilon.eol.dom.ExpressionStatement;
 import org.eclipse.epsilon.eol.dom.FirstOrderOperationCallExpression;
 import org.eclipse.epsilon.eol.dom.ForStatement;
@@ -65,8 +64,8 @@ public class MySqlQueryRewriter {
 			}
 			
 			else if (statement instanceof AssignmentStatement) {
-				Expression target = ((AssignmentStatement)statement).getTargetExpression();
-				Expression value = ((AssignmentStatement)statement).getValueExpression();
+//				Expression target = ((AssignmentStatement)statement).getTargetExpression();
+//				Expression value = ((AssignmentStatement)statement).getValueExpression();
 				
 				List<ModuleElement> targetAsts = Arrays.asList(statement.getChildren().get(0));
 				optimiseAST(model, targetAsts, context);

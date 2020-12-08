@@ -2,7 +2,6 @@ package org.eclipse.epsilon.eol.query;
 
 import java.io.File;
 
-import org.eclipse.epsilon.common.dt.editor.ModelTypeExtensionFactory;
 import org.eclipse.epsilon.emc.emf.SubEmfModelFactory;
 import org.eclipse.epsilon.eol.EolModule;
 import org.eclipse.epsilon.eol.dom.ModelDeclaration;
