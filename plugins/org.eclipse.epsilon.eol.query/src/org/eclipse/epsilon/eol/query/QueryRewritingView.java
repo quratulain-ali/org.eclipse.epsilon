@@ -11,16 +11,22 @@ import org.eclipse.epsilon.emc.emf.SubEmfModelFactory;
 import org.eclipse.epsilon.eol.EolModule;
 import org.eclipse.epsilon.eol.compile.context.IEolCompilationContext;
 import org.eclipse.epsilon.eol.dom.ModelDeclaration;
+import org.eclipse.epsilon.eol.dt.editor.EolEditor;
 import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.eol.models.IRewriter;
 import org.eclipse.epsilon.eol.parse.EolUnparser;
 import org.eclipse.epsilon.eol.staticanalyser.EolStaticAnalyser;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
@@ -29,18 +35,20 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.epsilon.common.dt.editor.AbstractModuleEditorSourceViewerConfiguration;
 
 public class QueryRewritingView extends ViewPart {
 	protected IEditorPart editor;
-	private Label label;
 	public String text;
-	ListViewer viewer;
+	SourceViewer viewer;
 	IEolCompilationContext context;
+	Document d;
 
 	public QueryRewritingView() {
 		super();
@@ -52,8 +60,21 @@ public class QueryRewritingView extends ViewPart {
 
 	@Override
 	public void createPartControl(Composite parent) {
-		label = new Label(parent, 0);
+	//	label = new Label(parent, 0);
 		
+		 viewer = new SourceViewer(parent, null, SWT.NONE);
+//		  SourceViewerConfiguration configuration = new AntSourceViewerConfiguration();
+//		  viewer.configure(configuration);
+		 SourceViewerConfiguration configuration = new AbstractModuleEditorSourceViewerConfiguration(new EolEditor());
+		configuration.getPresentationReconciler(viewer).install(viewer);
+		viewer.configure(configuration); 
+		viewer.setEditable(false);
+		  Font font = JFaceResources.getFont(JFaceResources.TEXT_FONT);
+		  viewer.getTextWidget().setFont(font);
+		  
+		  d = new Document();
+		   
+		 
 		//TODO: remove
 //		viewer = new ListViewer(parent, 0);
 //		viewer.setContentProvider(new ListContentProvider());
@@ -78,7 +99,12 @@ public class QueryRewritingView extends ViewPart {
 		
 		new QueryRewriter().invokeRewriters(module);
 		
-		label.setText(new EolUnparser().unparse(module));
+//		 viewer.setInput(new EolUnparser().unparse(module));
+//		 viewer.getControl().setFocus();
+		 d.set(new EolUnparser().unparse(module));
+		    viewer.setDocument(d);
+		
+		//label.setText(new EolUnparser().unparse(module));
 	}
 
 	public class MyLabelProvider extends LabelProvider implements IColorProvider {
@@ -99,7 +125,7 @@ public class QueryRewritingView extends ViewPart {
 
 	@Override
 	public void setFocus() {
-		label.setFocus();
+		viewer.getControl().setFocus();
 
 	}
 
@@ -133,7 +159,9 @@ public class QueryRewritingView extends ViewPart {
 		
 		new QueryRewriter().invokeRewriters(module);
 
-		label.setText(new EolUnparser().unparse(module));
+		d.set(new EolUnparser().unparse(module));
+	    viewer.setDocument(d);
+	
 	}
 
 }
