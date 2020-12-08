@@ -207,13 +207,16 @@ public abstract class AbstractEmfModel extends CachedModel<EObject> {
 		return getAllFromModel(eClass::isInstance);
 	}
 	
-	public Object findByIndex(String kind, String field, String value, String indexExists) throws EolModelElementTypeNotFoundException {
+	public Object findByIndex(String kind, String field, String value) throws EolModelElementTypeNotFoundException {
 		
-		if(indexExists.equals("true")){
-			return find(indices.get(kind), value);
+		if(indices.get(kind+","+field)!=null){
+			System.out.println("true");
+			return find(indices.get(kind+","+field), value);
 		}
-		else
+		else {
+			System.out.println("false");
 			return find(createIndex(kind, field), value);
+		}
 	}
 	
 	public HashMap<Object ,String> createIndex(String kind, String field) throws EolModelElementTypeNotFoundException {
@@ -225,7 +228,7 @@ public abstract class AbstractEmfModel extends CachedModel<EObject> {
 		for (EObject s : getAllFromModel(eClass::isInstance)) {
 		        index.put(s.eGet(eClass.getEStructuralFeature(field)), getElementId(s));
 		   }
-		indices.put(kind, index);
+		indices.put(kind+","+field, index);
 		return index;
 	}
 	

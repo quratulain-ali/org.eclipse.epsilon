@@ -152,7 +152,7 @@ public class EmfQueryRewriter {
 //										+"("+modelElementName.getValue()+","+indexField.getValue()+","+indexValue.getValue()+")");
 										
 										
-										OperationCallExpression rewritedQuery = new OperationCallExpression(targetExp, operationExp,modelElementName,indexField,indexValue,new StringLiteral(String.valueOf(indexExists)));
+										OperationCallExpression rewritedQuery = new OperationCallExpression(targetExp, operationExp,modelElementName,indexField,indexValue);
 										
 										ast.getParent().getChildren().remove(index);
 										ast.getParent().getChildren().add(index, rewritedQuery);
@@ -178,7 +178,7 @@ public class EmfQueryRewriter {
 //								module.addTranslatedQueries(targetExp.getName()+"."+operationExp.getName()
 //								+"("+modelElementName.getValue()+","+indexField.getValue()+","+indexValue.getValue()+")");
 								
-								OperationCallExpression rewritedQuery = new OperationCallExpression(targetExp, operationExp,modelElementName,indexField,indexValue,new StringLiteral(String.valueOf(indexExists)));
+								OperationCallExpression rewritedQuery = new OperationCallExpression(targetExp, operationExp,modelElementName,indexField,indexValue);
 								indexedElements.get(modelElementName.getValue()).add(indexField.getValue());
 								
 								if(ast.getParent() instanceof ExpressionStatement)
