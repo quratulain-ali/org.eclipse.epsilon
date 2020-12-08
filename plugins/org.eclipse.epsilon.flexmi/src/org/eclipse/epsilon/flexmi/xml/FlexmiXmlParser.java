@@ -28,6 +28,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.epsilon.flexmi.FlexmiDiagnostic;
+import org.eclipse.epsilon.flexmi.FlexmiFlavour;
 import org.eclipse.epsilon.flexmi.FlexmiParseException;
 import org.eclipse.epsilon.flexmi.FlexmiParser;
 import org.eclipse.epsilon.flexmi.FlexmiResource;
@@ -58,6 +59,9 @@ public class FlexmiXmlParser implements FlexmiParser {
 			}
 			else if (e instanceof FlexmiParseException) {
 				throw (FlexmiParseException) e;
+			}
+			else if (e instanceof RuntimeException && e.getCause() instanceof FlexmiParseException) {
+				throw (FlexmiParseException) e.getCause();
 			}
 			else {
 				throw new FlexmiParseException(e);
@@ -91,7 +95,7 @@ public class FlexmiXmlParser implements FlexmiParser {
 		if (processDocument) handler.endDocument(document);
 	}
 	
-	protected Document parse(InputStream inputStream) throws Exception {
+	public Document parse(InputStream inputStream) throws Exception {
 		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		TransformerFactory transformerFactory = TransformerFactory.newInstance();
 		Transformer transformer = transformerFactory.newTransformer();
@@ -211,6 +215,12 @@ public class FlexmiXmlParser implements FlexmiParser {
 	protected boolean isTemplate(Element element) {
 		return element.getNodeName().equals(Template.NODE_NAME);
 	}
+	
+	@Override
+	public FlexmiFlavour getFlavour() {
+		return FlexmiFlavour.XML;
+	}
+	
 	
 	public interface Handler {
 
