@@ -6,7 +6,7 @@
              name="Query Rewriting"
              category="org.eclipse.epsilon.dt"
              class="org.eclipse.epsilon.eol.query.QueryRewritingView"
-             icon="icons/eol.png"/>
+             icon="icons/TypeOneToOneMapping.gif"/>
 </extension>
 	<extension
          point="org.eclipse.epsilon.eol.dt.launchConfigurationExtension">
