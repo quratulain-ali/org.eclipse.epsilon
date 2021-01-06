@@ -32,7 +32,7 @@ public class MySqlQueryRewriter {
 	String limit;
 	boolean optimisable;
 	boolean injectPrintln = false;
-	StringLiteral printParameter ;
+	String printParameter = "";
 	
 	public void rewrite(IModel model, IEolModule module, IEolCompilationContext context) {
 
@@ -42,10 +42,11 @@ public class MySqlQueryRewriter {
 
 	public void optimiseStatementBlock(IModel model, IEolModule module, List<Statement> statements, IEolCompilationContext context) {
 		optimisable = true;
-		injectPrintln = false;
-
 		for (Statement statement : statements) {
+			injectPrintln = false;
+			printParameter = "";
 			if (statement instanceof ForStatement) {
+				optimiseAST(model, Arrays.asList(statement.getChildren().get(1)), context);
 				List<Statement> childStatements = ((ForStatement) statement).getBodyStatementBlock().getStatements();
 				optimiseStatementBlock(model, module, childStatements, context);
 			}
@@ -81,6 +82,7 @@ public class MySqlQueryRewriter {
 	}
 
 	public void optimiseAST(IModel model, List<ModuleElement> asts, IEolCompilationContext context) {
+		
 		for (ModuleElement ast : asts) {
 
 			NameExpression target = new NameExpression(model.getName());
@@ -91,7 +93,11 @@ public class MySqlQueryRewriter {
 				OperationCallExpression rewritedQuery = new OperationCallExpression(target, operation, p);
 
 				if (injectPrintln) {
-					rewritedQuery = new OperationCallExpression(rewritedQuery, new NameExpression("println"),printParameter);
+					if (printParameter.equals(""))
+						rewritedQuery = new OperationCallExpression(rewritedQuery, new NameExpression("println"));
+
+					else
+						rewritedQuery = new OperationCallExpression(rewritedQuery, new NameExpression("println"),new StringLiteral(printParameter));
 				}
 
 				if (ast.getParent() instanceof ExpressionStatement)
@@ -99,6 +105,8 @@ public class MySqlQueryRewriter {
 
 				else if(ast.getParent() instanceof AssignmentStatement)
 					((AssignmentStatement) ast.getParent()).setValueExpression(rewritedQuery);
+				else if(ast.getParent() instanceof ForStatement)
+					((ForStatement) ast.getParent()).setIteratedExpression(rewritedQuery);
 				else
 					((OperationCallExpression) ast.getParent()).setTargetExpression(rewritedQuery);
 
@@ -200,7 +208,8 @@ public class MySqlQueryRewriter {
 			if (ast.getName().equals("println")) {
 				injectPrintln = true;
 				if(!(ast.getParameterExpressions().isEmpty()))
-				printParameter = (StringLiteral)ast.getParameterExpressions().get(0);
+				printParameter = ((StringLiteral)ast.getParameterExpressions().get(0)).getValue();
+				System.err.println(printParameter.toString());
 			}
 		}
 	}
