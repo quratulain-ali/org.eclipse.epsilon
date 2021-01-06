@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.eol.IEolModule;
@@ -33,6 +36,7 @@ public class EmfQueryRewriter {
 	HashMap<String, List<String>> indexedElements;
 	List<ModuleElement> decomposedAsts =new ArrayList<ModuleElement>();
 	IEolModule module;
+	String modelName;
 	boolean indexExists = false;
 
 	public void rewrite(IModel model, IEolModule module, IEolCompilationContext context) {
@@ -43,6 +47,23 @@ public class EmfQueryRewriter {
 		indexedElements = new HashMap<>();
 		
 		optimiseStatementBlock(model, module, statements);
+		if (module.getMain() == null) return;
+		int index = 0;
+		Iterator<Entry<String, List<String>>> it = indexedElements.entrySet().iterator();
+	    while (it.hasNext()) {
+	        Map.Entry<String, List<String>> pair = (Map.Entry<String, List<String>>)it.next();
+	        for(String field : pair.getValue()) {
+	        ExpressionStatement statement = new ExpressionStatement();
+			statement.setExpression(new OperationCallExpression(new NameExpression(modelName), 
+					new NameExpression("createIndex"), new StringLiteral(pair.getKey()+""),
+					new StringLiteral(field)));
+			module.getMain().getStatements().add(index, statement);
+			index++;
+	        }
+	       // System.out.println(pair.getKey() + " = " + pair.getValue());
+	        it.remove(); // avoids a ConcurrentModificationException
+	    }
+		
 		
 	}
 	
@@ -115,7 +136,7 @@ public class EmfQueryRewriter {
 						if(optimisableOperations.contains(firstoperationName))
 						{
 							EolModelElementType m = ((EolModelElementType)((PropertyCallExpression)target).getTargetExpression().getResolvedType());
-							String modelName = m.getModelName();
+							modelName = m.getModelName();
 							try {
 								if (m.getModel(module.getCompilationContext()) == model) {
 								NameExpression targetExp = new NameExpression(modelName);
@@ -174,12 +195,12 @@ public class EmfQueryRewriter {
 								
 								else
 									indexedElements.get(modelElementName.getValue()).add(indexField.getValue());
-								
+//								
 //								module.addTranslatedQueries(targetExp.getName()+"."+operationExp.getName()
 //								+"("+modelElementName.getValue()+","+indexField.getValue()+","+indexValue.getValue()+")");
 								
 								OperationCallExpression rewritedQuery = new OperationCallExpression(targetExp, operationExp,modelElementName,indexField,indexValue);
-								indexedElements.get(modelElementName.getValue()).add(indexField.getValue());
+//								indexedElements.get(modelElementName.getValue()).add(indexField.getValue());
 								
 								if(ast.getParent() instanceof ExpressionStatement)
 								 ((ExpressionStatement)ast.getParent()).setExpression(rewritedQuery);
