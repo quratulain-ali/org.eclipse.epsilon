@@ -35,6 +35,7 @@ import org.eclipse.emf.ecore.util.EContentAdapter;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.epsilon.common.concurrent.ConcurrencyUtils;
+import org.eclipse.epsilon.common.util.Multimap;
 import org.eclipse.epsilon.common.util.StringProperties;
 import org.eclipse.epsilon.emc.emf.CachedResourceSet.Cache;
 import org.eclipse.epsilon.emc.emf.transactions.EmfModelTransactionSupport;
@@ -76,7 +77,7 @@ public abstract class AbstractEmfModel extends CachedModel<EObject> {
 	 */
 	boolean parallelAllOf;
 	
-	HashMap<String, HashMap> indices = new HashMap<>();
+	HashMap<String, Multimap> indices = new HashMap<>();
 	
 	public AbstractEmfModel() {
 		propertyGetter = new EmfPropertyGetter();
@@ -219,12 +220,11 @@ public abstract class AbstractEmfModel extends CachedModel<EObject> {
 		}
 	}
 	
-	public HashMap<Object ,String> createIndex(String kind, String field) throws EolModelElementTypeNotFoundException {
+	public Multimap<Object ,String> createIndex(String kind, String field) throws EolModelElementTypeNotFoundException {
 		
 		final EClass eClass = classForName(kind);
 		
-		HashMap<Object ,String> index=new HashMap<Object,String>(); //Creating HashMap 
-		
+		Multimap<Object ,String> index=new Multimap<Object,String>(); //Creating HashMap 
 		for (EObject s : getAllOfTypeFromModel(kind)) {
 		        index.put(s.eGet(eClass.getEStructuralFeature(field)), getElementId(s));
 		   }
@@ -232,8 +232,14 @@ public abstract class AbstractEmfModel extends CachedModel<EObject> {
 		return index;
 	}
 	
-   public Object find(HashMap<Object ,String> index, String value) throws EolModelElementTypeNotFoundException {
-		return getElementById(index.get(value));
+   public Object find(Multimap<Object ,String> index, String value) throws EolModelElementTypeNotFoundException {
+		List<Object> elements = new ArrayList<Object>();
+	   if(index.get(value) == null) return elements;
+	   System.out.println("Hey:"+index.get(value));
+	   for(String val : index.get(value)) {
+	   elements.add(getElementById(val));
+	   }
+	   return elements;
 	}
 	
 	@Override
