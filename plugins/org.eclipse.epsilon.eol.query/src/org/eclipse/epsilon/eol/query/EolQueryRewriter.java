@@ -32,8 +32,6 @@ public class EolQueryRewriter implements EpsilonLaunchConfigurationDelegateListe
         
 		new QueryRewriter().invokeRewriters(module);
 		
-		System.err.println(new EolUnparser().unparse((EolModule)module));
-		
 	}
 
 	@Override
