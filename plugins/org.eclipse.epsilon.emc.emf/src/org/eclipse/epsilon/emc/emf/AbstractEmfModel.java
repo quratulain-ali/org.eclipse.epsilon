@@ -224,11 +224,11 @@ public abstract class AbstractEmfModel extends CachedModel<EObject> {
 		final EClass eClass = classForName(kind);
 		
 		HashMap<Object ,String> index=new HashMap<Object,String>(); //Creating HashMap 
-		  
-		for (EObject s : getAllFromModel(eClass::isInstance)) {
+		
+		for (EObject s : getAllOfTypeFromModel(kind)) {
 		        index.put(s.eGet(eClass.getEStructuralFeature(field)), getElementId(s));
 		   }
-		indices.put(kind+","+field, index);
+		indices.put(kind+","+field, index);		
 		return index;
 	}
 	
