@@ -41,8 +41,9 @@ public class MySqlQueryRewriter {
 	}
 
 	public void optimiseStatementBlock(IModel model, IEolModule module, List<Statement> statements, IEolCompilationContext context) {
-		optimisable = true;
+		
 		for (Statement statement : statements) {
+			optimisable = true;
 			injectPrintln = false;
 			printParameter = "";
 			if (statement instanceof ForStatement) {

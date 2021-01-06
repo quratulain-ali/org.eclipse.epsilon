@@ -175,8 +175,8 @@ public class EmfQueryRewriter {
 										
 										OperationCallExpression rewritedQuery = new OperationCallExpression(targetExp, operationExp,modelElementName,indexField,indexValue);
 										
-										ast.getParent().getChildren().remove(index);
-										ast.getParent().getChildren().add(index, rewritedQuery);
+//										ast.getParent().getChildren().remove(index);
+//										ast.getParent().getChildren().add(index, rewritedQuery);
 										
 										return module;
 									}
@@ -208,8 +208,8 @@ public class EmfQueryRewriter {
 								else
 									((OperationCallExpression)ast.getParent()).setTargetExpression(rewritedQuery);
 								
-								ast.getParent().getChildren().remove(index);
-								ast.getParent().getChildren().add(index, rewritedQuery);
+//								ast.getParent().getChildren().remove(index);
+//								ast.getParent().getChildren().add(index, rewritedQuery);
 								
 								return module;
 								}
