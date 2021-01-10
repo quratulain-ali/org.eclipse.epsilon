@@ -54,7 +54,7 @@ public class EmfQueryRewriter {
 	        Map.Entry<String, List<String>> pair = (Map.Entry<String, List<String>>)it.next();
 	        for(String field : pair.getValue()) {
 	        ExpressionStatement statement = new ExpressionStatement();
-			statement.setExpression(new OperationCallExpression(new NameExpression(modelName), 
+			statement.setExpression(new OperationCallExpression(new NameExpression(model.getName()), 
 					new NameExpression("createIndex"), new StringLiteral(pair.getKey()+""),
 					new StringLiteral(field)));
 			module.getMain().getStatements().add(index, statement);
@@ -139,6 +139,7 @@ public class EmfQueryRewriter {
 							modelName = m.getModelName();
 							try {
 								if (m.getModel(module.getCompilationContext()) == model) {
+									model.setName(modelName);
 								NameExpression targetExp = new NameExpression(modelName);
 								NameExpression operationExp = new NameExpression("findByIndex");
 								StringLiteral modelElementName = new StringLiteral(m.getTypeName());
