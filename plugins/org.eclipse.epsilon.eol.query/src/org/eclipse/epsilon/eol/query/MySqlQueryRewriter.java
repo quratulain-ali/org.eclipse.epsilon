@@ -66,8 +66,6 @@ public class MySqlQueryRewriter {
 			}
 			
 			else if (statement instanceof AssignmentStatement) {
-//				Expression target = ((AssignmentStatement)statement).getTargetExpression();
-//				Expression value = ((AssignmentStatement)statement).getValueExpression();
 				
 				List<ModuleElement> targetAsts = Arrays.asList(statement.getChildren().get(0));
 				optimiseAST(model, targetAsts, context);
@@ -210,7 +208,6 @@ public class MySqlQueryRewriter {
 				injectPrintln = true;
 				if(!(ast.getParameterExpressions().isEmpty()))
 				printParameter = ((StringLiteral)ast.getParameterExpressions().get(0)).getValue();
-				System.err.println(printParameter.toString());
 			}
 		}
 	}

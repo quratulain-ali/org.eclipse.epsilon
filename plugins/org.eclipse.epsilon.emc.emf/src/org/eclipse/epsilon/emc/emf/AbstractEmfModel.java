@@ -211,11 +211,9 @@ public abstract class AbstractEmfModel extends CachedModel<EObject> {
 	public Object findByIndex(String kind, String field, String value) throws EolModelElementTypeNotFoundException {
 		
 		if(indices.get(kind+","+field)!=null){
-			System.out.println("true");
 			return find(indices.get(kind+","+field), value);
 		}
 		else {
-			System.out.println("false");
 			return find(createIndex(kind, field), value);
 		}
 	}
