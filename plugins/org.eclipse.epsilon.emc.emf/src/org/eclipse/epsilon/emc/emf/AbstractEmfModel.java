@@ -224,7 +224,7 @@ public abstract class AbstractEmfModel extends CachedModel<EObject> {
 		
 		final EClass eClass = classForName(kind);
 		
-		Multimap<Object ,String> index=new Multimap<Object,String>(); //Creating HashMap 
+		Multimap<Object ,String> index=new Multimap<Object,String>(); //Creating HashMap
 		for (EObject s : getAllOfTypeFromModel(kind)) {
 		        index.put(s.eGet(eClass.getEStructuralFeature(field)), getElementId(s));
 		   }
@@ -235,7 +235,6 @@ public abstract class AbstractEmfModel extends CachedModel<EObject> {
    public Object find(Multimap<Object ,String> index, String value) throws EolModelElementTypeNotFoundException {
 		List<Object> elements = new ArrayList<Object>();
 	   if(index.get(value) == null) return elements;
-	   System.out.println("Hey:"+index.get(value));
 	   for(String val : index.get(value)) {
 	   elements.add(getElementById(val));
 	   }
