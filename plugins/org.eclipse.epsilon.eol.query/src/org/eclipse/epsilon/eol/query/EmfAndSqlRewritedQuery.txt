@@ -1,0 +1,45 @@
+model bank driver EMF {nsuri = "bankAccounts", optimise = "true"}
+model imdb driver EMF {nsuri = "http://movies/1.0", optimise = "true"}
+model World driver MySQL {server = "192.168.64.2", port = "3306", database = "world", username = "root", password = "", name = "World", optimise = "true"}
+model imdbSql driver MySQL {server = "relational.fit.cvut.cz", port = "3306", database = "imdb_ijs", username = "guest", password = "relational", name = "imdbSql", optimise = "true"}
+imdb.createIndex("Movie", "year");
+imdb.createIndex("Movie", "title");
+imdb.createIndex("Actor", "name");
+bank.createIndex("Account", "sortCode");
+World.runSql("SELECT * FROM test").println("Size=");
+imdbSql.runSql("SELECT * FROM actors").println();
+imdb.findByIndex("Actor", "name", "Ataya, Alia");
+imdbSql.runSql("SELECT DISTINCT first_name FROM actors").println();
+if (true) {
+	bank.findByIndex("Account", "sortCode", "12").println("Acc");
+}
+else {
+	bank!Account.all.println();
+}
+imdb.findByIndex("Actor", "name", "Ataya, Alia").println();
+imdb.findByIndex("Actor", "name", "Anger, Mark").println();
+imdb.findByIndex("Movie", "year", "20").println();
+var movie = imdb.findByIndex("Movie", "title", "48 Hour Bootcamp").println();
+for (actor in imdbSql.runSql("SELECT * FROM actors")) {
+	actor.println().println().println();
+}
+var totalCountries = imdbSql.runSql("SELECT COUNT(*) FROM actors").println("Size=");
+var continents = imdbSql.runSql("SELECT DISTINCT first_name FROM actors").println();
+var firstCountry = imdbSql.runSql("SELECT first_name FROM actors limit 1").println("Actor Name = ");
+var actor = imdbSql.runSql("SELECT * FROM actors WHERE first_name = 'Eloy'").println("Actor Name = ");
+var allCountries = imdbSql.runSql("SELECT * FROM actors");
+imdbSql.runSql("SELECT * FROM actors").println();
+imdb.findByIndex("Actor", "name", "Ataya, Alia").println();
+imdb.findByIndex("Actor", "name", "Parks, Jim (II)").println();
+imdb.findByIndex("Actor", "name", "Anger, Mark").println();
+imdb.findByIndex("Movie", "title", "48 Hour Bootcamp").println();
+imdb.findByIndex("Movie", "title", "5 Dollars Incident").println();
+World.runSql("SELECT COUNT(*) FROM country WHERE Continent = 'Asia'").println("Number of Countries in Asia = ");
+World.runSql("SELECT COUNT(*) FROM country WHERE Continent = 'Europe'").println("Number of Countries in Europe = ");
+World.runSql("SELECT COUNT(*) FROM country WHERE Continent = 'Africa'").println("Number of Countries in Africa = ");
+World.runSql("SELECT COUNT(*) FROM country WHERE Continent = 'Antarctica'").println("Number of Countries in Antarctica = ");
+World.runSql("SELECT COUNT(*) FROM country WHERE Continent = 'North America'").println("Number of Countries in North America = ");
+World.runSql("SELECT COUNT(*) FROM country WHERE Continent = 'Oceania'").println("Number of Countries in Oceania = ");
+imdb.findByIndex("Actor", "name", "Ataya, Alia");
+imdb.findByIndex("Actor", "name", "Ataya, Alia");
+imdb.findByIndex("Actor", "name", "Anger, Mark");

@@ -1,0 +1,90 @@
+//ModelDeclarationStatement for Emf Model
+model bank driver EMF{
+nsuri = "bankAccounts",
+optimise = "true"
+};
+
+model imdb driver EMF{
+nsuri = "http://movies/1.0",
+optimise = "true"
+};
+
+model World driver MySQL {
+server = "192.168.64.2",
+port = "3306",
+database = "world",
+username = "root",
+password = "",
+name= "World",
+optimise = "true"
+};
+
+model imdbSql driver MySQL {
+server = "relational.fit.cvut.cz",
+port = "3306",
+database = "imdb_ijs",
+username = "guest",
+password = "relational",
+name= "imdbSql",
+optimise = "true"
+};
+
+World!test.allInstances.println("Size=");
+imdbSql!actors.allInstances.println();
+imdb!Actor.all.select(b|b.name = "Ataya, Alia");
+imdbSql!actors.allInstances.first_name.asSet().println();
+if(true)
+bank!Account.all.select(b|b.sortCode="12").println("Acc");
+else
+bank!Account.all.println();
+imdb!Actor.all.select(b|b.name = "Ataya, Alia").println();
+imdb!Actor.all.select(b|b.name = "Anger, Mark").println();
+
+imdb!Movie.all.select(b|b.year = "20").println();
+var movie = imdb!Movie.all.select(b|b.title = "48 Hour Bootcamp").println();
+for(actor in imdbSql!actors.allInstances) {
+actor.println();
+}
+
+//Queries for World Database
+var totalCountries = imdbSql!actors.allInstances.size().println("Size=");
+var continents = imdbSql!actors.allInstances.first_name.asSet().println();
+var firstCountry = imdbSql!actors.allInstances.first_name.first().println("Actor Name = ");
+var actor = imdbSql!actors.allInstances.select(f|f.first_name = "Eloy").println("Actor Name = ");
+var allCountries =imdbSql!actors.allInstances;
+imdbSql!actors.allInstances.println();
+
+//Queries for IMDb Database
+imdb!Actor.all.select(b|b.name = "Ataya, Alia").println();
+imdb!Actor.all.select(b|b.name = "Parks, Jim (II)").println();
+imdb!Actor.all.select(b|b.name = "Anger, Mark").println();
+
+imdb!Movie.all.select(r|r.title = "48 Hour Bootcamp").println();
+imdb!Movie.all.select(r|r.title = "5 Dollars Incident").println();
+
+World!country.allInstances.select(c|c.Continent = "Asia").size()
+	.println("Number of Countries in Asia = ");
+World!country.allInstances.select(c|c.Continent = "Europe").size()
+	.println("Number of Countries in Europe = ");
+World!country.allInstances.select(c|c.Continent = "Africa").size()
+	.println("Number of Countries in Africa = ");
+World!country.allInstances.select(c|c.Continent = "Antarctica").size()
+	.println("Number of Countries in Antarctica = ");
+World!country.allInstances.select(c|c.Continent = "North America").size()
+	.println("Number of Countries in North America = ");
+World!country.allInstances.select(c|c.Continent = "Oceania").size()
+	.println("Number of Countries in Oceania = ");
+
+
+imdb!Actor.all.select(b|b.name = "Ataya, Alia");
+imdb!Actor.all.select(b|b.name = "Ataya, Alia");
+imdb!Actor.all.select(b|b.name = "Anger, Mark");
+
+/*for (countryCode in countryCodes) {
+	var cities = World!city.allInstances.Name.asSet();
+	for (city in cities) {
+		var population = World!city.allInstances.
+			select(f|f.Name = city and f.CountryCode = countryCode).println();
+			
+	}
+}*/
