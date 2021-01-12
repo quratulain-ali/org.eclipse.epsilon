@@ -51,7 +51,7 @@ public class QueryRewritingView extends ViewPart {
 	@Override
 	public void createPartControl(Composite parent) {
 
-		viewer = new SourceViewer(parent, null, SWT.NONE);
+		viewer = new SourceViewer(parent, null, SWT.H_SCROLL | SWT.V_SCROLL);
 
 		SourceViewerConfiguration configuration = new AbstractModuleEditorSourceViewerConfiguration(new EolEditor());
 		configuration.getPresentationReconciler(viewer).install(viewer);
