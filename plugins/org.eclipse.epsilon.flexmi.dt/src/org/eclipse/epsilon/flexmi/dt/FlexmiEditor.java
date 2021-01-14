@@ -9,12 +9,11 @@
 **********************************************************************/
 package org.eclipse.epsilon.flexmi.dt;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.xml.transform.TransformerException;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -30,24 +29,36 @@ import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource.Diagnostic;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.epsilon.common.dt.util.LogUtil;
 import org.eclipse.epsilon.common.dt.util.ThemeChangeListener;
+import org.eclipse.epsilon.flexmi.FlexmiParseException;
 import org.eclipse.epsilon.flexmi.FlexmiResource;
 import org.eclipse.epsilon.flexmi.FlexmiResourceFactory;
+import org.eclipse.epsilon.flexmi.dt.xml.XMLConfiguration;
+import org.eclipse.epsilon.flexmi.dt.xml.XMLDocumentProvider;
+import org.eclipse.epsilon.flexmi.dt.yaml.YamlConfiguration;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentExtension3;
+import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
+import org.eclipse.jface.text.source.ICharacterPairMatcher;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.jface.text.source.ISourceViewerExtension2;
+import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.MarkerUtilities;
+import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
-import org.xml.sax.SAXParseException;
 
 public class FlexmiEditor extends TextEditor {
 
@@ -56,6 +67,7 @@ public class FlexmiEditor extends TextEditor {
 	protected FlexmiContentOutlinePage outlinePage = null;
 	protected FlexmiResource resource = null;
 	protected IFile file;
+	protected FlexmiFlavour flexmiFlavour = FlexmiFlavour.XML;
 	
 	public FlexmiEditor() {
 		super();
@@ -63,10 +75,10 @@ public class FlexmiEditor extends TextEditor {
 	    setRulerContextMenuId("editor.rulerMenu");
 		highlightingManager = new FlexmiHighlightingManager();
 		highlightingManager.initialiseDefaultColors();
-		setSourceViewerConfiguration(new XMLConfiguration(highlightingManager));
-		setDocumentProvider(new XMLDocumentProvider());
+		setSourceViewerConfiguration(createSourceViewerConfiguration(highlightingManager));
+		setDocumentProvider(createDocumentProvider());
 	}
-	
+
 	public IFile getFile() {
 		return file;
 	}
@@ -90,6 +102,7 @@ public class FlexmiEditor extends TextEditor {
 				if (!isClosed()) {
 					int textHashCode = getText().hashCode();
 					if (status != textHashCode) {
+						
 						parseResource();
 						status = textHashCode;
 					}
@@ -120,21 +133,52 @@ public class FlexmiEditor extends TextEditor {
 			}
 		});
 	}
-
+	
 	public void refreshText() {
 		ISourceViewer viewer= getSourceViewer();
-		if (!(viewer instanceof ISourceViewerExtension2))
-			return;
-		((ISourceViewerExtension2)viewer).unconfigure();
-		
-		setSourceViewerConfiguration(new XMLConfiguration(highlightingManager));
+		setSourceViewerConfiguration(createSourceViewerConfiguration(highlightingManager));
 		viewer.configure(getSourceViewerConfiguration());
+	}
+	
+	protected SourceViewerConfiguration createSourceViewerConfiguration(FlexmiHighlightingManager highlightingManager) {
+		if (flexmiFlavour == FlexmiFlavour.XML) return new XMLConfiguration(highlightingManager);
+		else return new YamlConfiguration(highlightingManager);
+	}
+	
+	public final static String EDITOR_MATCHING_BRACKETS = "matchingBrackets";
+	public final static String EDITOR_MATCHING_BRACKETS_COLOR= "matchingBracketsColor";
+	
+	@Override
+	protected void configureSourceViewerDecorationSupport(
+			SourceViewerDecorationSupport support) {
+
+		super.configureSourceViewerDecorationSupport(support);
+		char[] matchChars = {'[', ']', '{', '}'}; 		
+		ICharacterPairMatcher matcher = new DefaultCharacterPairMatcher(matchChars ,
+				IDocumentExtension3.DEFAULT_PARTITIONING);
+		support.setCharacterPairMatcher(matcher);
+		support.setMatchingCharacterPainterPreferenceKeys(EDITOR_MATCHING_BRACKETS,EDITOR_MATCHING_BRACKETS_COLOR);
+		
+		IPreferenceStore store = getPreferenceStore();
+		store.setDefault(EDITOR_MATCHING_BRACKETS, true);
+		store.setDefault(EDITOR_MATCHING_BRACKETS_COLOR, "128,128,128");
+	}
+	
+	private IDocumentProvider createDocumentProvider() {
+		if (flexmiFlavour == FlexmiFlavour.XML) return new XMLDocumentProvider();
+		else return new FileDocumentProvider();
 	}
 	
 	@Override
 	protected void doSetSelection(ISelection selection) {
 		super.doSetSelection(selection);
 	}
+	
+	/*
+	@Override
+	protected boolean isTabsToSpacesConversionEnabled() {
+		return super.isTabsToSpacesConversionEnabled() || flexmiFlavour == FlexmiFlavour.YAML;
+	}*/
 	
 	public void parseResource() {
 		
@@ -150,8 +194,16 @@ public class FlexmiEditor extends TextEditor {
 		// Replace tabs with spaces to match
 		// column numbers produced by the parser
 		String code = doc.get();
-		code = code.replaceAll("\t", " ");
-		SAXParseException parseException = null;
+		
+		// Detect the flavour of the Flexmi document and refresh the configuration accordingly
+		FlexmiFlavour detectedFlavour = FlexmiResource.isXml(new BufferedInputStream(new ByteArrayInputStream(code.getBytes()))) ? FlexmiFlavour.XML : FlexmiFlavour.YAML;
+		if ((detectedFlavour != flexmiFlavour)) {
+			flexmiFlavour = detectedFlavour;
+			Display.getDefault().asyncExec(() -> refreshText());
+		}
+		
+		code = code.replaceAll("\t", "  ");
+		FlexmiParseException parseException = null;
 		
 		ResourceSet resourceSet = new ResourceSetImpl();
 		
@@ -162,17 +214,12 @@ public class FlexmiEditor extends TextEditor {
 			resource.load(new ByteArrayInputStream(code.getBytes()), null);
 		}
 		catch (Exception ex) {
-				
-				if (ex instanceof RuntimeException) {
-					if (ex.getCause() instanceof TransformerException) {
-						if (ex.getCause().getCause() instanceof SAXParseException) {
-							parseException = (SAXParseException) ex.getCause().getCause();
-						}
-					}
-				}
-				else {
-					ex.printStackTrace();
-				}
+			if (ex instanceof FlexmiParseException) {
+				parseException = (FlexmiParseException) ex;
+			}
+			else {
+				LogUtil.log(ex);
+			}
 		}
 		
 		final String markerType = "org.eclipse.epsilon.flexmi.dt.problemmarker";
@@ -246,5 +293,7 @@ public class FlexmiEditor extends TextEditor {
 	public void dispose() {
 		super.dispose();
 	}
-
+	
+	
+	
 }

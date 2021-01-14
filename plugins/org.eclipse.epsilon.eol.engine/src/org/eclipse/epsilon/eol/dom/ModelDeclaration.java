@@ -131,4 +131,12 @@ public class ModelDeclaration extends AbstractModuleElement implements ICompilab
 	public void accept(IEolVisitor visitor) {
 		visitor.visit(this);
 	}
+	
+	public String doOptimisation(){
+		for (ModelDeclarationParameter parameter : modelDeclarationParameters) {
+			if(parameter.getKey().equals("optimise"))
+				return parameter.getValue();
+		}
+		return "false";
+	}
 }

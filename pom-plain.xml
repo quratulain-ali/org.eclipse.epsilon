@@ -126,7 +126,6 @@
 
   <modules>
     <!-- core component -->
-    <module>plugins/org.eclipse.epsilon.common.dt/pom-plain.xml</module>
     <module>plugins/org.eclipse.epsilon.common/pom-plain.xml</module>
     <module>plugins/org.eclipse.epsilon.ecl.engine/pom-plain.xml</module>
     <module>plugins/org.eclipse.epsilon.egl.engine/pom-plain.xml</module>
@@ -178,20 +177,8 @@
     <module>plugins/org.eclipse.epsilon.antlr.postprocessor.model/pom-plain.xml</module>
 
     <!-- Workflow component -->
-    <module>plugins/org.eclipse.epsilon.ecl.dt/pom-plain.xml</module>
-    <module>plugins/org.eclipse.epsilon.egl.dt/pom-plain.xml</module>
-    <module>plugins/org.eclipse.epsilon.emg.dt/pom-plain.xml</module>
-    <module>plugins/org.eclipse.epsilon.eml.dt/pom-plain.xml</module>
-    <module>plugins/org.eclipse.epsilon.eol.dt/pom-plain.xml</module>
-    <module>plugins/org.eclipse.epsilon.epl.dt/pom-plain.xml</module>
-    <module>plugins/org.eclipse.epsilon.erl.dt/pom-plain.xml</module>
-    <module>plugins/org.eclipse.epsilon.etl.dt/pom-plain.xml</module>
-    <module>plugins/org.eclipse.epsilon.evl.dt/pom-plain.xml</module>
-    <module>plugins/org.eclipse.epsilon.pinset.dt/pom-plain.xml</module>
     <module>plugins/org.eclipse.epsilon.workflow/pom-plain.xml</module>
-
-    <!-- Workflow EMF component -->
-    <module>plugins/org.eclipse.epsilon.emf.dt/pom-plain.xml</module>
+    <module>plugins/org.eclipse.epsilon.workflow.csv/pom-plain.xml</module>
     <module>plugins/org.eclipse.epsilon.workflow.emf/pom-plain.xml</module>
 
     <!-- Spreadsheets component -->
@@ -534,12 +521,12 @@ same version of EMF / other bits always.
       <dependency>
         <groupId>org.eclipse.emf</groupId>
         <artifactId>org.eclipse.emf.common</artifactId>
-        <version>2.18.0</version>
+        <version>2.21.0</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.emf</groupId>
         <artifactId>org.eclipse.emf.ecore</artifactId>
-        <version>2.21.0</version>
+        <version>2.23.0</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.emf</groupId>

@@ -51,7 +51,6 @@ public class EolModule extends AbstractModule implements IEolModule {
 	private IEolModule parent;
 	private BuiltinEolModule builtinModule;
 	private IEolCompilationContext compileContext;
-	public ArrayList<String> rewritedQuery= new ArrayList<>();
 	
 	/**
 	 * The type of {@link #context} when using {@link #getContext()} and {@link #setContext(IEolContext)}.
@@ -523,11 +522,10 @@ public class EolModule extends AbstractModule implements IEolModule {
 	}
 	@Override
 	public List<ModuleMarker> compile() {
-		//new EolStaticAnalyser(this);
 		compileContext = getCompilationContext();
-		preCompile();
-		mainCompile();
-		postCompile();
+//		preCompile();
+//		mainCompile();
+//		postCompile();
 		return compileContext.getMarkers();
 		
 	}
@@ -609,7 +607,6 @@ public class EolModule extends AbstractModule implements IEolModule {
 		
 		try {
 			//module.parse("if (true) var a = 0;");
-			module.parse(new File("./src/org/eclipse/epsilon/eol/emfTest.eol"));
 			module.compile();
 			module.execute();
 		} catch (Exception e) {
@@ -619,14 +616,4 @@ public class EolModule extends AbstractModule implements IEolModule {
 		
 	}
 
-
-	public void addTranslatedQueries(String text) {
-		rewritedQuery.add(text);
-		
-	}
-
-	
-	public ArrayList<String> getTranslatedQueries() {
-		return rewritedQuery;
-	}
 }

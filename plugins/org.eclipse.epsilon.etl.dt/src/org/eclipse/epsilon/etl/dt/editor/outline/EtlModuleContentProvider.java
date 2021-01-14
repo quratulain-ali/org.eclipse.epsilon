@@ -9,6 +9,7 @@
 **********************************************************************/
 package org.eclipse.epsilon.etl.dt.editor.outline;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.erl.dt.editor.outline.ErlModuleContentProvider;
@@ -18,19 +19,21 @@ public class EtlModuleContentProvider extends ErlModuleContentProvider {
 	
 	@Override
 	public List<ModuleElement> getVisibleChildren(ModuleElement moduleElement) {
-		List<ModuleElement> visible = super.getVisibleChildren(moduleElement);
 		
 		if (moduleElement instanceof IEtlModule) {
 			IEtlModule module = (IEtlModule) moduleElement;
+			List<ModuleElement> visible = new ArrayList<>();
 			visible.addAll(module.getImports());
 			visible.addAll(module.getDeclaredModelDeclarations());
 			visible.addAll(module.getDeclaredPre());
 			visible.addAll(module.getDeclaredTransformationRules());
 			visible.addAll(module.getDeclaredPost());
 			visible.addAll(module.getDeclaredOperations());
+			return visible;
 		}
-		
-		return visible;
+		else {
+			return super.getVisibleChildren(moduleElement);
+		}
 	}
 	
 }

@@ -509,6 +509,7 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 			return;
 		modelDeclaration.setModel(context.getModelFactory().createModel(modelDeclaration.getDriverNameExpression().getName()));
 		(modelDeclaration.getModel()).setName(modelDeclaration.getNameExpression().getName());
+
 		if (modelDeclaration.getModel() == null) {
 			context.addErrorMarker(modelDeclaration.getDriverNameExpression(),
 					"Unknown type of model: " + modelDeclaration.getDriverNameExpression().getName());
@@ -1307,8 +1308,8 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 		
 		if (!(module instanceof BuiltinEolModule))
 			module.getOperations().removeAll(builtinModule.getDeclaredOperations());
-		
-		invokeRewriters(module);
+//		
+//		invokeRewriters(module);
 		return errors;
 	}
 	

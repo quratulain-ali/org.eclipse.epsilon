@@ -9,6 +9,7 @@
  ******************************************************************************/
 package org.eclipse.epsilon.eol.types;
 
+import java.util.*;
 
 public class EolObjectComparator {
 	
@@ -19,33 +20,26 @@ public class EolObjectComparator {
 		if (o1 instanceof Number && o2 instanceof Number) {
 			return NumberUtil.isEqual((Number)o1, (Number)o2);
 		}
-
-		/*
+		
 		if (o1 instanceof Collection && o2 instanceof Collection) {
-			Collection c1 = (Collection) o1;
-			Collection c2 = (Collection) o2;
+			Collection<?> c1 = (Collection<?>) o1;
+			Collection<?> c2 = (Collection<?>) o2;
+		
+			if (c1.size() != c2.size()) return false;
 			
-			if (!EolCollectionType.getTypeName(c1).equals(EolCollectionType.getTypeName(c2))) return false;
-			boolean isOrdered = EolCollectionType.isOrdered(c1);
-			
-			if (c1.size() != c2.size()) { return false; } 
-			else {
-				Iterator it1 = c1.iterator();
-				Iterator it2 = c2.iterator();
-				while (it1.hasNext()) {
-					Object next = it1.next();
-					if (isOrdered) {
-						if (!equals(next, it2.next())) return false;
-					}
-					else {
-						if (!c2.contains(next)) return false;
-					}
-				}
-				return true;
+			if (EolCollectionType.Bag.isType(c1) && EolCollectionType.Bag.isType(c2)) {
+				List<Object> l1 = new ArrayList<>(c1);
+				List<Object> l2 = new ArrayList<>(c2);
+				
+				Comparator<Object> comparator = (e1, e2) -> String.valueOf(e1).compareTo(String.valueOf(e2));
+				
+				Collections.sort(l1, comparator);
+				Collections.sort(l2, comparator);
+				
+				return l1.equals(l2);
 			}
-		}*/
+		}
 		
 		return o1.equals(o2);
 	}
-	
 }

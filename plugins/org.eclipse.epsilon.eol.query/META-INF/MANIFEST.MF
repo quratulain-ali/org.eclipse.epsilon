@@ -10,8 +10,10 @@ Require-Bundle: org.eclipse.jface.text,
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.ui.ide,
  org.eclipse.epsilon.common.dt,
- org.eclipse.epsilon.emc.jdbc.mysql
+ org.eclipse.epsilon.emc.jdbc.mysql,
+ org.junit
 Import-Package: org.eclipse.epsilon.emc.emf,
  org.eclipse.epsilon.eol.dt,
+ org.eclipse.epsilon.eol.dt.editor,
+ org.eclipse.epsilon.eol.dt.launching,
  org.eclipse.epsilon.eol.staticanalyser
-Export-Package: org.eclipse.epsilon.eol.query

@@ -1,0 +1,22 @@
+
+model Flight driver MySQL {
+server = "192.168.64.2",
+port = "3306",
+database = "Flight",
+username = "root",
+password = "",
+name= "Flight"
+};
+
+var check : Boolean = true;
+
+if(check){
+	Flight!Flights.allInstances.println();
+}
+else {
+	for(p in Flight!Flights.all) {
+		Flight!Flights.allInstances.size().println();
+	}
+}
+
+Flight!Flights.allInstances.origin.println();

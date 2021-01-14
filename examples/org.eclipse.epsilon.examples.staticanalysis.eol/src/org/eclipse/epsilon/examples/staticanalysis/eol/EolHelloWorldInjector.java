@@ -20,12 +20,11 @@ public class EolHelloWorldInjector implements EpsilonLaunchConfigurationDelegate
 	public void aboutToExecute(ILaunchConfiguration configuration, String mode, ILaunch launch,
 			IProgressMonitor progressMonitor, IEolModule module) throws Exception {
 		
-//		if (module.getMain() == null) return;
-//		
-//		ExpressionStatement statement = new ExpressionStatement();
-//		statement.setExpression(new OperationCallExpression(new StringLiteral("Hello world!"), new NameExpression("println")));
-//		module.getMain().getStatements().add(0, statement);
-//		
+		if (module.getMain() == null) return;
+		        
+		ExpressionStatement statement = new ExpressionStatement();
+		statement.setExpression(new OperationCallExpression(new StringLiteral("Hello world!"), new NameExpression("println")));
+		module.getMain().getStatements().add(0, statement);
 	}
 	
 	@Override

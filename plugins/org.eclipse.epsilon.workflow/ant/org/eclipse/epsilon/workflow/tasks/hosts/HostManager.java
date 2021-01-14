@@ -10,11 +10,12 @@
 package org.eclipse.epsilon.workflow.tasks.hosts;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class HostManager {
 	
 	protected static Host host = null;
-	protected static ArrayList<Host> supportedHosts = new ArrayList<>();
+	protected static final ArrayList<Host> supportedHosts = new ArrayList<>();
 	
 	public static Host getHost() {
 		if (host == null) {
@@ -29,9 +30,14 @@ public class HostManager {
 	
 	protected static Host createHost() {
 		try {
-			supportedHosts.add(new EclipseHost());
+			Host eclipseHost = (Host)
+				Class.forName(HostManager.class.getPackage().getName() + ".EclipseHost")
+					.getConstructor().newInstance();
+			supportedHosts.add(eclipseHost);
 		}
-		catch (Throwable t) {}
+		catch (Throwable t) {
+			// Means we're not running in Eclipse
+		}
 		
 		for (Host host : supportedHosts) {
 			if (host.isRunning()) return host;
@@ -40,7 +46,7 @@ public class HostManager {
 		return new DefaultHost();
 	}
 	
-	public static ArrayList<Host> getSupportedHosts() {
+	public static List<Host> getSupportedHosts() {
 		return supportedHosts;
 	}
 	
