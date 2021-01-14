@@ -507,8 +507,8 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 
 		if (context.getModelFactory() == null)
 			return;
-		modelDeclaration
-				.setModel(context.getModelFactory().createModel(modelDeclaration.getDriverNameExpression().getName()));
+		modelDeclaration.setModel(context.getModelFactory().createModel(modelDeclaration.getDriverNameExpression().getName()));
+		(modelDeclaration.getModel()).setName(modelDeclaration.getNameExpression().getName());
 		if (modelDeclaration.getModel() == null) {
 			context.addErrorMarker(modelDeclaration.getDriverNameExpression(),
 					"Unknown type of model: " + modelDeclaration.getDriverNameExpression().getName());
@@ -900,7 +900,10 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 
 	@Override
 	public void visit(Parameter parameter) {
-		visit(parameter, true);
+		if (context.getFrameStack().contains(parameter.getName()))
+			visit(parameter, false);
+		else
+			visit(parameter, true);
 	}
 
 	public void visit(Parameter parameter, boolean createVariable) {
@@ -1241,8 +1244,7 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 			modelDeclaration.accept(this);
 		}
 
-		String root = "/Users/quratulainali/git/org.eclipse.epsilon/plugins/org.eclipse.epsilon.eol.engine/src/org/eclipse/epsilon/eol/";
-
+		String root = "/Users/sorourjahanbin/git/Epsilon_Nov2020/plugins/org.eclipse.epsilon.eol.engine/src/org/eclipse/epsilon/eol/";
 		if (!(module instanceof BuiltinEolModule)) {
 			try {
 				// builtinModule.parse(new File("./src/org/eclipse/epsilon/eol/builtin.eol"));
@@ -1284,6 +1286,7 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 
 	@Override
 	public List<ModuleMarker> validate(IModule imodule) {
+		
 		if (!(imodule instanceof EolModule))
 			return Collections.emptyList();
 
@@ -1299,6 +1302,7 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 		
 		if (eolModule.getMain() != null)
 			eolModule.getMain().accept(this);
+		
 		eolModule.getDeclaredOperations().forEach(o -> o.accept(this));
 		
 		if (!(module instanceof BuiltinEolModule))

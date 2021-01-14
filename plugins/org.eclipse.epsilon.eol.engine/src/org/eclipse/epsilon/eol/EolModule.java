@@ -32,8 +32,6 @@ import org.eclipse.epsilon.eol.execute.Return;
 import org.eclipse.epsilon.eol.execute.context.EolContext;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
-import org.eclipse.epsilon.eol.models.IModel;
-import org.eclipse.epsilon.eol.models.IRewriter;
 import org.eclipse.epsilon.eol.parse.EolLexer;
 import org.eclipse.epsilon.eol.parse.EolParser;
 
@@ -482,11 +480,8 @@ public class EolModule extends AbstractModule implements IEolModule {
 		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
 			modelDeclaration.compile(compileContext);
 		}
-
-		String root = "/Users/sorourjahanbin/git/org.eclipse.epsilon/plugins/org.eclipse.epsilon.eol.engine/src/org/eclipse/epsilon/eol/";
-		
-				builtinModule = new BuiltinEolModule();
-
+		String root = "/Users/sorourjahanbin/git/Epsilon_Nov2020/plugins/org.eclipse.epsilon.eol.engine/src/org/eclipse/epsilon/eol/";
+		builtinModule = new BuiltinEolModule();
 		if (!(this instanceof BuiltinEolModule)) {
 			try {
 				//builtinModule.parse(new File("./src/org/eclipse/epsilon/eol/builtin.eol"));
@@ -529,6 +524,7 @@ public class EolModule extends AbstractModule implements IEolModule {
 	@Override
 	public List<ModuleMarker> compile() {
 		//new EolStaticAnalyser(this);
+		compileContext = getCompilationContext();
 		preCompile();
 		mainCompile();
 		postCompile();
@@ -556,14 +552,7 @@ public class EolModule extends AbstractModule implements IEolModule {
 		if (!(this instanceof BuiltinEolModule))
 			operations.removeAll(builtinModule.getDeclaredOperations());
 		
-//		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
-//
-//			IModel model = modelDeclaration.getModel();
-//			if(model instanceof IRewriter)
-//			{
-//				((IRewriter)model).rewrite(this, compileContext);
-//			}
-//		}
+
 		return compileContext.getMarkers();
 	}
 	
@@ -639,17 +628,5 @@ public class EolModule extends AbstractModule implements IEolModule {
 	
 	public ArrayList<String> getTranslatedQueries() {
 		return rewritedQuery;
-	}
-
-	@Override
-	public void setText(String text) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public String getText() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

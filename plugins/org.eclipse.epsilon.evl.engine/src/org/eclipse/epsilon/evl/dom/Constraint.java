@@ -300,6 +300,7 @@ public class Constraint extends NamedRule implements IExecutableModuleElementPar
 
 	@Override
 	public void compile(IEolCompilationContext context) {
+<<<<<<< Updated upstream
 		ConstraintContext cc = (ConstraintContext)this.getParent();
 		context.getFrameStack().put(new Variable("self",cc.getTypeExpression().getResolvedType()));
 		 
@@ -322,6 +323,9 @@ public class Constraint extends NamedRule implements IExecutableModuleElementPar
 			if (f.titleBlock!=null)
 			f.titleBlock.compile(context); // Is it necessary?
 		}	
+=======
+		// TODO Auto-generated method stub
+>>>>>>> Stashed changes
 		
 	}
 }

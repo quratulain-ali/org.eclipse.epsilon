@@ -102,3 +102,4 @@ target-plain
 
 # Backup files from Emacs
 *~
+/.metadata/

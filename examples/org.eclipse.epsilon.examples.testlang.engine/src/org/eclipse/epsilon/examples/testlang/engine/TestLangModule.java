@@ -39,7 +39,12 @@ public class TestLangModule extends EolModule {
 
 	@Override
 	protected void prepareContext() {
-		super.prepareContext();
+		try {
+			super.prepareContext();
+		} catch (EolRuntimeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		getContext().getOperationContributorRegistry().add(new TestLangOperationContributor());
 	}
 

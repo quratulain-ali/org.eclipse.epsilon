@@ -10,7 +10,7 @@
 package org.eclipse.epsilon.examples.testlang.dt.launching;
 
 import org.eclipse.epsilon.common.dt.EpsilonPlugin;
-import org.eclipse.epsilon.common.dt.launching.AbstractSourceConfigurationTab;
+import org.eclipse.epsilon.common.dt.launching.tabs.AbstractSourceConfigurationTab;
 import org.eclipse.epsilon.examples.testlang.dt.TestLangPlugin;
 
 public class TestLangSourceConfigurationTab extends AbstractSourceConfigurationTab {

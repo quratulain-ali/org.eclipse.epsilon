@@ -16,7 +16,13 @@ public class TestLangLaunchConfigurationTabGroup extends EpsilonLaunchConfigurat
 
 	@Override
 	public ILaunchConfigurationTab getSourceConfigurationTab() {
-		return new TestLangSourceConfigurationTab();
+		return (ILaunchConfigurationTab) new TestLangSourceConfigurationTab();
+	}
+
+	@Override
+	public ILaunchConfigurationTab getAdvancedConfigurationTab() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

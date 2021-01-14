@@ -291,11 +291,16 @@ public class ConstraintContext extends AnnotatableModuleElement implements IExec
 
 	@Override
 	public void compile(IEolCompilationContext context) {
+<<<<<<< Updated upstream
 		typeExpression.compile(context);
 		 
 		
 		 for (Constraint c : getConstraints())
 			 
 			 c.compile(context);
+=======
+		// TODO Auto-generated method stub
+		
+>>>>>>> Stashed changes
 	}
 }

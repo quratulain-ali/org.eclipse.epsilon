@@ -182,9 +182,10 @@ public class EmfModel extends AbstractEmfModel implements IReflectiveModel,IRewr
 		this.metamodelUris = toURIList(properties.getProperty(PROPERTY_METAMODEL_URI));
 		setMetamodelFileUris(toURIList(properties.getProperty(PROPERTY_FILE_BASED_METAMODEL_URI)));
 		setReuseUnmodifiedFileBasedMetamodels(properties.getBooleanProperty(PROPERTY_REUSE_UNMODIFIED_FILE_BASED_METAMODELS, reuseUnmodifiedFileBasedMetamodels));
-		
-		load();
-	}
+		if (!properties.getProperty("type").equals("SmartEMF"))
+			
+			load();
+		}
 
 	@Override
 	protected void loadModel() throws EolModelLoadingException {
@@ -407,6 +408,9 @@ public class EmfModel extends AbstractEmfModel implements IReflectiveModel,IRewr
 		if (isCachingEnabled()) {
 			modelImpl.eAdapters().add(new CachedContentsAdapter());
 		}
+		System.out.println("**** Loaded Objects ****");
+		System.out.println(model.getContents().size());
+		 
 	}
 	
 	/**
