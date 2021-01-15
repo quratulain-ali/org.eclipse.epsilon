@@ -41,12 +41,12 @@ public class QueryTranslationTestCase extends TestCase{
 				IModel model = modelDeclaration.getModel();
 			if (modelDeclaration.getDriverNameExpression().getName().equals("MySQL")) {
 				context.setModelFactory(new SubModelFactory());
-				new MySqlQueryRewriter().rewrite(model, module, context);
+				new MySqlModelQueryRewriter().rewrite(model, module, context);
 			}
 
 			if (modelDeclaration.getDriverNameExpression().getName().equals("EMF")) {
 				context.setModelFactory(new SubEmfModelFactory());
-				new EmfQueryRewriter().rewrite(model, module, context);
+				new EmfModelQueryRewriter().rewrite(model, module, context);
 			}
 			}
 		}

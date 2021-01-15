@@ -29,7 +29,7 @@ import org.eclipse.epsilon.eol.exceptions.models.EolModelElementTypeNotFoundExce
 import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.eol.types.EolModelElementType;
 
-public class EmfQueryRewriter {
+public class EmfModelQueryRewriter {
 
 	boolean cascaded = false;
 	HashSet<String> optimisableOperations; // List of built-in operations that can be optimised
