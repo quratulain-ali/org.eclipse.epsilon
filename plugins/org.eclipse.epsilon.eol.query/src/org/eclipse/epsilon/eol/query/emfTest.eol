@@ -1,5 +1,6 @@
 model earth driver EMF{
-nsuri = "friends"
+nsuri = "friends",
+optimise = "true"
 };
 
 var check : Boolean = true;

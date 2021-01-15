@@ -1,0 +1,34 @@
+model earth driver EMF {nsuri = "friends", optimise = "true"}
+earth.createIndex("Person", "name");
+var check : Boolean = true;
+if (check) {
+	earth.findByIndex("Person", "name", "Judy").println();
+}
+else {
+	for (p in earth!Person.all) {
+		earth.findByIndex("Person", "name", "Judy").println();
+	}
+}
+earth.findByIndex("Person", "name", "Judy").println();
+var exists : Boolean = true;
+if (exists) {
+	if (exists) {
+		earth.findByIndex("Person", "name", "Judy").println();
+	}
+	earth.findByIndex("Person", "name", "Judy").println();
+}
+else {
+	if (exists) {
+		earth.findByIndex("Person", "name", "Judy").println();
+	}
+	earth.findByIndex("Person", "name", "Julie").println();
+}
+for (p in earth!Person.all) {
+	if (exists) {
+		earth.findByIndex("Person", "name", "Judy").println();
+	}
+	earth.findByIndex("Person", "name", "Judy").println();
+	earth.findByIndex("Person", "name", "Julie").println();
+}
+earth.findByIndex("Person", "name", "Monica").println();
+earth.findByIndex("Person", "name", "Rachel").println();
