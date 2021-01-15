@@ -10,7 +10,6 @@ import org.eclipse.epsilon.eol.EolModule;
 import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
 import org.eclipse.epsilon.eol.dom.ModelDeclaration;
 import org.eclipse.epsilon.eol.models.IModel;
-import org.eclipse.epsilon.eol.models.IRewriter;
 import org.eclipse.epsilon.eol.parse.EolUnparser;
 import org.eclipse.epsilon.eol.staticanalyser.EolStaticAnalyser;
 import org.junit.Test;
@@ -24,7 +23,6 @@ public class QueryTranslationTestCase extends TestCase{
 		EolModule module = new EolModule();
 
 		module.parse(new File("src/org/eclipse/epsilon/eol/query/EmfAndSqlQuery.eol"));
-		module.compile();
 		
 		EolCompilationContext context = module.getCompilationContext();
 		
