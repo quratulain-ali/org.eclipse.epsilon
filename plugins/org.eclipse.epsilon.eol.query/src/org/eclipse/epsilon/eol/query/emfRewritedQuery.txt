@@ -1,6 +1,9 @@
 model earth driver EMF {nsuri = "friends", optimise = "true"}
 earth.createIndex("Person", "name");
 var check : Boolean = true;
+var data : Collection(Integer) = Sequence{0..9};
+var data2 : Collection(Integer) = Collection{4..9};
+data.clone().println();
 if (check) {
 	earth.findByIndex("Person", "name", "Judy").println();
 }
@@ -13,7 +16,7 @@ earth.findByIndex("Person", "name", "Judy").println();
 var exists : Boolean = true;
 if (exists) {
 	if (exists) {
-		earth.findByIndex("Person", "name", "Judy").println();
+		earth.union(earth.findByIndex("Person", "name", "Judy"), earth.findByIndex("Person", "name", "Julie")).println();
 	}
 	earth.findByIndex("Person", "name", "Judy").println();
 }

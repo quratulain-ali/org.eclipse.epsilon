@@ -5,6 +5,10 @@ optimise = "true"
 
 var check : Boolean = true;
 
+var data : Collection<Integer> = Sequence{0..9};
+var data2 : Collection<Integer> = Collection{4..9};
+data.clone().println();
+
 if(check){
 	earth!Person.all.select(b|b.name = "Judy").println();
 }
