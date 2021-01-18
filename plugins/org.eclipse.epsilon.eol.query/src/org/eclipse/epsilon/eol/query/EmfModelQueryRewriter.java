@@ -187,14 +187,18 @@ public class EmfModelQueryRewriter {
 											if(rewritedQuery.getName() == null)
 											rewritedQuery = new OperationCallExpression(
 													targetExp, operationExp, modelElementName, indexField, indexValue);
-											else
+											else {
 //												rewritedQuery = new OperationCallExpression(
 //														rewritedQuery, new NameExpression("union"), new OperationCallExpression(
 //																targetExp, operationExp, modelElementName, indexField, indexValue));
+												rewritedQuery = new OperationCallExpression(
+														targetExp, new NameExpression("union"), rewritedQuery,new OperationCallExpression(
+																targetExp, operationExp, modelElementName, indexField, indexValue));
+											}
 											
-											rewritedQuery = new OperationCallExpression(
-													null, new NameExpression("join"), rewritedQuery,new OperationCallExpression(
-															targetExp, operationExp, modelElementName, indexField, indexValue));
+//											rewritedQuery = new OperationCallExpression(
+//													null, new NameExpression("join"), rewritedQuery,new OperationCallExpression(
+//															targetExp, operationExp, modelElementName, indexField, indexValue));
 											
 											}
 											if (ast.getParent() instanceof ExpressionStatement)
