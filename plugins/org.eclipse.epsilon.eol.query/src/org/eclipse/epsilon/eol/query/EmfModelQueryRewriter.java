@@ -118,6 +118,8 @@ public class EmfModelQueryRewriter {
 				if (!(targetOcExp instanceof NameExpression)) {
 					return optimiseAST(model, ast.getChildren(), indexExists);
 				}
+				
+				if(ast.getParent() instanceof ExpressionStatement) {
 
 				Expression targetExpression = ((ExpressionStatement) ast.getParent()).getExpression();
 
@@ -125,6 +127,7 @@ public class EmfModelQueryRewriter {
 					OperationCallExpression newOcExp = new OperationCallExpression(targetExpression,
 							new NameExpression("println"));
 					((ExpressionStatement) ast.getParent()).setExpression(newOcExp);
+				}
 				}
 
 			}
