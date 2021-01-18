@@ -218,6 +218,12 @@ public abstract class AbstractEmfModel extends CachedModel<EObject> {
 		}
 	}
 	
+	public Object union(ArrayList<Object> a1, ArrayList<Object> a2) {
+		a1.addAll(a2);
+		return a1;
+		
+	}
+	
 	public Multimap<Object ,String> createIndex(String kind, String field) throws EolModelElementTypeNotFoundException {
 		
 		final EClass eClass = classForName(kind);
