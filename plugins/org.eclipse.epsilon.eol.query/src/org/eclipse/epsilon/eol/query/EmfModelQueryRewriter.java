@@ -14,16 +14,20 @@ import org.eclipse.epsilon.eol.IEolModule;
 import org.eclipse.epsilon.eol.compile.context.IEolCompilationContext;
 import org.eclipse.epsilon.eol.dom.AndOperatorExpression;
 import org.eclipse.epsilon.eol.dom.AssignmentStatement;
+import org.eclipse.epsilon.eol.dom.BooleanLiteral;
 import org.eclipse.epsilon.eol.dom.EqualsOperatorExpression;
 import org.eclipse.epsilon.eol.dom.Expression;
 import org.eclipse.epsilon.eol.dom.ExpressionStatement;
 import org.eclipse.epsilon.eol.dom.FirstOrderOperationCallExpression;
 import org.eclipse.epsilon.eol.dom.ForStatement;
 import org.eclipse.epsilon.eol.dom.IfStatement;
+import org.eclipse.epsilon.eol.dom.IntegerLiteral;
 import org.eclipse.epsilon.eol.dom.NameExpression;
+import org.eclipse.epsilon.eol.dom.Operation;
 import org.eclipse.epsilon.eol.dom.OperationCallExpression;
 import org.eclipse.epsilon.eol.dom.OrOperatorExpression;
 import org.eclipse.epsilon.eol.dom.PropertyCallExpression;
+import org.eclipse.epsilon.eol.dom.ReturnStatement;
 import org.eclipse.epsilon.eol.dom.Statement;
 import org.eclipse.epsilon.eol.dom.StatementBlock;
 import org.eclipse.epsilon.eol.dom.StringLiteral;
@@ -44,6 +48,9 @@ public class EmfModelQueryRewriter {
 
 	public void rewrite(IModel model, IEolModule module, IEolCompilationContext context) {
 		this.module = module;
+		
+		if (module.getMain() == null)   return;
+		
 		List<Statement> statements = module.getMain().getStatements();
 		
 		optimisableOperations = new HashSet<String>(Arrays.asList("select"));
@@ -52,7 +59,9 @@ public class EmfModelQueryRewriter {
 
 		optimiseStatementBlock(model, module, statements);
 		
-		if (module.getMain() == null)   return;
+		for(Operation operation : module.getDeclaredOperations()) {
+			optimiseStatementBlock(model, module, operation.getBody().getStatements());
+		}
 		int index = 0;
 		
 		Iterator<Entry<String, List<String>>> it = indexedElements.entrySet().iterator();
@@ -207,6 +216,8 @@ public class EmfModelQueryRewriter {
 												((AssignmentStatement) ast.getParent()).setValueExpression(rewritedQuery);
 											else if (ast.getParent() instanceof ForStatement)
 												((ForStatement) ast.getParent()).setIteratedExpression(rewritedQuery);
+											else if (ast.getParent() instanceof ReturnStatement)
+												((ReturnStatement) ast.getParent()).setReturnedExpression(rewritedQuery);
 											else
 												((OperationCallExpression) ast.getParent())
 														.setTargetExpression(rewritedQuery);
@@ -217,10 +228,17 @@ public class EmfModelQueryRewriter {
 										StringLiteral indexField = new StringLiteral(
 												((NameExpression) operation.getExpressions().get(0).getChildren().get(0)
 														.getChildren().get(1)).getName());
-										StringLiteral indexValue = new StringLiteral(
-												((StringLiteral) operation.getExpressions().get(0).getChildren().get(1))
-														.getValue());
-
+										ModuleElement indexValueExpression = operation.getExpressions().get(0).getChildren().get(1);
+										StringLiteral indexValue = new StringLiteral();
+										if(indexValueExpression instanceof BooleanLiteral) {
+											indexValue = new StringLiteral(((BooleanLiteral) indexValueExpression).getValue().toString());
+										}
+										else if(indexValueExpression instanceof StringLiteral) {
+											indexValue = new StringLiteral(((StringLiteral)indexValueExpression).getValue());
+										}
+										else if(indexValueExpression instanceof IntegerLiteral) {
+											indexValue = new StringLiteral(((IntegerLiteral)indexValueExpression).getValue().toString());
+										}
 										indexExists = false;
 
 										if (indexedElements.get(modelElementName.getValue())
@@ -240,6 +258,8 @@ public class EmfModelQueryRewriter {
 											((AssignmentStatement) ast.getParent()).setValueExpression(rewritedQuery);
 										else if (ast.getParent() instanceof ForStatement)
 											((ForStatement) ast.getParent()).setIteratedExpression(rewritedQuery);
+										else if (ast.getParent() instanceof ReturnStatement)
+											((ReturnStatement) ast.getParent()).setReturnedExpression(rewritedQuery);
 										else
 											((OperationCallExpression) ast.getParent())
 													.setTargetExpression(rewritedQuery);
