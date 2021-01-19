@@ -23,7 +23,7 @@ public class QueryTranslationEmfModelTests extends TestCase {
 		EolModule module = new EolModule();
 
 		module.parse(new File("src/org/eclipse/epsilon/eol/query/emfTest.eol"));
-EolCompilationContext context = module.getCompilationContext();
+        EolCompilationContext context = module.getCompilationContext();
 		
 		for (ModelDeclaration modelDeclaration : module.getDeclaredModelDeclarations()) {
 			if (modelDeclaration.getDriverNameExpression().getName().equals("MySQL")) 
