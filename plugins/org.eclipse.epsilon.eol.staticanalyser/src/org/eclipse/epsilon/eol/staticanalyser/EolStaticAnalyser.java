@@ -237,7 +237,6 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 	@Override
 	public void visit(ExecutableAnnotation executableAnnotation) {
 		executableAnnotation.getExpression().accept(this);
-		// TODO body.compile(context);
 	}
 
 	@Override
@@ -271,7 +270,6 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 				builtinOperations.add(op);
 
 		targetExpression.accept(this);
-		// targetExpression.compile(context);
 
 		if (targetExpression.getResolvedType() instanceof EolCollectionType) {
 			contextType = ((EolCollectionType) targetExpression.getResolvedType()).getContentType();
@@ -287,9 +285,8 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 		if (contextType != null) {
 			context.getFrameStack().enterLocal(FrameType.UNPROTECTED, firstOrderOperationCallExpression);
 			Parameter parameter = firstOrderOperationCallExpression.getParameters().get(0);
-			// parameter.accept(this);
+			
 			visit(parameter, false);
-			// parameter.compile(context, false);
 
 			if (parameter.isExplicitlyTyped()) {
 				// TODO: Check that the type of the parameter is a subtype of the type of the
@@ -328,9 +325,6 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 
 			Expression expression = firstOrderOperationCallExpression.getExpressions().get(0);
 			expression.accept(this);
-			// expression.compile(context);
-
-			System.out.println(firstOrderOperationCallExpression.getExpressions().get(0).getResolvedType());
 
 			context.getFrameStack().leaveLocal(firstOrderOperationCallExpression);
 
@@ -357,14 +351,13 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 				if (firstOrderOperationCallExpression.getExpressions().size() == 2) {
 					Expression valueExpression = firstOrderOperationCallExpression.getExpressions().get(1);
 					valueExpression.accept(this);
-					// valueExpression.compile(context);
+					
 					firstOrderOperationCallExpression.setResolvedType(
 							new EolMapType(expression.getResolvedType(), valueExpression.getResolvedType()));
 				} else {
 					errors.add(new ModuleMarker(firstOrderOperationCallExpression.getNameExpression(),
 							"Aggregate requires a key and a value expression", Severity.Error));
-					// context.addErrorMarker(firstOrderOperationCallExpression.getNameExpression(),
-					// "Aggregate requires a key and a value expression");
+					
 				}
 			} else if (name.equals("mapBy")) {
 				firstOrderOperationCallExpression.setResolvedType(
@@ -575,7 +568,7 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 
 		newInstanceExpression.getTypeExpression().accept(this);
 		for (Expression parameterExpression : newInstanceExpression.getParameterExpressions()) {
-			parameterExpression.compile(context);
+			parameterExpression.accept(this);
 		}
 		newInstanceExpression.setResolvedType(newInstanceExpression.getTypeExpression().getResolvedType());
 	}
@@ -671,12 +664,6 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 		
 		for (Operation op : getOperations(operationCallExpression)) {
 
-			/*
-			 * if (op.getName().equals("getAllSuitableContainmentReferences"))
-			 * op.compile(context); else if (op.getName().equals("getNodes"))
-			 * op.compile(context); else if (op.getName().equals("getLinks"))
-			 * op.compile(context);
-			 */
 			successMatch = false;
 
 			reqParams = op.getFormalParameters();
@@ -1049,9 +1036,8 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 	public void visit(ReturnStatement returnStatement) {
 		Expression returnedExpression = returnStatement.getReturnedExpression();
 		if (returnedExpression != null) {
-
-			returnedExpression.compile(context);
-
+			
+			returnedExpression.accept(this);
 			EolType providedReturnType = returnedExpression.getResolvedType();
 
 			ModuleElement parent = returnedExpression.getParent();
@@ -1067,7 +1053,8 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 				// add for setting resolved type
 				if (((Operation) parent).getReturnTypeExpression() == null)
 					((Operation) parent).setReturnTypeExpression(new TypeExpression("Any"));
-				(((Operation) parent).getReturnTypeExpression()).compile(context);
+				
+				(((Operation) parent).getReturnTypeExpression()).accept(this);
 				EolType requiredReturnType = ((Operation) parent).getReturnTypeExpression().getResolvedType();
 
 				if (!(isCompatible(requiredReturnType, providedReturnType))) {
@@ -1308,8 +1295,7 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 		
 		if (!(module instanceof BuiltinEolModule))
 			module.getOperations().removeAll(builtinModule.getDeclaredOperations());
-//		
-//		invokeRewriters(module);
+
 		return errors;
 	}
 	
