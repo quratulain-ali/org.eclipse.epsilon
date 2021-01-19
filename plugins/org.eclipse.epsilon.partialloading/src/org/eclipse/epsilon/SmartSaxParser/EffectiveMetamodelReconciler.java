@@ -105,6 +105,7 @@ public class EffectiveMetamodelReconciler {
 			{
 				if (eClassifier instanceof EClass) {
 					EClass leClass = (EClass) eClassifier;
+					
 					if (actualObjectToLoad(ePackage, (EClass) eClassifier)) {
 						
 						for(EReference eReference: leClass.getEAllReferences())
@@ -124,6 +125,15 @@ public class EffectiveMetamodelReconciler {
 							{
 								EClass eType = (EClass) eReference.getEType();
 								addTypesToLoad(eType);
+								//By Sorour
+								for(EClassifier eclass: ePackage.getEClassifiers())
+								{
+									if (eclass instanceof EClass) {
+										EClass subclass = (EClass) eclass;
+										if (subclass.getEAllSuperTypes().contains(eType))
+											addTypesToLoad(subclass);
+									}
+								}
 							}
 						}
 
@@ -216,6 +226,10 @@ public class EffectiveMetamodelReconciler {
 					{
 						return true;
 					}
+					/*By Sorour*/
+					else if (eClass.getEAllSuperTypes().contains(kind))
+						return true;
+					/**/
 				}
 				
 				//for each type in all of type
@@ -259,6 +273,12 @@ public class EffectiveMetamodelReconciler {
 					{
 						return true;
 					}
+					// The subclasses of effective types should be loaded as well
+					
+					/*By Sorour*/
+					else if (eClass.getEAllSuperTypes().contains(kind))
+						return true;
+					/**/
 				}
 			}
 		}

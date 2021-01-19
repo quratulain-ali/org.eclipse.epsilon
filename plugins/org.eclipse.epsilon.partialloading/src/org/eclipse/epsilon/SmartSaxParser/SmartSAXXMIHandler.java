@@ -269,8 +269,11 @@ public class SmartSAXXMIHandler extends SAXXMIHandler{
 	  	        setValueFromId(object, (EReference)feature, value);
 			}
 	    	  else {
-					if (handlingFeature && shouldHandleFeatureForType(object, feature.getName())) {
-						setFeatureValue(object, feature, value, -2);
+	    		  /*By Sorour*/
+	    		// handlingFeature =  false;
+					if (shouldHandleFeatureForType(object, feature.getName()) && handlingFeature) {
+							 setValueFromId(object, (EReference)feature, value);
+//							 setFeatureValue(object, feature, value, -2);
 					}
 				}
 	      }
