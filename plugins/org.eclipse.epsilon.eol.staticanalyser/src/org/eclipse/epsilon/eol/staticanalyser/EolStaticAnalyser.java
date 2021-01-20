@@ -186,10 +186,12 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 
 	@Override
 	public void visit(CollectionLiteralExpression<?> collectionLiteralExpression) {
+		if(!collectionLiteralExpression.getParameterExpressions().isEmpty()) {
 		collectionLiteralExpression.getParameterExpressions().get(0).accept(this);
 		collectionLiteralExpression
 				.setResolvedType(new EolCollectionType(collectionLiteralExpression.getCollectionType(),
 						collectionLiteralExpression.getParameterExpressions().get(0).getResolvedType()));
+		}
 	}
 
 	@Override
@@ -1045,7 +1047,8 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 		Expression returnedExpression = returnStatement.getReturnedExpression();
 		if (returnedExpression != null) {
 
-			returnedExpression.compile(context);
+			returnedExpression.accept(this);
+			
 
 			EolType providedReturnType = returnedExpression.getResolvedType();
 
