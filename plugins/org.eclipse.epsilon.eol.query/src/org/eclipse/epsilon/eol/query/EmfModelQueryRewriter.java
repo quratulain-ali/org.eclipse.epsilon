@@ -25,6 +25,7 @@ import org.eclipse.epsilon.eol.dom.IntegerLiteral;
 import org.eclipse.epsilon.eol.dom.NameExpression;
 import org.eclipse.epsilon.eol.dom.Operation;
 import org.eclipse.epsilon.eol.dom.OperationCallExpression;
+import org.eclipse.epsilon.eol.dom.OperatorExpression;
 import org.eclipse.epsilon.eol.dom.OrOperatorExpression;
 import org.eclipse.epsilon.eol.dom.PropertyCallExpression;
 import org.eclipse.epsilon.eol.dom.ReturnStatement;
@@ -170,6 +171,7 @@ public class EmfModelQueryRewriter {
 									Expression parameterAst = operation.getExpressions().get(0);
 
 									if (parameterAst instanceof OrOperatorExpression) {
+										cascaded = false;
 										decomposedAsts = decomposeAST(parameterAst);
 
 										if (cascaded)
@@ -197,17 +199,10 @@ public class EmfModelQueryRewriter {
 											rewritedQuery = new OperationCallExpression(
 													targetExp, operationExp, modelElementName, indexField, indexValue);
 											else {
-//												rewritedQuery = new OperationCallExpression(
-//														rewritedQuery, new NameExpression("union"), new OperationCallExpression(
-//																targetExp, operationExp, modelElementName, indexField, indexValue));
 												rewritedQuery = new OperationCallExpression(
 														targetExp, new NameExpression("union"), rewritedQuery,new OperationCallExpression(
 																targetExp, operationExp, modelElementName, indexField, indexValue));
 											}
-											
-//											rewritedQuery = new OperationCallExpression(
-//													null, new NameExpression("join"), rewritedQuery,new OperationCallExpression(
-//															targetExp, operationExp, modelElementName, indexField, indexValue));
 											
 											}
 											if (ast.getParent() instanceof ExpressionStatement)
@@ -221,9 +216,65 @@ public class EmfModelQueryRewriter {
 											else
 												((OperationCallExpression) ast.getParent())
 														.setTargetExpression(rewritedQuery);
-											//return module;
 										}
-									} else {
+									}
+									else if (parameterAst instanceof AndOperatorExpression) {
+										cascaded = false;
+										decomposedAsts = decomposeAST(parameterAst);
+
+										if (cascaded)
+											decomposedAsts
+													.add(((AndOperatorExpression) parameterAst).getSecondOperand());
+										
+										OperationCallExpression rewritedQuery = new OperationCallExpression();
+										
+										StringLiteral indexField = new StringLiteral();
+										StringLiteral indexValue = new StringLiteral();
+										
+										for (ModuleElement firstOperand : decomposedAsts) {
+											if(firstOperand instanceof EqualsOperatorExpression) {
+												if(indexField.getValue() != null) {
+											 indexField = new StringLiteral(indexField.getValue()+"-"+
+													 ((NameExpression) firstOperand
+													.getChildren().get(0).getChildren().get(1)).getName());
+											indexValue = new StringLiteral(indexValue.getValue()+"-"+
+													((StringLiteral) firstOperand.getChildren().get(1)).getValue()); 
+												}
+												else {
+													indexField = new StringLiteral(((NameExpression) firstOperand
+															.getChildren().get(0).getChildren().get(1)).getName());
+													indexValue = new StringLiteral(((StringLiteral) firstOperand.getChildren().get(1)).getValue());
+												}
+											
+										}
+										}
+											indexExists = false;
+
+											if (indexedElements.get(modelElementName.getValue())
+													.contains(indexField.getValue())) {
+												indexExists = true;
+											}
+											
+
+											else
+												indexedElements.get(modelElementName.getValue())
+														.add(indexField.getValue());
+										rewritedQuery = new OperationCallExpression(
+														targetExp, operationExp,modelElementName, indexField, indexValue);
+											if (ast.getParent() instanceof ExpressionStatement)
+												((ExpressionStatement) ast.getParent()).setExpression(rewritedQuery);
+											else if (ast.getParent() instanceof AssignmentStatement)
+												((AssignmentStatement) ast.getParent()).setValueExpression(rewritedQuery);
+											else if (ast.getParent() instanceof ForStatement)
+												((ForStatement) ast.getParent()).setIteratedExpression(rewritedQuery);
+											else if (ast.getParent() instanceof ReturnStatement)
+												((ReturnStatement) ast.getParent()).setReturnedExpression(rewritedQuery);
+											else
+												((OperationCallExpression) ast.getParent())
+														.setTargetExpression(rewritedQuery);
+										
+									}
+									else {
 										if(operation.getExpressions().get(0) instanceof EqualsOperatorExpression) {
 										StringLiteral indexField = new StringLiteral(
 												((NameExpression) operation.getExpressions().get(0).getChildren().get(0)
@@ -286,7 +337,8 @@ public class EmfModelQueryRewriter {
 	}
 
 	public List<ModuleElement> decomposeAST(Expression ast) {
-		Expression firstOperand = ((OrOperatorExpression) ast).getFirstOperand();
+		Expression firstOperand = ((OperatorExpression) ast).getFirstOperand();
+		
 		if (firstOperand instanceof OrOperatorExpression) {
 			cascaded = true;
 			return decomposeAST(firstOperand);
