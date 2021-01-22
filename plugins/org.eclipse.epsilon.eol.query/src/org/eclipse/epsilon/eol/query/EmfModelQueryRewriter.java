@@ -200,7 +200,7 @@ public class EmfModelQueryRewriter {
 													targetExp, operationExp, modelElementName, indexField, indexValue);
 											else {
 												rewritedQuery = new OperationCallExpression(
-														targetExp, new NameExpression("union"), rewritedQuery,new OperationCallExpression(
+														rewritedQuery, new NameExpression("includingAll"),new OperationCallExpression(
 																targetExp, operationExp, modelElementName, indexField, indexValue));
 											}
 											
