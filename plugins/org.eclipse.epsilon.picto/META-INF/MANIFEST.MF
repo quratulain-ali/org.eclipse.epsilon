@@ -18,6 +18,7 @@ Require-Bundle: org.eclipse.epsilon.flexmi,
  org.eclipse.emf.edit,
  org.eclipse.epsilon.common.dt;visibility:=reexport,
  org.eclipse.epsilon.egl.engine;visibility:=reexport,
+ org.eclipse.epsilon.pinset.engine,
  org.eclipse.epsilon.emc.emf,
  org.eclipse.ui.ide,
  org.eclipse.emf.emfatic.ui;resolution:=optional,
@@ -38,7 +39,8 @@ Require-Bundle: org.eclipse.epsilon.flexmi,
  com.atlassian.commonmark-ins,
  com.atlassian.commonmark-task-list-items,
  com.atlassian.commonmark-yaml,
- net.sourceforge.plantuml
+ net.sourceforge.plantuml,
+ org.apache.commons.csv
 Bundle-Activator: org.eclipse.epsilon.picto.PictoPlugin
 Bundle-ActivationPolicy: lazy
 Export-Package: org.eclipse.epsilon.picto,
