@@ -2,14 +2,14 @@
 operation String firstToLowerCase () : String {
 }
 //Added for Eugenia _ 25March2020
-@firstorder
-operation Collection<Any> sortBy(a : Any) : Collection <Any>{
+@firstorder @builtin 
+operation Collection<Any> sortBy(a : Any) : Collection <Any> {
 }
 
-@firstorder
+@firstorder @builtin 
 operation Collection<Any> collect(a: Any) : Collection<EolSelfExpressionType> {
 }
-@firstorder
+@firstorder @builtin 
 operation Collection<Any> exists(a: Any) : Collection<EolSelfExpressionType> {
 }
 @builtin
@@ -100,40 +100,40 @@ operation Any asInteger () : Integer {
 operation Any format () : String {
 }
 @builtin
-operation Any errln (prefix: Any, suffix: Any) : Any {
+operation Any errln (prefix: Any, suffix: Any) : EolSelf {
 }
 @builtin
-operation Any errln (prefix: Any) : Any {
+operation Any errln (prefix: Any) : EolSelf {
 }
 @builtin
-operation Any errln () : Any {
+operation Any errln () : EolSelf {
 }
 @builtin
-operation Any err (prefix: Any, suffix: Any) : Any {
+operation Any err (prefix: Any, suffix: Any) : EolSelf {
 }
 @builtin
-operation Any err (prefix: Any) : Any {
+operation Any err (prefix: Any) : EolSelf {
 }
 @builtin
-operation Any err () : Any {
+operation Any err () : EolSelf {
 }
 @builtin
-operation Any print (prefix: Any, suffix: Any) : Any {
+operation Any print (prefix: Any, suffix: Any) : EolSelf {
 }
 @builtin
-operation Any print (prefix: Any) : Any {
+operation Any print (prefix: Any) : EolSelf {
 }
 @builtin
-operation Any print () : Any {
+operation Any print () : EolSelf {
 }
 @builtin
-operation Any println (prefix: Any, suffix: Any) : Any {
+operation Any println (prefix: Any, suffix: Any) : EolSelf {
 }
 @builtin
-operation Any println (prefix: Any) : Any {
+operation Any println (prefix: Any) : EolSelf {
 }
 @builtin
-operation Any println () : Any {
+operation Any println () : EolSelf {
 
 }
 @builtin
@@ -165,7 +165,7 @@ operation Collection<Any> first() : Any {
 @builtin
 operation Collection<Any> isEmpty() : Boolean {
 }
-operation Collection<Any> notEmpty() : Boolean{
+operation Collection<Any> notEmpty() : Boolean {
 }
 // Added for Eugenia _ 17March2020
 @builtin
@@ -173,57 +173,56 @@ operation Any isDefined() : Boolean {
 }
 // Added for Eugenia _ 17March2020
 @builtin
-operation Collection<Any> add(item : Any) : Boolean{
+operation Collection<Any> add(item : Any) : Boolean {
 }
 // Added for Eugenia _ 17March2020
 @builtin
-operation Collection<Any> addAll(col : Collection) : Boolean{
+operation Collection<Any> addAll(col : Collection) : Boolean {
 }
 // Added for Eugenia _ 17March2020
 @builtin
-operation Collection<Any> clone() : Collection <Any>{
+operation Collection<Any> clone() : Collection <Any> {
 }
 // Added for Eugenia _ 17March2020
 @builtin
-operation Collection<Any> size() : Integer{
+operation Collection<Any> size() : Integer {
 }
 // Added for Eugenia _ 17March2020
 @builtin
-operation Any asSequence() : Sequence{
+operation Any asSequence() : Sequence {
 }
 // Added for Eugenia _ 17March2020
 @builtin
-operation Collection<Any> asSequence() : Sequence{
+operation Collection<Any> asSequence() : Sequence {
 }
 // Added for Eugenia _ 18March2020
 @builtin
-operation Collection<Any> at(index : Integer) : Any{
+operation Collection<Any> at(index : Integer) : Any {
 }
 // Added for Eugenia _ 17March2020
 @builtin
-operation Any isKindOf(type : Any) : Boolean{
+operation Any isKindOf(type : Any) : Boolean {
 }
 @builtin
-operation Any allOfKind() : Collection <Any>{
+operation Any allOfKind() : Collection <Any> {
 }
 
 // Added for Eugenia _ 17March2020
 @builtin
-operation Collection<Any> includes(item : Any) : Boolean{
+operation Collection<Any> includes(item : Any) : Boolean {
 }
 // Added for Eugenia _ 18March2020
 @builtin
-operation Collection<Any> excludes(item : Any) : Boolean{
+operation Collection<Any> excludes(item : Any) : Boolean {
 }
 // Added for Eugenia _ 18March2020
 @builtin
-operation Any isTypeOf(type : Any) : Boolean{
+operation Any isTypeOf(type : Any) : Boolean {
 }
 // Added for Eugenia _ 18March2020
 @builtin
-operation Any get(key : Any) : Any{
+operation Any get(key : Any) : Any {
 }
-
 // Remove it after testing _ 25Feb2020
 @builtin
 operation Collection<Any> testSelfCollection() : EolSelfCollectionType{
@@ -231,10 +230,19 @@ operation Collection<Any> testSelfCollection() : EolSelfCollectionType{
 @builtin
 operation Any asSet(): Set {
 }
-
-operation Any satisfies(invariant :String) : Boolean{}
-operation String substring(startIndex : Integer,endIndex : Integer) : String{}
-operation String substring(startIndex : Integer) : String{}
-operation String toLowerCase():String{}
-operation String toUpperCase():String{}
+@builtin
+operation Any satisfies(invariant :String) : Boolean {
+}
+@builtin 
+operation String substring(startIndex : Integer,endIndex : Integer) : String {
+}
+@builtin 
+operation String substring(startIndex : Integer) : String {
+}
+@builtin 
+operation String toLowerCase():String {
+}
+@builtin 
+operation String toUpperCase():String {
+}
 
