@@ -32,8 +32,6 @@ import org.eclipse.epsilon.eol.execute.Return;
 import org.eclipse.epsilon.eol.execute.context.EolContext;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
-import org.eclipse.epsilon.eol.models.IModel;
-import org.eclipse.epsilon.eol.models.IRewriter;
 import org.eclipse.epsilon.eol.parse.EolLexer;
 import org.eclipse.epsilon.eol.parse.EolParser;
 
@@ -553,15 +551,6 @@ public class EolModule extends AbstractModule implements IEolModule {
 
 		if (!(this instanceof BuiltinEolModule))
 			operations.removeAll(builtinModule.getDeclaredOperations());
-		
-		for (ModelDeclaration modelDeclaration : getDeclaredModelDeclarations()) {
-
-			IModel model = modelDeclaration.getModel();
-			if(model instanceof IRewriter)
-			{
-				((IRewriter)model).rewrite(this, compileContext);
-			}
-		}
 		return compileContext.getMarkers();
 	}
 	
