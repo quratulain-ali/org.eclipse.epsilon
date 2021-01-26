@@ -33,7 +33,6 @@ public class EffectiveMetamodelExtractor {
 		try {
 			smartEMFModel = (SmartEMF) module.getContext().getModelRepository().getModelByName(module.getCompilationContext().getModelDeclarations().get(0).getNameExpression().getName());
 		} catch (EolModelNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		children.addAll(module.getChildren());
@@ -66,27 +65,45 @@ public class EffectiveMetamodelExtractor {
 								|| operationCall.getNameExpression().getName().equals("allOfKind")
 								|| operationCall.getNameExpression().getName().equals("allInstances")) {
 
-							smartEMFModel.addToAllOfKind(target.getTypeName());
-							
-							ExpressionStatement statement = new ExpressionStatement();
-							statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addToAllOfKind"), new StringLiteral(target.getTypeName())));
-							module.getMain().getStatements().add(i, statement);
-							i++;
-							
+							//If the element is already under EM's allOfType reference
 							if (smartEMFModel.allOfTypeContains(target.getTypeName())) {
-								smartEMFModel.getAllOfType().remove(target.getTypeName());
-							
-								statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("getAllOfType"),new NameExpression("remove"), new StringLiteral(target.getTypeName())));
+								
+								smartEMFModel.addToAllOfKind(smartEMFModel.getFromAllOfType(target.getName()));
+								smartEMFModel.removeFromAllOfType(target.getName());
+								
+								ExpressionStatement statement = new ExpressionStatement();
+								statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addToAllOfKind"), new OperationCallExpression(new NameExpression(smartEMFModel.getName()),new NameExpression("getFromAllOfType"), new StringLiteral(target.getName()))));
 								module.getMain().getStatements().add(i, statement);
+								i++;
+								
+								ExpressionStatement statement2 = new ExpressionStatement();
+								statement2.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("removeFromAllOfType"), new StringLiteral(target.getName())));
+								module.getMain().getStatements().add(i, statement2);
 								i++;
 							}
+							//If the element is already under EM's types reference
+							if (smartEMFModel.typesContains(target.getTypeName())){
 							
-							else if (smartEMFModel.typesContains(target.getTypeName())) {
-								smartEMFModel.removeFromTypes(target.getTypeName());
-								// Inject this statement ?
-								statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("removeFromTypes"), new StringLiteral(target.getTypeName())));
+								smartEMFModel.addToAllOfKind(smartEMFModel.getFromTypes(target.getName()));
+								smartEMFModel.removeFromTypes(target.getName());
+								
+								ExpressionStatement statement = new ExpressionStatement();
+								statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addToAllOfKind"), new OperationCallExpression(new NameExpression(smartEMFModel.getName()),new NameExpression("getFromTypes"), new StringLiteral(target.getName()))));
 								module.getMain().getStatements().add(i, statement);
 								i++;
+								
+								ExpressionStatement statement2 = new ExpressionStatement();
+								statement2.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("removeFromTypes"), new StringLiteral(target.getName())));
+								module.getMain().getStatements().add(i, statement2);
+								i++;							
+							}
+							else {
+								// not already under the EM's allOfKind or allOfType references
+									smartEMFModel.addToAllOfKind(target.getTypeName());
+									ExpressionStatement statement = new ExpressionStatement();
+									statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addToAllOfKind"),new StringLiteral(target.getTypeName())));
+									module.getMain().getStatements().add(i, statement);
+									i++;
 							}
 
 						} else if (operationCall.getNameExpression().getName().equals("allOfType")) {
@@ -94,7 +111,7 @@ public class EffectiveMetamodelExtractor {
 									&& !smartEMFModel.allOfTypeContains(target.getTypeName()))
 							{
 								smartEMFModel.addToAllOfType(target.getTypeName());
-							
+		
 								ExpressionStatement statement = new ExpressionStatement();
 								statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addToAllOfType"), new StringLiteral(target.getTypeName())));
 								module.getMain().getStatements().add(i, statement);
@@ -114,26 +131,46 @@ public class EffectiveMetamodelExtractor {
 					if (pro.getNameExpression().getName().equals("all") ||pro.getNameExpression().getName().equals("allInstances")) {
 						// Like AllofKind Algorithm
 						
-						smartEMFModel.addToAllOfKind(target.getTypeName());
-						
-						ExpressionStatement statement = new ExpressionStatement();
-						statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addToAllOfKind"),new StringLiteral(target.getTypeName())));
-						module.getMain().getStatements().add(i, statement);
-						i++;
-						
+						//If the element is already under EM's allOfType reference
 						if (smartEMFModel.allOfTypeContains(target.getTypeName())) {
-							smartEMFModel.getAllOfType().remove(target.getTypeName());
-							// Inject this statement ?
-							statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("getAllOfType"),new NameExpression("remove"), new StringLiteral(target.getTypeName())));
+							
+							smartEMFModel.addToAllOfKind(smartEMFModel.getFromAllOfType(target.getName()));
+							smartEMFModel.removeFromAllOfType(target.getName());
+							
+							ExpressionStatement statement = new ExpressionStatement();
+							statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addToAllOfKind"), new OperationCallExpression(new NameExpression(smartEMFModel.getName()),new NameExpression("getFromAllOfType"), new StringLiteral(target.getName()))));
 							module.getMain().getStatements().add(i, statement);
+							i++;
+							
+							ExpressionStatement statement2 = new ExpressionStatement();
+							statement2.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("removeFromAllOfType"), new StringLiteral(target.getName())));
+							module.getMain().getStatements().add(i, statement2);
 							i++;
 						}
+						//If the element is already under EM's types reference
 						if (smartEMFModel.typesContains(target.getTypeName())){
-							smartEMFModel.removeFromTypes(target.getTypeName());
-							// Inject this statement ?
-							statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("removeFromTypes"), new StringLiteral(target.getTypeName())));
+						
+							smartEMFModel.addToAllOfKind(smartEMFModel.getFromTypes(target.getName()));
+							smartEMFModel.removeFromTypes(target.getName());
+							
+							ExpressionStatement statement = new ExpressionStatement();
+							statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addToAllOfKind"), new OperationCallExpression(new NameExpression(smartEMFModel.getName()),new NameExpression("getFromTypes"), new StringLiteral(target.getName()))));
 							module.getMain().getStatements().add(i, statement);
 							i++;
+							
+							ExpressionStatement statement2 = new ExpressionStatement();
+							statement2.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("removeFromTypes"), new StringLiteral(target.getName())));
+							module.getMain().getStatements().add(i, statement2);
+							i++;							
+						}
+						else {
+							
+							// not already under the EM's allOfKind or allOfType references
+								smartEMFModel.addToAllOfKind(target.getTypeName());
+								ExpressionStatement statement = new ExpressionStatement();
+								statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addToAllOfKind"),new StringLiteral(target.getTypeName())));
+								module.getMain().getStatements().add(i, statement);
+								i++;
 						}
 					}
 					// not already under the EM's types, allOfKind or allOfType references
@@ -166,7 +203,9 @@ public class EffectiveMetamodelExtractor {
 						}
 
 						for (StructuralFeature sf : features) {
-							if (sf instanceof Attribute && sf.getName().equals(pro.getNameExpression().getName())) {
+							if (sf instanceof Attribute 
+									&& sf.getName().equals(pro.getNameExpression().getName())
+									&& !effectiveType.containsAttribute(sf.getName())) {
 								effectiveType.addToAttributes(sf.getName());
 								
 								ExpressionStatement statement = new ExpressionStatement();
@@ -176,7 +215,8 @@ public class EffectiveMetamodelExtractor {
 								
 								break;
 							} else if (sf instanceof Reference
-									&& sf.getName().equals(pro.getNameExpression().getName())) {
+									&& sf.getName().equals(pro.getNameExpression().getName())
+									&& !effectiveType.containsReference(sf.getName())) {
 								effectiveType.addToReferences(sf.getName());
 								
 								ExpressionStatement statement = new ExpressionStatement();
@@ -221,30 +261,37 @@ public class EffectiveMetamodelExtractor {
 
 						for (StructuralFeature sf : features) {
 							if (sf instanceof Attribute
-									&& sf.getName().equals(pro.getNameExpression().getName())) {
-								effectiveType.addToAttributes(sf.getName());
+									&& sf.getName().equals(pro.getNameExpression().getName())
+									&& !effectiveType.containsAttribute(sf.getName())) {
 								
-								ExpressionStatement statement = new ExpressionStatement();
-								statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addAttributeToEffectiveType"),new StringLiteral(effectiveType.getName()), new StringLiteral(sf.getName())));
-								module.getMain().getStatements().add(i, statement);
-								i++;
+									effectiveType.addToAttributes(sf.getName());
+									ExpressionStatement statement = new ExpressionStatement();
+									statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addAttributeToEffectiveType"),new StringLiteral(effectiveType.getName()), new StringLiteral(sf.getName())));
+									module.getMain().getStatements().add(i, statement);
+									i++;
+									break;
 								
-								break;
-							} else if (sf instanceof Reference
-									&& sf.getName().equals(pro.getNameExpression().getName())) {
-								effectiveType.addToReferences(sf.getName());
+							} else if (sf instanceof Reference 
+									&& sf.getName().equals(pro.getNameExpression().getName())
+									&& !effectiveType.containsReference(sf.getName())) {
+									effectiveType.addToReferences(sf.getName());
 								
-								ExpressionStatement statement = new ExpressionStatement();
-								statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addReferenceToEffectiveType"), new StringLiteral(effectiveType.getName()) ,new StringLiteral(sf.getName())));
-								module.getMain().getStatements().add(i, statement);
-								i++;
-								break;
+									ExpressionStatement statement = new ExpressionStatement();
+									statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addReferenceToEffectiveType"), new StringLiteral(effectiveType.getName()) ,new StringLiteral(sf.getName())));
+									module.getMain().getStatements().add(i, statement);
+									i++;
+									break;
 							}
 						}
 					}
 				}
 			}
 		}
+		
+		ExpressionStatement statement = new ExpressionStatement();
+		statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("load")));
+		module.getMain().getStatements().add(i,statement);
+		i++;
 		return smartEMFModel;
 	}
 }

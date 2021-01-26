@@ -45,12 +45,13 @@ public class SmartSAXXMIResource extends XMIResourceImpl{
 		
 		//loadAllAttributes = (Boolean) options.get(OPTION_LOAD_ALL_ATTRIBUTES);
 		
+		
 		ArrayList<SmartEMF> effectiveMetamodels = (ArrayList<SmartEMF>) options.get(OPTION_EFFECTIVE_METAMODELS);
 		if (effectiveMetamodels != null) {
 			EffectiveMetamodelReconciler effectiveMetamodelReconciler = new EffectiveMetamodelReconciler();
 			effectiveMetamodelReconciler.addEffectiveMetamodels(effectiveMetamodels);
 			effectiveMetamodelReconciler.addPackages(getResourceSet().getPackageRegistry().values());
-			if ((Boolean) options.get(OPTION_RECONCILE_EFFECTIVE_METAMODELS)) {
+			if (!(Boolean) options.get(OPTION_RECONCILE_EFFECTIVE_METAMODELS)) {
 				effectiveMetamodelReconciler.reconcile();
 			}
 			actualObjectsToLoad = effectiveMetamodelReconciler.getActualObjectsToLoad();
@@ -60,7 +61,7 @@ public class SmartSAXXMIResource extends XMIResourceImpl{
 		else {
 			EffectiveMetamodelReconciler effectiveMetamodelReconciler = (EffectiveMetamodelReconciler) options.get(OPTION_EFFECTIVE_METAMODEL_RECONCILER);
 			if (effectiveMetamodelReconciler != null) {
-				if ((Boolean) options.get(OPTION_RECONCILE_EFFECTIVE_METAMODELS)) {
+				if (!(Boolean) options.get(OPTION_RECONCILE_EFFECTIVE_METAMODELS)) {
 					effectiveMetamodelReconciler.reconcile();
 				}
 				actualObjectsToLoad = effectiveMetamodelReconciler.getActualObjectsToLoad();
@@ -68,6 +69,7 @@ public class SmartSAXXMIResource extends XMIResourceImpl{
 				typesToLoad = effectiveMetamodelReconciler.getTypesToLoad();
 			}
 		}
+		
 		super.load(options);
 	}
 	

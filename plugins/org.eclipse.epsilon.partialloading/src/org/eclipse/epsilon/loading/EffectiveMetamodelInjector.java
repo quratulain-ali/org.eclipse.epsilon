@@ -66,7 +66,7 @@ public class EffectiveMetamodelInjector implements EpsilonLaunchConfigurationDel
 	if (!module.getCompilationContext().getModelDeclarations().isEmpty() 
 		&& module.getCompilationContext().getModelDeclarations().get(0).getDriverNameExpression().getName().equals("SmartEMF"))
 		{
-			int i = 0;
+			
 			if (module.getMain() == null) return;
 		
 		//ArrayList<SmartEMF> effectiveMetamodels = new ArrayList<SmartEMF>();
@@ -289,11 +289,6 @@ public class EffectiveMetamodelInjector implements EpsilonLaunchConfigurationDel
 //		}
 
 		//smartEMFModel.load();
-		
-		ExpressionStatement statement = new ExpressionStatement();
-		statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("load")));
-		module.getMain().getStatements().add(i,statement);
-		i++;
 		
 		System.out.println(smartEMFModel);
 		System.out.println(new EolUnparser().unparse((EolModule)module));

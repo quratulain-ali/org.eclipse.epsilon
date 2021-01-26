@@ -77,24 +77,48 @@ public class SmartEMF extends EmfModel{
 		return allOfKind;
 	}
 	
-	public boolean removeFromTypes(String modelElement) {
-		
-		EffectiveType me = new EffectiveType(modelElement);
-		
-		for(EffectiveType et: types)
+//	public boolean removeFromTypes(String modelElement) {
+//		
+//		EffectiveType me = new EffectiveType(modelElement);
+//		
+//		for(EffectiveType et: types)
+//		{
+//			if (et.getName().equals(modelElement)) {
+//				types.remove(me);
+//				return true;
+//			}
+//		}
+//		return false;
+//	}
+	
+	/*Add elements to effective meta-model references*/
+	/* In all methods, if the element already exists, it just returned*/
+	
+	public EffectiveType addToAllOfKind(String modelElement)
+	{
+		for(EffectiveType et: allOfKind)
 		{
 			if (et.getName().equals(modelElement)) {
-				types.remove(me);
-				return true;
+				return et;
 			}
 		}
-		return false;
+		EffectiveType et = new EffectiveType(modelElement);
+		et.setEffectiveMetamodel(this);
+		allOfKind.add(et);
+		return et;
 	}
-	
-	public ArrayList<EffectiveType> getTypes() {
-		return types;
+	public EffectiveType addToAllOfKind(EffectiveType et)
+	{
+		for(EffectiveType t: allOfKind)
+		{
+			if (t.getName().equals(et.getName())) {
+				return t;
+			}
+		}
+		et.setEffectiveMetamodel(this);
+		allOfKind.add(et);
+		return et;
 	}
-	
 	public EffectiveType addToAllOfType(String modelElement)
 	
 	{
@@ -126,48 +150,14 @@ public class SmartEMF extends EmfModel{
 		types.add(et);
 		return et;
 	}
-
 	
-	public EffectiveType addToAllOfKind(String modelElement)
-	{
-		for(EffectiveType et: allOfKind)
-		{
-			if (et.getName().equals(modelElement)) {
-				return et;
-			}
-		}
-		
-		EffectiveType et = new EffectiveType(modelElement);
-		et.setEffectiveMetamodel(this);
-		allOfKind.add(et);
-		return et;
+	/*Get methods for all references of effective meta-model*/
+	public ArrayList<EffectiveType> getTypes() {
+		return types;
 	}
 	
-	public EffectiveFeature addAttributeToAllOfKind(String elementName, String attribute)
-	{
-		EffectiveType effectiveType = getFromAllOfKind(elementName);
-		if (effectiveType != null) {
-			EffectiveFeature effectiveFeature = new EffectiveFeature(attribute);
-			effectiveType.getAttributes().add(effectiveFeature);
-			return effectiveFeature;
-		}
-		return null;
-	}
-	public EffectiveFeature addReferenceToEffectiveType(String elementName, String reference)
-	{
-		EffectiveType effectiveType = getFromAllOfKind(elementName);
-		if (effectiveType == null) {
-			effectiveType = getFromAllOfType(elementName);
-			if (effectiveType == null) 
-				effectiveType = getFromTypes(elementName);
-		}
-		if (effectiveType != null) {
-			EffectiveFeature effectiveFeature = new EffectiveFeature(reference);
-			effectiveType.getReferences().add(effectiveFeature);
-			return effectiveFeature;
-		}
-		return null;
-	}
+	
+	/*Methods for adding new feature to effective types (where-ever they are!)*/
 	public EffectiveFeature addAttributeToEffectiveType(String elementName, String attribute)
 	{
 		EffectiveType effectiveType = getFromAllOfKind(elementName);
@@ -183,9 +173,15 @@ public class SmartEMF extends EmfModel{
 		}
 		return null;
 	}
-	public EffectiveFeature addReferenceToAllOfKind(String elementName, String reference)
+	
+	public EffectiveFeature addReferenceToEffectiveType(String elementName, String reference)
 	{
 		EffectiveType effectiveType = getFromAllOfKind(elementName);
+		if (effectiveType == null) {
+			effectiveType = getFromAllOfType(elementName);
+			if (effectiveType == null) 
+				effectiveType = getFromTypes(elementName);
+		}
 		if (effectiveType != null) {
 			EffectiveFeature effectiveFeature = new EffectiveFeature(reference);
 			effectiveType.getReferences().add(effectiveFeature);
@@ -194,38 +190,77 @@ public class SmartEMF extends EmfModel{
 		return null;
 	}
 	
-	public EffectiveFeature addAttributeToAllOfType(String elementName, String attribute)
-	{
-		EffectiveType effectiveType = getFromAllOfType(elementName);
-		if (effectiveType != null) {
-			EffectiveFeature effectiveFeature = new EffectiveFeature(attribute);
-			effectiveType.getAttributes().add(effectiveFeature);
-			return effectiveFeature;
-		}
-		return null;
-	}
-	public EffectiveFeature addAttributeToTypes(String elementName, String attribute)
+	public boolean removeFromTypes(String elementName)
 	{
 		EffectiveType effectiveType = getFromTypes(elementName);
 		if (effectiveType != null) {
-			EffectiveFeature effectiveFeature = new EffectiveFeature(attribute);
-			effectiveType.getAttributes().add(effectiveFeature);
-			return effectiveFeature;
+			return getTypes().remove(effectiveType);
 		}
-		return null;
+		return false;
 	}
-	public EffectiveFeature addReferenceToAllOfType(String elementName, String reference)
+	public boolean removeFromAllOfType(String elementName)
 	{
 		EffectiveType effectiveType = getFromAllOfType(elementName);
 		if (effectiveType != null) {
-			EffectiveFeature effectiveFeature = new EffectiveFeature(reference);
-			effectiveType.getReferences().add(effectiveFeature);
-			return effectiveFeature;
+			return getTypes().remove(effectiveType);
 		}
-		return null;
+		return false;
 	}
+//	
+//	public EffectiveFeature addReferenceToAllOfKind(String elementName, String reference)
+//	{
+//		EffectiveType effectiveType = getFromAllOfKind(elementName);
+//		if (effectiveType != null) {
+//			EffectiveFeature effectiveFeature = new EffectiveFeature(reference);
+//			effectiveType.getReferences().add(effectiveFeature);
+//			return effectiveFeature;
+//		}
+//		return null;
+//	}
+//	
+//	public EffectiveFeature addReferenceToAllOfType(String elementName, String reference)
+//	{
+//		EffectiveType effectiveType = getFromAllOfType(elementName);
+//		if (effectiveType != null) {
+//			EffectiveFeature effectiveFeature = new EffectiveFeature(reference);
+//			effectiveType.getReferences().add(effectiveFeature);
+//			return effectiveFeature;
+//		}
+//		return null;
+//	}
+//	
+//	public EffectiveFeature addAttributeToAllOfType(String elementName, String attribute)
+//	{
+//		EffectiveType effectiveType = getFromAllOfType(elementName);
+//		if (effectiveType != null) {
+//			EffectiveFeature effectiveFeature = new EffectiveFeature(attribute);
+//			effectiveType.getAttributes().add(effectiveFeature);
+//			return effectiveFeature;
+//		}
+//		return null;
+//	}
+//	public EffectiveFeature addAttributeToTypes(String elementName, String attribute)
+//	{
+//		EffectiveType effectiveType = getFromTypes(elementName);
+//		if (effectiveType != null) {
+//			EffectiveFeature effectiveFeature = new EffectiveFeature(attribute);
+//			effectiveType.getAttributes().add(effectiveFeature);
+//			return effectiveFeature;
+//		}
+//		return null;
+//	}
+//	public EffectiveFeature addAttributeToAllOfKind(String elementName, String attribute)
+//	{
+//		EffectiveType effectiveType = getFromAllOfKind(elementName);
+//		if (effectiveType != null) {
+//			EffectiveFeature effectiveFeature = new EffectiveFeature(attribute);
+//			effectiveType.getAttributes().add(effectiveFeature);
+//			return effectiveFeature;
+//		}
+//		return null;
+//	}
 	
-	
+	/*Get elements from allOfType*/
 	public EffectiveType getFromAllOfType(String elementName)
 	{
 		for(EffectiveType ef: allOfType)
@@ -236,6 +271,7 @@ public class SmartEMF extends EmfModel{
 		}
 		return null;
 	}
+	/*Get elements from types*/
 	public EffectiveType getFromTypes(String elementName)
 	{
 		for(EffectiveType ef: types)
@@ -246,6 +282,7 @@ public class SmartEMF extends EmfModel{
 		}
 		return null;
 	}
+	/*Get elements from allOfKind*/
 	public EffectiveType getFromAllOfKind(String elementName)
 	{
 		for(EffectiveType ef: allOfKind)
@@ -257,6 +294,7 @@ public class SmartEMF extends EmfModel{
 		return null;
 	}
 	
+	/*Check if an element is exists in allOfType*/
 	public boolean allOfTypeContains(String modelElement)
 	{
 		for(EffectiveType ef: allOfType)
@@ -267,7 +305,7 @@ public class SmartEMF extends EmfModel{
 		}
 		return false;
 	}
-	
+	/*Check if an element is exists in allOfKind*/
 	public boolean allOfKindContains(String modelElement)
 	{
 		for(EffectiveType ef: allOfKind)
@@ -278,6 +316,7 @@ public class SmartEMF extends EmfModel{
 		}
 		return false;
 	}
+	/*Check if an element is exists in types*/
 	public boolean typesContains(String modelElement)
 	{
 		for(EffectiveType ef: types)
@@ -292,7 +331,6 @@ public class SmartEMF extends EmfModel{
 	@Override
 	public void load(){
 		
-		long startTime = System.nanoTime();
 		//String model = "/Users/sorourjahanbin/git/Epsilon_Nov2020/plugins/org.eclipse.epsilon.partialloading/src/org/eclipse/epsilon/TestUnit/Parser/flowchart2.xmi";
 		
 		ResourceSet resourceSet = new ResourceSetImpl();
@@ -311,6 +349,7 @@ public class SmartEMF extends EmfModel{
 		EffectiveMetamodelReconciler effectiveMetamodelReconciler = new EffectiveMetamodelReconciler();
 		effectiveMetamodelReconciler.addPackages(resourceSet.getPackageRegistry().values());
 		effectiveMetamodelReconciler.addEffectiveMetamodel(this);
+		
 		effectiveMetamodelReconciler.reconcile();
 
 		Map<String, Object> loadOptions = new HashMap<String, Object>();
@@ -318,22 +357,21 @@ public class SmartEMF extends EmfModel{
 		loadOptions.put(SmartSAXXMIResource.OPTION_LOAD_ALL_ATTRIBUTES, false);
 		loadOptions.put(SmartSAXXMIResource.OPTION_RECONCILE_EFFECTIVE_METAMODELS, true);
 
-		
+		long startTime = System.nanoTime();
 		try {
 			
 			resource.load(loadOptions);
-			long endTime = System.nanoTime();
-			long duration = (endTime - startTime); // divide by 1000000 to get milliseconds.
-			System.out.println("**** Time ****");
-			System.out.println(duration/1000000+ " milliseconds");
 			
 		} catch (IOException e) {
 			
 			e.printStackTrace();
 		}
 		
+		long endTime = System.nanoTime();
+		long duration = (endTime - startTime); // divide by 1000000 to get milliseconds.
+		System.out.println("**** Time ****");
+		System.out.println(duration/1000000+ " milliseconds");
 		System.out.println("**** Loaded Objects ****");
 		System.out.println(resource.getContents().size());
-		 
 	}
 }
