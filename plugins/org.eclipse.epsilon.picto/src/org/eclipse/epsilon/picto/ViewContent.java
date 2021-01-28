@@ -32,6 +32,7 @@ public class ViewContent {
 	protected List<Patch> patches;
 	protected Set<java.net.URI> baseUris;
 	protected ViewContent next = undefined;
+	protected ViewContent previous = null;
 	protected File file;
 	protected static final ViewContent undefined = new ViewContent("We shouldn't be here","xxx", null, Collections.emptyList(), Collections.emptyList(), Collections.emptySet());
 	
@@ -103,6 +104,7 @@ public class ViewContent {
 				if (viewContentTransformer.canTransform(this)) {
 					try {
 						next = viewContentTransformer.transform(this, pictoView);
+						if (next != null) next.setPrevious(this);
 					}
 					catch (Exception e) {
 						next = new ExceptionContentTransformer().getViewContent(e, pictoView);
@@ -113,6 +115,24 @@ public class ViewContent {
 		}
 		if (next == undefined) next = null;
 		return next;
+	}
+	
+	public void setPrevious(ViewContent previous) {
+		this.previous = previous;
+	}
+	
+	public ViewContent getPrevious() {
+		return previous;
+	}
+	
+	public List<ViewContent> getAllPrevious() {
+		List<ViewContent> allPrevious = new ArrayList<>();
+		ViewContent p = previous;
+		while (p != null) {
+			allPrevious.add(previous);
+			p = p.getPrevious();
+		}
+		return allPrevious;
 	}
 	
 	public boolean isActive() {
