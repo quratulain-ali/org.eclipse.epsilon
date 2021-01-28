@@ -440,4 +440,10 @@ public class EolVariableNameChecker implements IModuleValidator, IEolVisitor {
 		visitOperatorExpression(xorOperatorExpression);
 	}
 
+	@Override
+	public void visit(OperatorExpression operatorExpression) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
