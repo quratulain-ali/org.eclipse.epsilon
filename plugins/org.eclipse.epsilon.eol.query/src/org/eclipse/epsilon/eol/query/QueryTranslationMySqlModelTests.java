@@ -33,7 +33,8 @@ public class QueryTranslationMySqlModelTests extends TestCase {
 				context.setModelFactory(new SubEmfModelFactory());
 		}
 		
-		new EolStaticAnalyser().validate(module);
+		EolStaticAnalyser staticAnlayser = new EolStaticAnalyser();
+		staticAnlayser.validate(module);
 		
 		for (ModelDeclaration modelDeclaration : module.getDeclaredModelDeclarations()) {
 			if (modelDeclaration.doOptimisation().equals("true")) {
@@ -45,7 +46,7 @@ public class QueryTranslationMySqlModelTests extends TestCase {
 
 			if (modelDeclaration.getDriverNameExpression().getName().equals("EMF")) {
 				context.setModelFactory(new SubEmfModelFactory());
-				new EmfModelQueryRewriter().rewrite(model, module, context);
+				new EmfModelQueryRewriter().rewrite(model, module, context, staticAnlayser.getCallGraph());
 			}
 			}
 		}

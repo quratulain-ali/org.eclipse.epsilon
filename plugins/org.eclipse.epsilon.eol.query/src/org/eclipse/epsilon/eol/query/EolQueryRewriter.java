@@ -24,11 +24,12 @@ public class EolQueryRewriter implements EpsilonLaunchConfigurationDelegateListe
 		
 		module.getCompilationContext().setModelFactory(new ModelTypeExtensionFactory());
 		
-		new EolStaticAnalyser().validate(module);
+		EolStaticAnalyser staticAnlayser = new EolStaticAnalyser();
+		staticAnlayser.validate(module);
 		
 		if (module.getMain() == null) return;
         
-		new QueryRewriter().invokeRewriters(module);
+		new QueryRewriter().invokeRewriters(module, staticAnlayser.getCallGraph());
 		
 	}
 

@@ -1,8 +1,12 @@
 package org.eclipse.epsilon.eol.staticanalyser;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.epsilon.eol.IEolModule;
 import org.eclipse.epsilon.eol.dom.AbortStatement;
@@ -72,6 +76,8 @@ import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.AllDirectedPaths;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.nio.Attribute;
+import org.jgrapht.nio.DefaultAttribute;
 import org.jgrapht.nio.dot.DOTExporter;
 
 public class CallGraphGenerator implements IEolVisitor {
@@ -79,7 +85,7 @@ public class CallGraphGenerator implements IEolVisitor {
 	String entry = "main";
 	boolean calledFromLoop = false;
 	int loopCounter = 0;
-	DefaultDirectedGraph<String, DefaultEdge> callGraph;
+	DefaultDirectedGraph<String, RelationshipEdge> callGraph;
 
 	@Override
 	public void visit(AbortStatement abortStatement) {
@@ -335,17 +341,13 @@ public class CallGraphGenerator implements IEolVisitor {
 		   if(!entry.equals("main")) 
 		 		callGraph.addVertex(entry);
 		   
+		   callGraph.addVertex(operationName);
+		   
 		   if(calledFromLoop) {
-			   	loopCounter++;
-		 		String vertex = "loop"+(loopCounter);
-		 		callGraph.addVertex(vertex);
-		 		callGraph.addVertex(operationName);
-		 		callGraph.addEdge(entry, vertex);
-		 		callGraph.addEdge(vertex, operationName);
+			 callGraph.addEdge(entry, operationName,new RelationshipEdge("loop"));
 		 	}
 		   else {
-		 	callGraph.addVertex(operationName);
-		 	callGraph.addEdge(entry, operationName);
+		 	callGraph.addEdge(entry, operationName,new RelationshipEdge(""));
 		   }
 		 	
 		  
@@ -469,7 +471,7 @@ public class CallGraphGenerator implements IEolVisitor {
 	
 	public void generateCallGraph(IEolModule eolModule) {
 		if (eolModule.getMain() != null) {
-			callGraph =  new DefaultDirectedGraph<String, DefaultEdge>(DefaultEdge.class);
+			callGraph =  new DefaultDirectedGraph<String, RelationshipEdge>(RelationshipEdge.class);
 			callGraph.addVertex("main");
 			eolModule.getMain().accept(this);
 		}
@@ -483,15 +485,24 @@ public class CallGraphGenerator implements IEolVisitor {
 
 		//eolModule.getDeclaredOperations().forEach(o -> o.accept(this));
 		
-		DOTExporter<String, DefaultEdge> exporter=new DOTExporter<>(v -> v.toString());
-        Writer writer = new StringWriter();
+		DOTExporter<String, RelationshipEdge> exporter=new DOTExporter<>(v -> v.toString());
+		exporter.setEdgeAttributeProvider((e) -> {
+            Map<String, Attribute> map = new LinkedHashMap<>();
+            map.put("label", DefaultAttribute.createAttribute(e.getLabel()));
+            return map;
+		});
+		Writer writer = new StringWriter();
+		try {
+	        exporter.exportGraph( callGraph,new FileWriter("/Users/quratulainali/runtime-EclipseApplication/TestProject/callGraph.dot"));
+	    }catch (IOException e){}
         exporter.exportGraph(callGraph, writer);
         System.out.println(writer.toString());
 	}
+
 	
 	public boolean pathExists(String source, String destination){
 		if(callGraph.containsVertex(destination) && callGraph.containsVertex(source)) {
-		List<GraphPath<String, DefaultEdge>> possiblePaths = 
+		List<GraphPath<String, RelationshipEdge>> possiblePaths = 
 			new AllDirectedPaths<>(callGraph).getAllPaths(source, destination, true, null);
 		
 		if(possiblePaths.isEmpty())
@@ -506,12 +517,15 @@ public class CallGraphGenerator implements IEolVisitor {
 		boolean pathContainsLoop = false;
 		if(callGraph.containsVertex(destination) && callGraph.containsVertex(source) 
 				&& pathExists(source,destination)) {
-		List<GraphPath<String, DefaultEdge>> possiblePaths = 
+		List<GraphPath<String, RelationshipEdge>> possiblePaths = 
 			new AllDirectedPaths<>(callGraph).getAllPaths(source, destination, true, null);
 		
-		for(GraphPath<String, DefaultEdge> path : possiblePaths)
-		if(path.getVertexList().contains("loop1"))
-			pathContainsLoop = true;
+		for(GraphPath<String, RelationshipEdge> path : possiblePaths) {
+			List<RelationshipEdge> edges = path.getEdgeList();
+			for(RelationshipEdge edge : edges)
+				if(edge.getLabel().equals("loop"))
+					pathContainsLoop = true;
+		}
 		}
 		return pathContainsLoop;
 	}
