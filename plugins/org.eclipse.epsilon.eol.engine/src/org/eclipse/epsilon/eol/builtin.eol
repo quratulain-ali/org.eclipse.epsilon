@@ -165,6 +165,7 @@ operation Collection<Any> first() : Any {
 @builtin
 operation Collection<Any> isEmpty() : Boolean {
 }
+@builtin
 operation Collection<Any> notEmpty() : Boolean {
 }
 // Added for Eugenia _ 17March2020
