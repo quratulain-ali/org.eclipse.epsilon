@@ -1,10 +1,8 @@
 package org.eclipse.epsilon.eol.staticanalyser;
 
 import org.jgrapht.alg.connectivity.KosarajuStrongConnectivityInspector;
-import org.jgrapht.alg.interfaces.ShortestPathAlgorithm.SingleSourcePaths;
 import org.jgrapht.alg.interfaces.StrongConnectivityAlgorithm;
 import org.jgrapht.alg.shortestpath.AllDirectedPaths;
-import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.nio.dot.DOTExporter;
@@ -14,13 +12,16 @@ import java.io.Writer;
 import java.util.List;
 
 import org.jgrapht.Graph;
+import org.jgrapht.GraphPath;
 
 public class TestGraph {
 
+	static DefaultDirectedGraph<String, DefaultEdge> callGraph;
+			
 	public static void main(String[] args) {
 		// constructs a directed graph with the specified vertices and edges
-        DefaultDirectedGraph<String, DefaultEdge> callGraph =
-            new DefaultDirectedGraph<String, DefaultEdge>(DefaultEdge.class);
+        
+        callGraph = new DefaultDirectedGraph<String, DefaultEdge>(DefaultEdge.class);
         callGraph.addVertex("main");
         callGraph.addVertex("bar");
         callGraph.addVertex("foo");
@@ -48,8 +49,8 @@ public class TestGraph {
         for (int i = 0; i < stronglyConnectedSubgraphs.size(); i++) {
             System.out.println(stronglyConnectedSubgraphs.get(i));
         }
-        System.out.println();
-
+        System.out.println(callGraph instanceof Graph);
+        
         // Prints the shortest path from vertex i to vertex c. This certainly
         // exists for our particular directed graph.
         System.out.println("Shortest path from i to c:");
@@ -62,7 +63,7 @@ public class TestGraph {
 //        // empty and the variable "path"; must be null.
 //        System.out.println("Shortest path from main to test:");
 //        SingleSourcePaths<String, DefaultEdge> cPaths = dijkstraAlg.getPaths("main");
-//        System.out.println(cPaths.getPath("foo"));
+        System.out.println("Path contains loop : "+pathContainsLoop("main", "hello"));
         
       //Create the exporter (without ID provider)
         DOTExporter<String, DefaultEdge> exporter=new DOTExporter<>(v -> v.toString());
@@ -72,4 +73,19 @@ public class TestGraph {
         
         
     }
+	
+	public static boolean pathContainsLoop(String source, String destination){
+		boolean pathContainsLoop = false;
+		if(callGraph.containsVertex(destination) && callGraph.containsVertex(source)) {
+		List<GraphPath<String, DefaultEdge>> possiblePaths = 
+			new AllDirectedPaths<>(callGraph).getAllPaths(source, destination, true, null);
+		
+		for(GraphPath<String, DefaultEdge> path : possiblePaths)
+		if(path.getVertexList().contains("for"))
+			pathContainsLoop = true;
+		else
+			pathContainsLoop = false;
+		}
+		return pathContainsLoop;
+	}
 }

@@ -34,7 +34,13 @@ import org.eclipse.epsilon.eol.dom.StatementBlock;
 import org.eclipse.epsilon.eol.dom.StringLiteral;
 import org.eclipse.epsilon.eol.exceptions.models.EolModelElementTypeNotFoundException;
 import org.eclipse.epsilon.eol.models.IModel;
+import org.eclipse.epsilon.eol.staticanalyser.CallGraphGenerator;
 import org.eclipse.epsilon.eol.types.EolModelElementType;
+import org.jgrapht.Graph;
+import org.jgrapht.GraphPath;
+import org.jgrapht.alg.shortestpath.AllDirectedPaths;
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
 
 public class EmfModelQueryRewriter {
 
@@ -46,8 +52,9 @@ public class EmfModelQueryRewriter {
 	IEolModule module;
 	String modelName;
 	boolean indexExists = false;
+	boolean canbeExecutedMultipleTimes = false;
 
-	public void rewrite(IModel model, IEolModule module, IEolCompilationContext context) {
+	public void rewrite(IModel model, IEolModule module, IEolCompilationContext context, CallGraphGenerator cg) {//, DefaultDirectedGraph<String, DefaultEdge> callGraph) {
 		this.module = module;
 		
 		if (module.getMain() == null)   return;
@@ -61,7 +68,12 @@ public class EmfModelQueryRewriter {
 		optimiseStatementBlock(model, module, statements);
 		
 		for(Operation operation : module.getDeclaredOperations()) {
+			if(cg.pathExists("main", operation.getName())
+					&& cg.pathContainsLoop("main", operation.getName())) {
+				canbeExecutedMultipleTimes = true;
 			optimiseStatementBlock(model, module, operation.getBody().getStatements());
+			canbeExecutedMultipleTimes = false;
+			}
 		}
 		int index = 0;
 		
@@ -91,10 +103,12 @@ public class EmfModelQueryRewriter {
 
 		for (Statement statement : statements) {
 			if (statement instanceof ForStatement) {
-				//optimising iterator expression
-				optimiseAST(model, Arrays.asList(statement.getChildren().get(1)), indexExists);
+//				//optimising iterator expression
+//				optimiseAST(model, Arrays.asList(statement.getChildren().get(1)), indexExists);
+				canbeExecutedMultipleTimes = true;
 				List<Statement> childStatements = ((ForStatement) statement).getBodyStatementBlock().getStatements();
 				optimiseStatementBlock(model, module, childStatements);
+				canbeExecutedMultipleTimes = false;
 			}
 
 			else if (statement instanceof IfStatement) {
@@ -108,9 +122,12 @@ public class EmfModelQueryRewriter {
 					List<Statement> elseStatements = ((IfStatement) statement).getElseStatementBlock().getStatements();
 					optimiseStatementBlock(model, module, elseStatements);
 				}
-			} else {
+			} 
+			else {
+				if(canbeExecutedMultipleTimes) {
 				List<ModuleElement> asts = statement.getChildren();
 				module = optimiseAST(model, asts, indexExists);
+				}
 			}
 		}
 	}

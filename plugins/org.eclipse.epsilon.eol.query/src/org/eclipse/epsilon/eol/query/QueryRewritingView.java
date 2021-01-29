@@ -31,6 +31,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
+import org.jgrapht.Graph;
 import org.eclipse.epsilon.common.dt.editor.AbstractModuleEditorSourceViewerConfiguration;
 
 public class QueryRewritingView extends ViewPart {
@@ -77,9 +78,11 @@ public class QueryRewritingView extends ViewPart {
 
 		context.setModelFactory(new ModelTypeExtensionFactory());
 
-		new EolStaticAnalyser().validate(module);
+		EolStaticAnalyser staticAnlayser = new EolStaticAnalyser();
+		staticAnlayser.validate(module);
+		
 
-		new QueryRewriter().invokeRewriters(module);
+		new QueryRewriter().invokeRewriters(module,staticAnlayser.getCallGraph());
 		
 		translatedCode.set(new EolUnparser().unparse(module));
 		viewer.setDocument(translatedCode);
@@ -133,9 +136,10 @@ public class QueryRewritingView extends ViewPart {
 		context = module.getCompilationContext();
 		context.setModelFactory(new ModelTypeExtensionFactory());
 
-		new EolStaticAnalyser().validate(module);
+		EolStaticAnalyser staticAnlayser = new EolStaticAnalyser();
+		staticAnlayser.validate(module);
 
-		new QueryRewriter().invokeRewriters(module);
+		new QueryRewriter().invokeRewriters(module,staticAnlayser.getCallGraph());
 
 		translatedCode.set(new EolUnparser().unparse(module));
 		viewer.setDocument(translatedCode);

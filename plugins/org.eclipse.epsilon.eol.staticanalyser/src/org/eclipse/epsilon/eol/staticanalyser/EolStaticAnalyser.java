@@ -98,6 +98,9 @@ import org.eclipse.epsilon.eol.types.EolSelfCollectionType;
 import org.eclipse.epsilon.eol.types.EolSelfContentType;
 import org.eclipse.epsilon.eol.types.EolSelfExpressionType;
 import org.eclipse.epsilon.eol.types.EolType;
+import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
 
 public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 
@@ -111,7 +114,7 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 	HashMap<OperationCallExpression, ArrayList<Operation>> matchedOperations = new HashMap<>(); //keeping all matched operations with same contextType and parameters
 	HashMap<OperationCallExpression, ArrayList<EolType>> matchedReturnType = new HashMap<>(); //keeping returnTypes of matched operations
 	HashMap<OperationCallExpression, Boolean> matched = new HashMap<>(); //finding one perfect match, in doesn't change for every missmatch
-	//HashMap<OperationCallExpression>
+	CallGraphGenerator callGraph;
 	
 	public EolStaticAnalyser() {
 	}
@@ -1298,7 +1301,11 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 		if (eolModule.getMain() != null)
 			eolModule.getMain().accept(this);
 		eolModule.getDeclaredOperations().forEach(o -> o.accept(this));
-		new CallGraphGenerator().generateCallGraph(eolModule);
+		
+		callGraph = new CallGraphGenerator();
+		callGraph.generateCallGraph(module);
+		
+        System.out.println("Instance of Graph "+(callGraph instanceof Graph));
 		if (!(module instanceof BuiltinEolModule))
 			module.getOperations().removeAll(builtinModule.getDeclaredOperations());
 		
@@ -1308,6 +1315,10 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 	@Override
 	public String getMarkerType() {
 		return AbstractModuleEditor.PROBLEM_MARKER;
+	}
+	
+	public CallGraphGenerator getCallGraph() {
+		return callGraph;
 	}
 
 	public void createTypeCompatibilityWarning(Expression requiredExpression, Expression providedExpression) {

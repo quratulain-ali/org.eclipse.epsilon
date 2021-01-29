@@ -2,6 +2,7 @@ package org.eclipse.epsilon.eol.staticanalyser;
 
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.List;
 
 import org.eclipse.epsilon.eol.IEolModule;
 import org.eclipse.epsilon.eol.dom.AbortStatement;
@@ -66,6 +67,9 @@ import org.eclipse.epsilon.eol.dom.TypeExpression;
 import org.eclipse.epsilon.eol.dom.VariableDeclaration;
 import org.eclipse.epsilon.eol.dom.WhileStatement;
 import org.eclipse.epsilon.eol.dom.XorOperatorExpression;
+import org.jgrapht.Graph;
+import org.jgrapht.GraphPath;
+import org.jgrapht.alg.shortestpath.AllDirectedPaths;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.nio.dot.DOTExporter;
@@ -75,7 +79,7 @@ public class CallGraphGenerator implements IEolVisitor {
 	String entry = "main";
 	boolean calledFromLoop = false;
 	int loopCounter = 0;
-	DefaultDirectedGraph<String, DefaultEdge> callGraph  =  new DefaultDirectedGraph<String, DefaultEdge>(DefaultEdge.class);;
+	DefaultDirectedGraph<String, DefaultEdge> callGraph;
 
 	@Override
 	public void visit(AbortStatement abortStatement) {
@@ -465,8 +469,8 @@ public class CallGraphGenerator implements IEolVisitor {
 	
 	public void generateCallGraph(IEolModule eolModule) {
 		if (eolModule.getMain() != null) {
-		
-	        callGraph.addVertex("main");
+			callGraph =  new DefaultDirectedGraph<String, DefaultEdge>(DefaultEdge.class);
+			callGraph.addVertex("main");
 			eolModule.getMain().accept(this);
 		}
 		
@@ -484,5 +488,31 @@ public class CallGraphGenerator implements IEolVisitor {
         exporter.exportGraph(callGraph, writer);
         System.out.println(writer.toString());
 	}
-
+	
+	public boolean pathExists(String source, String destination){
+		if(callGraph.containsVertex(destination) && callGraph.containsVertex(source)) {
+		List<GraphPath<String, DefaultEdge>> possiblePaths = 
+			new AllDirectedPaths<>(callGraph).getAllPaths(source, destination, true, null);
+		
+		if(possiblePaths.isEmpty())
+			return false;
+		else
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean pathContainsLoop(String source, String destination){
+		boolean pathContainsLoop = false;
+		if(callGraph.containsVertex(destination) && callGraph.containsVertex(source) 
+				&& pathExists(source,destination)) {
+		List<GraphPath<String, DefaultEdge>> possiblePaths = 
+			new AllDirectedPaths<>(callGraph).getAllPaths(source, destination, true, null);
+		
+		for(GraphPath<String, DefaultEdge> path : possiblePaths)
+		if(path.getVertexList().contains("loop1"))
+			pathContainsLoop = true;
+		}
+		return pathContainsLoop;
+	}
 }
