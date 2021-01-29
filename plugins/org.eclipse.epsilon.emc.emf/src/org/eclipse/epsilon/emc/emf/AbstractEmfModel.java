@@ -77,7 +77,7 @@ public abstract class AbstractEmfModel extends CachedModel<EObject> {
 	 */
 	boolean parallelAllOf;
 	
-	HashMap<String, Multimap> indices = new HashMap<>();
+	HashMap<String, Multimap<Object, String>> indices = new HashMap<>();
 	
 	public AbstractEmfModel() {
 		propertyGetter = new EmfPropertyGetter();
@@ -218,15 +218,18 @@ public abstract class AbstractEmfModel extends CachedModel<EObject> {
 		}
 	}
 	
-	public Multimap<Object ,String> createIndex(String kind, String field) throws EolModelElementTypeNotFoundException {
+	public Multimap<Object ,String> createIndex(String type, String field) throws EolModelElementTypeNotFoundException {
 		
-		final EClass eClass = classForName(kind);
-		
+		EClass eClass = classForName(type);
 		Multimap<Object ,String> index=new Multimap<Object,String>(); //Creating HashMap
-		for (EObject s : getAllOfTypeFromModel(kind)) {
-		        index.put(s.eGet(eClass.getEStructuralFeature(field)), getElementId(s));
-		   }
-		indices.put(kind+","+field, index);		
+		EStructuralFeature feature =eClass.getEStructuralFeature(field);
+		Collection<EObject> all = getAllOfTypeFromModel(type);
+		
+		for (EObject s : all) {
+		    index.put(s.eGet(feature), getElementId(s));
+		}
+	    
+		indices.put(type+","+field, index);		
 		return index;
 	}
 	
