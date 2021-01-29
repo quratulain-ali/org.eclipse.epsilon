@@ -111,7 +111,8 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 	HashMap<OperationCallExpression, ArrayList<Operation>> matchedOperations = new HashMap<>(); //keeping all matched operations with same contextType and parameters
 	HashMap<OperationCallExpression, ArrayList<EolType>> matchedReturnType = new HashMap<>(); //keeping returnTypes of matched operations
 	HashMap<OperationCallExpression, Boolean> matched = new HashMap<>(); //finding one perfect match, in doesn't change for every missmatch
-
+	//HashMap<OperationCallExpression>
+	
 	public EolStaticAnalyser() {
 	}
 
@@ -1286,7 +1287,6 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 			return Collections.emptyList();
 
 		errors = new ArrayList<>();
-		// errors = new ArrayList<>();
 
 		EolModule eolModule = (EolModule) imodule;
 		this.module = eolModule;
@@ -1298,7 +1298,7 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 		if (eolModule.getMain() != null)
 			eolModule.getMain().accept(this);
 		eolModule.getDeclaredOperations().forEach(o -> o.accept(this));
-		
+		new CallGraphGenerator().generateCallGraph(eolModule);
 		if (!(module instanceof BuiltinEolModule))
 			module.getOperations().removeAll(builtinModule.getDeclaredOperations());
 		
