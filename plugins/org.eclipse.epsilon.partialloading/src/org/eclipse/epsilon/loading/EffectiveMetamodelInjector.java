@@ -19,6 +19,7 @@ import org.eclipse.epsilon.effectivemetamodel.SmartEMF;
 import org.eclipse.epsilon.effectivemetamodel.EffectiveMetamodelExtraction;
 import org.eclipse.epsilon.effectivemetamodel.EffectiveMetamodelExtractor;
 import org.eclipse.epsilon.effectivemetamodel.EffectiveType;
+import org.eclipse.epsilon.effectivemetamodel.EvlEffectiveMetamodelExtractor;
 import org.eclipse.epsilon.effectivemetamodel.SubModelFactory;
 import org.eclipse.epsilon.emc.emf.EmfModel;
 import org.eclipse.epsilon.eol.EolModule;
@@ -44,8 +45,10 @@ import org.eclipse.epsilon.eol.parse.EolUnparser;
 import org.eclipse.epsilon.eol.staticanalyser.EolStaticAnalyser;
 import org.eclipse.epsilon.eol.types.EolCollectionType;
 import org.eclipse.epsilon.eol.types.EolModelElementType;
+import org.eclipse.epsilon.evl.EvlModule;
 import org.eclipse.epsilon.evl.dom.ConstraintContext;
 import org.eclipse.epsilon.evl.parse.Evl_EvlParserRules.context_return;
+import org.eclipse.epsilon.evl.staticanalyser.EvlStaticAnalyser;
 
 public class EffectiveMetamodelInjector implements EpsilonLaunchConfigurationDelegateListener{
 
@@ -61,16 +64,26 @@ public class EffectiveMetamodelInjector implements EpsilonLaunchConfigurationDel
 		
 		
 		module.getCompilationContext().setModelFactory(new SubModelFactory());
-		new EolStaticAnalyser().validate(module);
+		if (module instanceof EvlModule)
+			new EvlStaticAnalyser().validate(module);
+		else {
+			new EolStaticAnalyser().validate(module);
+			if (module.getMain() == null) return;
+		}
 		
 	if (!module.getCompilationContext().getModelDeclarations().isEmpty() 
 		&& module.getCompilationContext().getModelDeclarations().get(0).getDriverNameExpression().getName().equals("SmartEMF"))
 		{
 			
-			if (module.getMain() == null) return;
+			
 		
 		//ArrayList<SmartEMF> effectiveMetamodels = new ArrayList<SmartEMF>();
 		SmartEMF smartEMFModel = null;
+		if (module instanceof EvlModule) {
+			smartEMFModel = new EvlEffectiveMetamodelExtractor().geteffectiveMetamodel(module);
+			module = (IEolModule) module;
+		}
+		else
 		smartEMFModel = new EffectiveMetamodelExtractor().geteffectiveMetamodel(module);
 		
 //		ArrayList<ModuleElement> children = new ArrayList<ModuleElement>();

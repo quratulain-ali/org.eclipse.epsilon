@@ -16,23 +16,27 @@ import org.eclipse.epsilon.eol.dom.StringLiteral;
 import org.eclipse.epsilon.eol.exceptions.models.EolModelNotFoundException;
 import org.eclipse.epsilon.eol.types.EolCollectionType;
 import org.eclipse.epsilon.eol.types.EolModelElementType;
+import org.eclipse.epsilon.erl.dom.NamedStatementBlockRule;
 import org.eclipse.epsilon.evl.EvlModule;
 import org.eclipse.epsilon.evl.dom.ConstraintContext;
 
-public class EffectiveMetamodelExtractor {
+public class EvlEffectiveMetamodelExtractor {
 
-	public EffectiveMetamodelExtractor() {}
+	public EvlEffectiveMetamodelExtractor() {}
 	
-	public SmartEMF geteffectiveMetamodel(IEolModule module) {
+	public SmartEMF geteffectiveMetamodel(IEolModule eolmodule) {
 		
 		SmartEMF smartEMFModel = null;
 		ArrayList<ModuleElement> children = new ArrayList<ModuleElement>();
 		ArrayList<StructuralFeature> features = new ArrayList<StructuralFeature>();
 		EffectiveType effectiveType;
 		EolModelElementType target;
+		EvlModule module = (EvlModule)eolmodule;
 		
 		try {
-			smartEMFModel = (SmartEMF) module.getContext().getModelRepository().getModelByName(module.getCompilationContext().getModelDeclarations().get(0).getNameExpression().getName());
+			smartEMFModel = (SmartEMF) module.getContext().getModelRepository().getModelByName
+					(module.getCompilationContext().getModelDeclarations().get(0).getNameExpression()
+							.getName());
 		} catch (EolModelNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -61,12 +65,16 @@ public class EffectiveMetamodelExtractor {
 					
 					ExpressionStatement statement = new ExpressionStatement();
 					statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addToAllOfKind"), new OperationCallExpression(new NameExpression(smartEMFModel.getName()),new NameExpression("getFromAllOfType"), new StringLiteral(target.getName()))));
-					module.getMain().getStatements().add(i, statement);
+					//module.getMain().getStatements().add(i, statement);
+					((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement);
+	
 					i++;
 					
 					ExpressionStatement statement2 = new ExpressionStatement();
 					statement2.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("removeFromAllOfType"), new StringLiteral(target.getName())));
-					module.getMain().getStatements().add(i, statement2);
+					//module.getMain().getStatements().add(i, statement2);
+					((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement2);
+					
 					i++;
 				}
 				//If the element is already under EM's types reference
@@ -77,12 +85,16 @@ public class EffectiveMetamodelExtractor {
 					
 					ExpressionStatement statement = new ExpressionStatement();
 					statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addToAllOfKind"), new OperationCallExpression(new NameExpression(smartEMFModel.getName()),new NameExpression("getFromTypes"), new StringLiteral(target.getName()))));
-					module.getMain().getStatements().add(i, statement);
+					//module.getMain().getStatements().add(i, statement);
+					((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement);
+					
 					i++;
 					
 					ExpressionStatement statement2 = new ExpressionStatement();
 					statement2.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("removeFromTypes"), new StringLiteral(target.getName())));
-					module.getMain().getStatements().add(i, statement2);
+					//module.getMain().getStatements().add(i, statement2);
+					((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement2);
+					
 					i++;							
 				}
 				else {
@@ -90,7 +102,9 @@ public class EffectiveMetamodelExtractor {
 						smartEMFModel.addToAllOfKind(target.getTypeName());
 						ExpressionStatement statement = new ExpressionStatement();
 						statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addToAllOfKind"),new StringLiteral(target.getTypeName())));
-						module.getMain().getStatements().add(i, statement);
+						//module.getMain().getStatements().add(i, statement);
+						((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement);
+						
 						i++;
 				}
 			}
@@ -117,12 +131,16 @@ public class EffectiveMetamodelExtractor {
 								
 								ExpressionStatement statement = new ExpressionStatement();
 								statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addToAllOfKind"), new OperationCallExpression(new NameExpression(smartEMFModel.getName()),new NameExpression("getFromAllOfType"), new StringLiteral(target.getName()))));
-								module.getMain().getStatements().add(i, statement);
+								//module.getMain().getStatements().add(i, statement);
+								((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement);
+								
 								i++;
 								
 								ExpressionStatement statement2 = new ExpressionStatement();
 								statement2.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("removeFromAllOfType"), new StringLiteral(target.getName())));
-								module.getMain().getStatements().add(i, statement2);
+								//module.getMain().getStatements().add(i, statement2);
+								((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement2);
+								
 								i++;
 							}
 							//If the element is already under EM's types reference
@@ -133,12 +151,16 @@ public class EffectiveMetamodelExtractor {
 								
 								ExpressionStatement statement = new ExpressionStatement();
 								statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addToAllOfKind"), new OperationCallExpression(new NameExpression(smartEMFModel.getName()),new NameExpression("getFromTypes"), new StringLiteral(target.getName()))));
-								module.getMain().getStatements().add(i, statement);
+								//module.getMain().getStatements().add(i, statement);
+								((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement);
+								
 								i++;
 								
 								ExpressionStatement statement2 = new ExpressionStatement();
 								statement2.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("removeFromTypes"), new StringLiteral(target.getName())));
-								module.getMain().getStatements().add(i, statement2);
+								//module.getMain().getStatements().add(i, statement2);
+								((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement2);
+								
 								i++;							
 							}
 							else {
@@ -146,7 +168,9 @@ public class EffectiveMetamodelExtractor {
 									smartEMFModel.addToAllOfKind(target.getTypeName());
 									ExpressionStatement statement = new ExpressionStatement();
 									statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addToAllOfKind"),new StringLiteral(target.getTypeName())));
-									module.getMain().getStatements().add(i, statement);
+								//	module.getMain().getStatements().add(i, statement);
+									((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement);
+									
 									i++;
 							}
 
@@ -158,7 +182,9 @@ public class EffectiveMetamodelExtractor {
 		
 								ExpressionStatement statement = new ExpressionStatement();
 								statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addToAllOfType"), new StringLiteral(target.getTypeName())));
-								module.getMain().getStatements().add(i, statement);
+							//	module.getMain().getStatements().add(i, statement);
+								((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement);
+								
 								i++;
 							}
 						}
@@ -183,12 +209,16 @@ public class EffectiveMetamodelExtractor {
 							
 							ExpressionStatement statement = new ExpressionStatement();
 							statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addToAllOfKind"), new OperationCallExpression(new NameExpression(smartEMFModel.getName()),new NameExpression("getFromAllOfType"), new StringLiteral(target.getName()))));
-							module.getMain().getStatements().add(i, statement);
+							//module.getMain().getStatements().add(i, statement);
+							((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement);
+							
 							i++;
 							
 							ExpressionStatement statement2 = new ExpressionStatement();
 							statement2.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("removeFromAllOfType"), new StringLiteral(target.getName())));
-							module.getMain().getStatements().add(i, statement2);
+							//module.getMain().getStatements().add(i, statement2);
+							((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement2);
+							
 							i++;
 						}
 						//If the element is already under EM's types reference
@@ -199,12 +229,16 @@ public class EffectiveMetamodelExtractor {
 							
 							ExpressionStatement statement = new ExpressionStatement();
 							statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addToAllOfKind"), new OperationCallExpression(new NameExpression(smartEMFModel.getName()),new NameExpression("getFromTypes"), new StringLiteral(target.getName()))));
-							module.getMain().getStatements().add(i, statement);
+							//module.getMain().getStatements().add(i, statement);
+							((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement);
+							
 							i++;
 							
 							ExpressionStatement statement2 = new ExpressionStatement();
 							statement2.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("removeFromTypes"), new StringLiteral(target.getName())));
-							module.getMain().getStatements().add(i, statement2);
+							//module.getMain().getStatements().add(i, statement2);
+							((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement2);
+							
 							i++;							
 						}
 						else {
@@ -213,7 +247,9 @@ public class EffectiveMetamodelExtractor {
 								smartEMFModel.addToAllOfKind(target.getTypeName());
 								ExpressionStatement statement = new ExpressionStatement();
 								statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addToAllOfKind"),new StringLiteral(target.getTypeName())));
-								module.getMain().getStatements().add(i, statement);
+								//module.getMain().getStatements().add(i, statement);
+								((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement);
+								
 								i++;
 						}
 					}
@@ -235,7 +271,9 @@ public class EffectiveMetamodelExtractor {
 							
 							ExpressionStatement statement = new ExpressionStatement();
 							statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addToTypes"), new StringLiteral(effectiveType.getName())));
-							module.getMain().getStatements().add(i, statement);
+							//module.getMain().getStatements().add(i, statement);
+							((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement);
+							
 							i++;
 						}
 						if (!target.getMetaClass().getAllStructuralFeatures().isEmpty()) {
@@ -254,7 +292,9 @@ public class EffectiveMetamodelExtractor {
 								
 								ExpressionStatement statement = new ExpressionStatement();
 								statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addAttributeToEffectiveType"), new StringLiteral(effectiveType.getName()) ,new StringLiteral(sf.getName())));
-								module.getMain().getStatements().add(i, statement);
+								//module.getMain().getStatements().add(i, statement);
+								((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement);
+								
 								i++;
 								
 								break;
@@ -265,7 +305,9 @@ public class EffectiveMetamodelExtractor {
 								
 								ExpressionStatement statement = new ExpressionStatement();
 								statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addReferenceToEffectiveType"), new StringLiteral(effectiveType.getName()) ,new StringLiteral(sf.getName())));
-								module.getMain().getStatements().add(i, statement);
+							//	module.getMain().getStatements().add(i, statement);
+								((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement);
+								
 								i++;
 								break;
 							}
@@ -292,7 +334,9 @@ public class EffectiveMetamodelExtractor {
 						
 							ExpressionStatement statement = new ExpressionStatement();
 							statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addToTypes"), new StringLiteral(effectiveType.getName())));
-							module.getMain().getStatements().add(i, statement);
+							//module.getMain().getStatements().add(i, statement);
+							((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement);
+							
 							i++;
 						}
 						if (!target.getMetaClass().getAllStructuralFeatures().isEmpty()) {
@@ -311,7 +355,9 @@ public class EffectiveMetamodelExtractor {
 									effectiveType.addToAttributes(sf.getName());
 									ExpressionStatement statement = new ExpressionStatement();
 									statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addAttributeToEffectiveType"),new StringLiteral(effectiveType.getName()), new StringLiteral(sf.getName())));
-									module.getMain().getStatements().add(i, statement);
+									//module.getMain().getStatements().add(i, statement);
+									((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement);
+									
 									i++;
 									break;
 								
@@ -322,7 +368,9 @@ public class EffectiveMetamodelExtractor {
 								
 									ExpressionStatement statement = new ExpressionStatement();
 									statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addReferenceToEffectiveType"), new StringLiteral(effectiveType.getName()) ,new StringLiteral(sf.getName())));
-									module.getMain().getStatements().add(i, statement);
+								//	module.getMain().getStatements().add(i, statement);
+									((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement);
+									
 									i++;
 									break;
 							}
@@ -334,7 +382,9 @@ public class EffectiveMetamodelExtractor {
 		
 		ExpressionStatement statement = new ExpressionStatement();
 		statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("load")));
-		module.getMain().getStatements().add(i,statement);
+	//	module.getMain().getStatements().add(i,statement);
+		((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement);
+		
 		i++;
 		return smartEMFModel;
 	}
