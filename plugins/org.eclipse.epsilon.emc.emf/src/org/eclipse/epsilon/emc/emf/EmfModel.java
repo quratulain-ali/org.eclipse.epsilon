@@ -393,6 +393,7 @@ public class EmfModel extends AbstractEmfModel implements IReflectiveModel,IRewr
 			resourceSet.getPackageRegistry().put(nsUri, ep);
 		}
 		resourceSet.getPackageRegistry().put(EcorePackage.eNS_URI, EcorePackage.eINSTANCE);
+		long startTime = System.nanoTime();
 		
 		Resource model = resourceSet.createResource(modelUri);
 		if (this.readOnLoad) {
@@ -409,6 +410,8 @@ public class EmfModel extends AbstractEmfModel implements IReflectiveModel,IRewr
 		if (isCachingEnabled()) {
 			modelImpl.eAdapters().add(new CachedContentsAdapter());
 		}
+		System.out.println((System.nanoTime()-startTime)/1000000 + " milliseconds");
+
 		System.out.println("**** Loaded Objects ****");
 		System.out.println(model.getContents().size());
 	}

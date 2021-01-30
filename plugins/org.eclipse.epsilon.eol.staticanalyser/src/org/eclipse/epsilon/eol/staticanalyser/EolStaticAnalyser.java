@@ -46,6 +46,7 @@ import org.eclipse.epsilon.eol.dom.FirstOrderOperationCallExpression;
 import org.eclipse.epsilon.eol.dom.ForStatement;
 import org.eclipse.epsilon.eol.dom.GreaterEqualOperatorExpression;
 import org.eclipse.epsilon.eol.dom.GreaterThanOperatorExpression;
+import org.eclipse.epsilon.eol.dom.ICompilableModuleElement;
 import org.eclipse.epsilon.eol.dom.IEolVisitor;
 import org.eclipse.epsilon.eol.dom.IfStatement;
 import org.eclipse.epsilon.eol.dom.ImpliesOperatorExpression;
@@ -102,10 +103,11 @@ import org.eclipse.epsilon.eol.types.EolSelfCollectionType;
 import org.eclipse.epsilon.eol.types.EolSelfContentType;
 import org.eclipse.epsilon.eol.types.EolSelfExpressionType;
 import org.eclipse.epsilon.eol.types.EolType;
+import org.eclipse.epsilon.evl.EvlModule;
 
 public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 
-	protected List<ModuleMarker> errors;
+	protected List<ModuleMarker> errors = new ArrayList<>();
 	protected EolModule module;
 	protected BuiltinEolModule builtinModule = new BuiltinEolModule();
 	protected EolCompilationContext context;
@@ -241,9 +243,9 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 
 	@Override
 	public void visit(ExecutableBlock<?> executableBlock) {
-		// ICompilableModuleElement body = (ICompilableModuleElement)
-		// executableBlock.getBody();
-		// Should we add add accept method?
+		 ICompilableModuleElement body = (ICompilableModuleElement)executableBlock.getBody();
+		body.accept(this);
+		 // Should we add add accept method?
 	}
 
 	@Override
@@ -1226,13 +1228,19 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 		visitOperatorExpression(operatorExpression);
 	}
 
-	public void preValidate() {
-
+	public void preValidate(IEolModule imodule) {
+		
+		errors = new ArrayList<>();
+		EolModule eolModule = (EolModule) imodule;
+		this.module = eolModule;
+		
+		context = eolModule.getCompilationContext();
+	//	context = (EolCompilationContext) module.getCompilationContext();
 		for (ModelDeclaration modelDeclaration : module.getDeclaredModelDeclarations()) {
 			modelDeclaration.accept(this);
 		}
 
-		String root = "/Users/sorourjahanbin/git/Epsilon_Nov2020/plugins/org.eclipse.epsilon.eol.engine/src/org/eclipse/epsilon/eol/";
+		String root = "/Users/sorourjahanbin/git/partialloading/plugins/org.eclipse.epsilon.eol.engine/src/org/eclipse/epsilon/eol/";
 		if (!(module instanceof BuiltinEolModule)) {
 			try {
 				// builtinModule.parse(new File("./src/org/eclipse/epsilon/eol/builtin.eol"));
@@ -1271,31 +1279,40 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 			}
 		}
 	}
-
-	@Override
-	public List<ModuleMarker> validate(IModule imodule) {
+	
+	public void mainValidate(IEolModule module) {
 		
-		if (!(imodule instanceof EolModule))
-			return Collections.emptyList();
-
-		errors = new ArrayList<>();
-		// errors = new ArrayList<>();
-
-		EolModule eolModule = (EolModule) imodule;
-		this.module = eolModule;
+		context = (EolCompilationContext) module.getCompilationContext();
 		
-		context = eolModule.getCompilationContext();
+		if (module.getMain() != null)
+			module.getMain().accept(this);
 		
-		preValidate();
+		module.getDeclaredOperations().forEach(o -> o.accept(this));
 		
-		if (eolModule.getMain() != null)
-			eolModule.getMain().accept(this);
+	}
+	
+	public void postValidate(IEolModule module) {
 		
-		eolModule.getDeclaredOperations().forEach(o -> o.accept(this));
+		context = (EolCompilationContext) module.getCompilationContext();
 		
 		if (!(module instanceof BuiltinEolModule))
 			module.getOperations().removeAll(builtinModule.getDeclaredOperations());
-
+	}
+	
+	@Override
+	public List<ModuleMarker> validate(IModule imodule) {
+		
+		
+		if (!(imodule instanceof EolModule) || imodule instanceof EvlModule)
+			return Collections.emptyList();
+		
+		//errors = new ArrayList<>();
+		EolModule eolModule = (EolModule) imodule;
+		this.module = eolModule;
+		preValidate(module);
+		mainValidate(module);
+		postValidate(module);
+		
 		return errors;
 	}
 	

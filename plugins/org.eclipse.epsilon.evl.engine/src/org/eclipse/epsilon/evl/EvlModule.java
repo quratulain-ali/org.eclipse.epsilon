@@ -369,16 +369,16 @@ public class EvlModule extends ErlModule implements IEvlModule{
 
 		EolCompilationContext context = getCompilationContext();
 		
-		for (Pre p : getPre()) {
-		((NamedStatementBlockRule)p).compile(context);
-		}
-		super.preCompile();
-		super.mainCompile();
-	
-		for (ConstraintContext cc : getConstraintContexts()) {
-				cc.compile(context);
-		}
-		super.postCompile();
+//		for (Pre p : getPre()) {
+//		((NamedStatementBlockRule)p).compile(context);
+//		}
+//		super.preCompile();
+//		super.mainCompile();
+//	
+//		for (ConstraintContext cc : getConstraintContexts()) {
+//				cc.compile(context);
+//		}
+//		super.postCompile();
 		return context.getMarkers();
 	}
 

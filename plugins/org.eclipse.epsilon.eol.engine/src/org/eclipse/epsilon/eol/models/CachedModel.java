@@ -295,9 +295,9 @@ public abstract class CachedModel<ModelElementType> extends Model {
 	@Override
 	public void load() throws EolModelLoadingException {
 		clearCache();
-		long startTime = System.nanoTime();
+	//	long startTime = System.nanoTime();
 		loadModel();
-		System.out.println((System.nanoTime()-startTime)/1000000 + " milliseconds");
+	//	System.out.println((System.nanoTime()-startTime)/1000000 + " milliseconds");
 		
 	}
 	
