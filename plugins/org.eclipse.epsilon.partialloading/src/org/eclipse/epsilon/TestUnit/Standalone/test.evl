@@ -1,0 +1,11 @@
+model javaMM driver SmartEMF {
+nsuri = "http://www.eclipse.org/MoDisco/Java/0.2.incubation/java" 
+};
+pre{}
+
+context Block {
+	constraint emptyBlockIsDocumented {
+		guard: self.statements.isEmpty()
+		check: self.comments.notEmpty()
+	}
+}

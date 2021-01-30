@@ -11,23 +11,22 @@ package org.eclipse.epsilon.TestUnit.Standalone;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import org.eclipse.emf.common.EMFPlugin;
 import org.eclipse.epsilon.common.util.StringProperties;
-import org.eclipse.epsilon.effectivemetamodel.SmartEMF;
-import org.eclipse.epsilon.eol.launch.EolRunConfiguration;
 import org.eclipse.epsilon.emc.emf.EmfModel;
+import org.eclipse.epsilon.evl.launch.EvlRunConfiguration;
 
 /**
- * This example demonstrates using the Epsilon Object Language, the core language of Epsilon, in a stand-alone manner 
+ * This example demonstrates using the 
+ * Epsilon Validation Language, the model validation language
+ * of Epsilon, in a stand-alone manner
  * 
  * @author Sina Madani
  * @author Dimitrios Kolovos
  */
-public class EolStandaloneExample {
-	
-	public static void main(String[] args) throws Exception {
-		Path root = Paths.get(EolStandaloneExample.class.getResource("").toURI()),
+public class EvlStandaloneExample {
+
+	public static void main(String... args) throws Exception {
+		Path root = Paths.get(EvlStandaloneExample.class.getResource("").toURI()),
 			modelsRoot = root.getParent().resolve("standalone");
 		
 		StringProperties modelProperties = new StringProperties();
@@ -39,20 +38,19 @@ public class EolStandaloneExample {
 	//	modelProperties.setProperty(EmfModel.PROPERTY_METAMODEL_URI,"http://www.eclipse.org/MoDisco/Java/0.2.incubation/java");
 		modelProperties.setProperty("type", "EMF");
 		modelProperties.setProperty(EmfModel.PROPERTY_MODEL_URI,
-			modelsRoot.resolve("eclipseModel-0.2.xmi").toAbsolutePath().toUri().toString()
+			modelsRoot.resolve("test.xmi").toAbsolutePath().toUri().toString()
 		);
 		
-		EolRunConfiguration runConfig = EolRunConfiguration.Builder()
-			.withScript(root.resolve("java_findbugs_emf.eol"))
+		
+		EvlRunConfiguration runConfig = EvlRunConfiguration.Builder()
+			.withScript(root.resolve("test.evl"))
 			.withModel(new EmfModel(), modelProperties)
-			.withParameter("Thread", Thread.class)
+			.withParameter("greeting", "Hello from ")
 			.withProfiling()
+			.withResults()
+		//	.withParallelism()
 			.build();
-	
+		
 		runConfig.run();
-		//runConfig.run();
-			
-//	System.out.println(runConfig.getResult());
 	}
-	
 }

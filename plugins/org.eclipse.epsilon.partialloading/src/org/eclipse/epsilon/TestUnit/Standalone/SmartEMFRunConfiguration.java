@@ -11,6 +11,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.epsilon.effectivemetamodel.EffectiveMetamodelExtractor;
+import org.eclipse.epsilon.effectivemetamodel.EvlEffectiveMetamodelExtractor;
 import org.eclipse.epsilon.effectivemetamodel.SmartEMF;
 import org.eclipse.epsilon.effectivemetamodel.SubModelFactory;
 import org.eclipse.epsilon.eol.EolModule;
@@ -19,6 +20,8 @@ import org.eclipse.epsilon.eol.launch.EolRunConfiguration;
 import org.eclipse.epsilon.eol.launch.EolRunConfiguration.Builder;
 import org.eclipse.epsilon.eol.parse.EolUnparser;
 import org.eclipse.epsilon.eol.staticanalyser.EolStaticAnalyser;
+import org.eclipse.epsilon.evl.EvlModule;
+import org.eclipse.epsilon.evl.staticanalyser.EvlStaticAnalyser;
 
 public class SmartEMFRunConfiguration extends EolRunConfiguration{
 	
@@ -53,20 +56,27 @@ public class SmartEMFRunConfiguration extends EolRunConfiguration{
 		}	//	Resource resource = resourceSet.createResource(URI.createFileURI(new File(model).getAbsolutePath()));
 
 		module.getCompilationContext().setModelFactory(new SubModelFactory());
-		new EolStaticAnalyser().validate(module);
+		if (module instanceof EvlModule)
+			new EvlStaticAnalyser().validate(module);
+		else
+			new EolStaticAnalyser().validate(module);
 			
 		if (!module.getCompilationContext().getModelDeclarations().isEmpty() 
 			&& module.getCompilationContext().getModelDeclarations().get(0).getDriverNameExpression().getName().equals("SmartEMF"))
 			{
 				
-				if (module.getMain() == null) return;
+				
 			
 			//ArrayList<SmartEMF> effectiveMetamodels = new ArrayList<SmartEMF>();
 			SmartEMF smartEMFModel = null;
+			if (module instanceof EvlModule)
+				smartEMFModel = new EvlEffectiveMetamodelExtractor().geteffectiveMetamodel(module);
+			else {
+				if (module.getMain() == null) return;
 			smartEMFModel = new EffectiveMetamodelExtractor().geteffectiveMetamodel(module);
-
+			}
 		//	System.out.println(smartEMFModel);
-		//	System.out.println(new EolUnparser().unparse((EolModule)module));
+			System.out.println(new EolUnparser().unparse((EolModule)module));
 		}
 	}
 }

@@ -16,6 +16,7 @@ import org.eclipse.emf.common.EMFPlugin;
 import org.eclipse.epsilon.common.util.StringProperties;
 import org.eclipse.epsilon.effectivemetamodel.SmartEMF;
 import org.eclipse.epsilon.eol.launch.EolRunConfiguration;
+import org.eclipse.epsilon.evl.launch.EvlRunConfiguration;
 import org.eclipse.epsilon.emc.emf.EmfModel;
 
 /**
@@ -24,10 +25,10 @@ import org.eclipse.epsilon.emc.emf.EmfModel;
  * @author Sina Madani
  * @author Dimitrios Kolovos
  */
-public class EolStandaloneExample_SmartEMF {
+public class EvlStandaloneExample_SmartEMF {
 	
-	public static void main(String[] args) throws Exception {
-		Path root = Paths.get(EolStandaloneExample_SmartEMF.class.getResource("").toURI()),
+	public static void main(String... args) throws Exception {
+		Path root = Paths.get(EvlStandaloneExample_SmartEMF.class.getResource("").toURI()),
 			modelsRoot = root.getParent().resolve("standalone");
 		
 		StringProperties modelProperties = new StringProperties();
@@ -36,20 +37,22 @@ public class EolStandaloneExample_SmartEMF {
 			modelsRoot.resolve("java.ecore").toAbsolutePath().toUri().toString()
 			
 		);
-		modelProperties.setProperty(EmfModel.PROPERTY_METAMODEL_URI,"http://www.eclipse.org/MoDisco/Java/0.2.incubation/java");
+		modelProperties.setProperty(SmartEMF.PROPERTY_METAMODEL_URI,"http://www.eclipse.org/MoDisco/Java/0.2.incubation/java");
 		modelProperties.setProperty("type", "SmartEMF");
 		modelProperties.setProperty(SmartEMF.PROPERTY_MODEL_URI,
 			modelsRoot.resolve("test.xmi").toAbsolutePath().toUri().toString()
 		);
 		
-		EolRunConfiguration runConfig = EolRunConfiguration.Builder()
-			.withScript(root.resolve("test.eol"))
+		EvlRunConfiguration runConfig = EvlRunConfiguration.Builder()
+			.withScript(root.resolve("test.evl"))
 			.withModel(new SmartEMF(), modelProperties)
-			.withParameter("Thread", Thread.class)
+			.withParameter("greeting", "Hello from ")
 			.withProfiling()
+			.withResults()
 			.build();
 		SmartEMFRunConfiguration sm = new SmartEMFRunConfiguration(runConfig);
 		sm.run();
-		System.out.println(sm.getResult());
+		runConfig.postExecute();
+		//System.out.println(sm.getResult());
 	}
 }

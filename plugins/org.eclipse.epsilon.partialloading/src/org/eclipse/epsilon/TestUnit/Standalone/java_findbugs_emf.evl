@@ -1,4 +1,4 @@
-model javaMM driver SmartEMF {
+model javaMM driver EMF {
 nsuri = "http://www.eclipse.org/MoDisco/Java/0.2.incubation/java" 
 };
 
@@ -326,7 +326,6 @@ context ClassDeclaration {
 			var fields = self.bodyDeclarations.select(bd | bd.isKindOf(FieldDeclaration));
 			return
 				self.bodyDeclarations
-				//	.select(bd | bd.isKindOf(AbstractMethodDeclaration))
 					.forAll(md:AbstractMethodDeclaration | md.body.isDefined() implies md.body.statements
 						.select(s | s.isKindOf(VariableDeclaration))
 						.forAll(vd | fields.forAll(fd | fd.name <> vd.name))
