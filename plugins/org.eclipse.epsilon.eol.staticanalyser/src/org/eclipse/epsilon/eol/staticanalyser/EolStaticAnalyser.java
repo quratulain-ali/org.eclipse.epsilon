@@ -99,6 +99,8 @@ import org.eclipse.epsilon.eol.types.EolSelfContentType;
 import org.eclipse.epsilon.eol.types.EolSelfExpressionType;
 import org.eclipse.epsilon.eol.types.EolType;
 import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
 
 public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 
@@ -328,6 +330,9 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 
 			Expression expression = firstOrderOperationCallExpression.getExpressions().get(0);
 			expression.accept(this);
+			// expression.compile(context);
+
+			System.out.println(firstOrderOperationCallExpression.getExpressions().get(0).getResolvedType());
 
 			context.getFrameStack().leaveLocal(firstOrderOperationCallExpression);
 
@@ -1167,6 +1172,7 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 					.getModelElementType(typeExpression.getName());
 			if (modelElementType != null) {
 				type = modelElementType;
+				// System.out.println("Printing:"+modelElementType.getMetaClass().getSuperTypes().get(0).getName());
 				if (modelElementType.getMetaClass() == null
 						&& !context.getModelDeclarations().isEmpty()) {
 					errors.add(new ModuleMarker(typeExpression, "Unknown type " + typeExpression.getName(),
@@ -1299,6 +1305,7 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 		callGraph = new CallGraphGenerator();
 		callGraph.generateCallGraph(module);
 		
+        System.out.println("Instance of Graph "+(callGraph instanceof Graph));
 		if (!(module instanceof BuiltinEolModule))
 			module.getOperations().removeAll(builtinModule.getDeclaredOperations());
 		
