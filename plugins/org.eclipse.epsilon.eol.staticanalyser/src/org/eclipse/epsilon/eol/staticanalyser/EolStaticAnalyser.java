@@ -99,8 +99,6 @@ import org.eclipse.epsilon.eol.types.EolSelfContentType;
 import org.eclipse.epsilon.eol.types.EolSelfExpressionType;
 import org.eclipse.epsilon.eol.types.EolType;
 import org.jgrapht.Graph;
-import org.jgrapht.graph.DefaultDirectedGraph;
-import org.jgrapht.graph.DefaultEdge;
 
 public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 
