@@ -31,7 +31,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
-import org.jgrapht.Graph;
 import org.eclipse.epsilon.common.dt.editor.AbstractModuleEditorSourceViewerConfiguration;
 
 public class QueryRewritingView extends ViewPart {
