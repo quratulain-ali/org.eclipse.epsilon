@@ -4,6 +4,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import org.eclipse.epsilon.eol.dom.EnumerationLiteralExpression;
 import org.eclipse.epsilon.eol.dom.EqualsOperatorExpression;
 import org.eclipse.epsilon.eol.dom.ExecutableAnnotation;
 import org.eclipse.epsilon.eol.dom.ExecutableBlock;
+import org.eclipse.epsilon.eol.dom.Expression;
 import org.eclipse.epsilon.eol.dom.ExpressionInBrackets;
 import org.eclipse.epsilon.eol.dom.ExpressionStatement;
 import org.eclipse.epsilon.eol.dom.FirstOrderOperationCallExpression;
@@ -71,11 +73,9 @@ import org.eclipse.epsilon.eol.dom.TypeExpression;
 import org.eclipse.epsilon.eol.dom.VariableDeclaration;
 import org.eclipse.epsilon.eol.dom.WhileStatement;
 import org.eclipse.epsilon.eol.dom.XorOperatorExpression;
-import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.AllDirectedPaths;
 import org.jgrapht.graph.DefaultDirectedGraph;
-import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.DefaultAttribute;
 import org.jgrapht.nio.dot.DOTExporter;
@@ -113,8 +113,8 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(AssignmentStatement assignmentStatement) {
-		// TODO Auto-generated method stub
-		
+		assignmentStatement.getTargetExpression().accept(this);
+		assignmentStatement.getValueExpression().accept(this);
 	}
 
 	@Override
@@ -167,7 +167,8 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(ElvisOperatorExpression elvisOperatorExpression) {
-		// TODO Auto-generated method stub
+		elvisOperatorExpression.getFirstOperand().accept(this);
+		elvisOperatorExpression.getSecondOperand().accept(this);
 		
 	}
 
@@ -215,6 +216,8 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(ForStatement forStatement) {
+		forStatement.getIteratorParameter().accept(this);
+		forStatement.getIteratedExpression().accept(this);
 		calledFromLoop = true;
 		forStatement.getBodyStatementBlock().accept(this);
 		calledFromLoop = false;
@@ -235,7 +238,17 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(IfStatement ifStatement) {
-		// TODO Auto-generated method stub
+		ifStatement.getConditionExpression().accept(this);
+		ifStatement.getThenStatementBlock().accept(this);
+		if (ifStatement.getElseStatementBlock() != null) {
+			StatementBlock elseStatementBlock = ifStatement.getElseStatementBlock();
+			if (elseStatementBlock.getStatements().size() == 1 && elseStatementBlock.getStatements().get(0) instanceof IfStatement) {
+				elseStatementBlock.getStatements().get(0).accept(this);
+			}
+			else {
+				ifStatement.getElseStatementBlock().accept(this);
+			}
+		}
 		
 	}
 
@@ -259,8 +272,8 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(ItemSelectorExpression itemSelectorExpression) {
-		// TODO Auto-generated method stub
-		
+		itemSelectorExpression.getTargetExpression().accept(this);
+		itemSelectorExpression.getIndexExpression().accept(this);
 	}
 
 	@Override
@@ -313,7 +326,7 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(NewInstanceExpression newInstanceExpression) {
-		// TODO Auto-generated method stub
+		newInstanceExpression.getTypeExpression().accept(this);
 		
 	}
 
@@ -325,7 +338,7 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(NotOperatorExpression notOperatorExpression) {
-		// TODO Auto-generated method stub
+		notOperatorExpression.getFirstOperand().accept(this);
 		
 	}
 
@@ -361,7 +374,9 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(Parameter parameter) {
-		// TODO Auto-generated method stub
+		if (parameter.getTypeExpression() != null) {
+			parameter.getTypeExpression().accept(this);
+		}
 		
 	}
 
@@ -379,7 +394,7 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(PropertyCallExpression propertyCallExpression) {
-		// TODO Auto-generated method stub
+		propertyCallExpression.getTargetExpression().accept(this);
 		
 	}
 
@@ -391,8 +406,9 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(ReturnStatement returnStatement) {
-		// TODO Auto-generated method stub
-		
+		if (returnStatement.getReturnedExpression() != null) {
+			returnStatement.getReturnedExpression().accept(this);
+		}
 	}
 
 	@Override
@@ -415,20 +431,25 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(SwitchStatement switchStatement) {
-		// TODO Auto-generated method stub
-		
+		switchStatement.getConditionExpression().accept(this);
+		switchStatement.getCases().forEach(c -> { c.accept(this); });
+		if (switchStatement.getDefault() != null) {
+			switchStatement.getDefault().accept(this); 
+		}
 	}
 
 	@Override
 	public void visit(TernaryExpression ternaryExpression) {
-		// TODO Auto-generated method stub
+		ternaryExpression.getFirstOperand().accept(this);
+		ternaryExpression.getSecondOperand().accept(this);
+		ternaryExpression.getThirdOperand().accept(this);
 		
 	}
 
 	@Override
 	public void visit(ThrowStatement throwStatement) {
-		// TODO Auto-generated method stub
-		
+		if (throwStatement.getThrown() != null) 
+			throwStatement.getThrown().accept(this);
 	}
 
 	@Override
@@ -451,7 +472,8 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(VariableDeclaration variableDeclaration) {
-		// TODO Auto-generated method stub
+		if (variableDeclaration.getTypeExpression() != null) 
+			variableDeclaration.getTypeExpression().accept(this);
 		
 	}
 
@@ -482,8 +504,6 @@ public class CallGraphGenerator implements IEolVisitor {
 				operation.accept(this);
 			}
 		}
-
-		//eolModule.getDeclaredOperations().forEach(o -> o.accept(this));
 		
 		DOTExporter<String, RelationshipEdge> exporter=new DOTExporter<>(v -> v.toString());
 		exporter.setEdgeAttributeProvider((e) -> {
@@ -496,7 +516,6 @@ public class CallGraphGenerator implements IEolVisitor {
 	        exporter.exportGraph( callGraph,new FileWriter("/Users/quratulainali/runtime-EclipseApplication/TestProject/callGraph.dot"));
 	    }catch (IOException e){}
         exporter.exportGraph(callGraph, writer);
-        System.out.println(writer.toString());
 	}
 
 	
