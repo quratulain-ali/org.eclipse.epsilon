@@ -41,9 +41,10 @@ public class EmfModelQueryRewriter {
 	
 	HashSet<String> optimisableOperations; // List of built-in operations that can be optimised
 	HashSet<String> allOperations; //all, allInstances
-	HashMap<String, List<String>> possibleIndices; //fields that can be indexed
-	List<String> potentialIndices = new ArrayList<String>(); //indexed fields which can be possibly used multiple times
-	Map<String,ArrayList<Object>> multiMap = new HashMap<>();
+	HashMap<String, HashSet<String>> possibleIndices; //fields that can be indexed
+	HashMap<String, HashSet<String>> potentialIndices = new HashMap<>(); //indexed fields which can be possibly used multiple times
+	//Asts of possible indices 
+	Map<String,List<List<Object>>> astsOfPossibleIndices = new HashMap<>();
 	//Cascaded and or clauses in select statement
 	List<ModuleElement> decomposedAsts = new ArrayList<ModuleElement>();
 	boolean cascaded = false; 
@@ -77,25 +78,10 @@ public class EmfModelQueryRewriter {
 			canbeExecutedMultipleTimes = false;
 		}
 		
-		module = rewriteIfIndexAlreadyExists(module, multiMap, potentialIndices);
+		module = rewriteIfIndexAlreadyExists(module, astsOfPossibleIndices, potentialIndices);
 		
-		int index = 0;
-		Iterator<Entry<String, List<String>>> it = possibleIndices.entrySet().iterator();
-		while (it.hasNext()) {
-			Map.Entry<String, List<String>> pair = (Map.Entry<String, List<String>>) it.next();
-			for (String field : pair.getValue()) {
-				//Injecting createIndex statements based on potential indices
-				if(potentialIndices.contains(field)) {
-				ExpressionStatement statement = new ExpressionStatement();
-				statement.setExpression(new OperationCallExpression(new NameExpression(model.getName()),
-						new NameExpression("createIndex"), new StringLiteral(pair.getKey() + ""),
-						new StringLiteral(field)));
-				
-				module.getMain().getStatements().add(index, statement);
-				index++;
-				}
-			}
-		}
+		injectCreateIndexStatements(module, modelName, potentialIndices);
+		
 	}
 
 	public void optimiseStatementBlock(IModel model, IEolModule module, List<Statement> statements) {
@@ -129,8 +115,6 @@ public class EmfModelQueryRewriter {
 	}
 
 	public IEolModule optimiseAST(IModel model, List<ModuleElement> asts, boolean indexExists) {
-		@SuppressWarnings("unused")
-		int index = 0;
 
 		for (ModuleElement ast : asts) {
 
@@ -181,8 +165,10 @@ public class EmfModelQueryRewriter {
 									NameExpression operationExp = new NameExpression("findByIndex");
 									StringLiteral modelElementName = new StringLiteral(m.getTypeName());
 
-									if (possibleIndices.get(modelElementName.getValue()) == null)
-										possibleIndices.put(modelElementName.getValue(), new ArrayList<String>());
+									if (possibleIndices.get(modelElementName.getValue()) == null) {
+										possibleIndices.put(modelElementName.getValue(), new HashSet<String>());
+										potentialIndices.put(modelElementName.getValue(), new HashSet<String>());
+									}
 
 									Expression parameterAst = operation.getExpressions().get(0);
 									StringLiteral indexField = new StringLiteral();
@@ -203,7 +189,7 @@ public class EmfModelQueryRewriter {
 
 											indexExists = false;
 
-											if (possibleIndices.get(modelElementName.getValue())
+											if (potentialIndices.get(modelElementName.getValue())
 													.contains(indexField.getValue())) {
 												indexExists = true;
 											}
@@ -222,15 +208,18 @@ public class EmfModelQueryRewriter {
 											
 											}
 											if(indexExists || canbeExecutedMultipleTimes) {
-												 potentialIndices.add(indexField.getValue());
+												 potentialIndices.get(modelElementName.getValue()).add(indexField.getValue());
 												 rewriteToModule(ast, rewritedQuery);
 											}
 											else {
-												ArrayList<Object> possibleAst = new ArrayList<>();
-												possibleAst.add(rewritedQuery);
-												possibleAst.add(ast);
-												multiMap.put(indexField.getValue(),possibleAst); 
-											}
+												if(astsOfPossibleIndices.get(modelElementName.getValue()+","+indexField.getValue()) != null)
+														astsOfPossibleIndices.get(modelElementName.getValue()+","+indexField.getValue()).add(Arrays.asList(rewritedQuery,ast));
+												else {
+													List<List<Object>> possibleAst = new ArrayList<List<Object>>();
+															possibleAst.add(Arrays.asList(rewritedQuery,ast));
+												astsOfPossibleIndices.put(modelElementName.getValue()+","+indexField.getValue(),possibleAst); 
+												}
+												}
 											
 										}
 									}
@@ -266,7 +255,7 @@ public class EmfModelQueryRewriter {
 										}
 											indexExists = false;
 
-											if (possibleIndices.get(modelElementName.getValue())
+											if (potentialIndices.get(modelElementName.getValue())
 													.contains(indexField.getValue())) {
 												indexExists = true;
 											}
@@ -278,14 +267,17 @@ public class EmfModelQueryRewriter {
 										rewritedQuery = new OperationCallExpression(
 														targetExp, operationExp,modelElementName, indexField, indexValue);
 										if(indexExists && canbeExecutedMultipleTimes) {
-											 potentialIndices.add(indexField.getValue());
+											potentialIndices.get(modelElementName.getValue()).add(indexField.getValue());
 											 rewriteToModule(ast, rewritedQuery);
 										}
 										else {
-											ArrayList<Object> possibleAst = new ArrayList<>();
-											possibleAst.add(rewritedQuery);
-											possibleAst.add(ast);
-											multiMap.put(indexField.getValue(),possibleAst); 
+											if(astsOfPossibleIndices.get(modelElementName.getValue()+","+indexField.getValue()) != null)
+													astsOfPossibleIndices.get(modelElementName.getValue()+","+indexField.getValue()).add(Arrays.asList(rewritedQuery,ast));
+											else {
+												List<List<Object>> possibleAst = new ArrayList<List<Object>>();
+														possibleAst.add(Arrays.asList(rewritedQuery,ast));
+											astsOfPossibleIndices.put(modelElementName.getValue()+","+indexField.getValue(),possibleAst); 
+											}
 										}
 										
 									}
@@ -307,7 +299,7 @@ public class EmfModelQueryRewriter {
 										}
 										indexExists = false;
 
-										if (possibleIndices.get(modelElementName.getValue())
+										if (potentialIndices.get(modelElementName.getValue())
 												.contains(indexField.getValue())) {
 											indexExists = true;
 										}
@@ -318,15 +310,18 @@ public class EmfModelQueryRewriter {
 										OperationCallExpression rewritedQuery = new OperationCallExpression(targetExp,
 												operationExp, modelElementName, indexField, indexValue);
 										
-										if(indexExists && canbeExecutedMultipleTimes) {
-											 potentialIndices.add(indexField.getValue());
+										if(indexExists || canbeExecutedMultipleTimes) {
+											potentialIndices.get(modelElementName.getValue()).add(indexField.getValue());
 											 rewriteToModule(ast, rewritedQuery);
 										}
 										else {
-											ArrayList<Object> possibleAst = new ArrayList<>();
-											possibleAst.add(rewritedQuery);
-											possibleAst.add(ast);
-											multiMap.put(indexField.getValue(),possibleAst); 
+											if(astsOfPossibleIndices.get(modelElementName.getValue()+","+indexField.getValue()) != null)
+													astsOfPossibleIndices.get(modelElementName.getValue()+","+indexField.getValue()).add(Arrays.asList(rewritedQuery,ast));
+											else {
+												List<List<Object>> possibleAst = new ArrayList<List<Object>>();
+														possibleAst.add(Arrays.asList(rewritedQuery,ast));
+											astsOfPossibleIndices.put(modelElementName.getValue()+","+indexField.getValue(),possibleAst); 
+											}
 										}
 										}
 										return module;
@@ -338,7 +333,6 @@ public class EmfModelQueryRewriter {
 						}
 					}
 				}
-				index++;
 			}
 		}
 		return module;
@@ -372,17 +366,40 @@ public class EmfModelQueryRewriter {
 			((OperationCallExpression) ast.getParent()).setTargetExpression(rewritedQuery);
 	}
 	
-	public IEolModule rewriteIfIndexAlreadyExists(IEolModule module, Map<String, ArrayList<Object>> data, List<String> potentialIndices) {
+	public IEolModule rewriteIfIndexAlreadyExists(IEolModule module, Map<String, List<List<Object>>> data, HashMap<String, HashSet<String>> potentialIndices) {
 		this.module = module;
-		for(String potentialIndex : potentialIndices) {
-		if(data.containsKey(potentialIndex)){
-			ModuleElement ast = (ModuleElement) data.get(potentialIndex).get(1);
-			OperationCallExpression rewritedQuery = (OperationCallExpression) data.get(potentialIndex).get(0);
+
+		potentialIndices.forEach((k,v) -> {
+		for(String potentialIndex : v) {
+		if(data.containsKey(k+","+potentialIndex)){
+			for(List<Object> one : data.get(k+","+potentialIndex)) {
+			ModuleElement ast = (ModuleElement) one.get(1);
+			OperationCallExpression rewritedQuery = (OperationCallExpression) one.get(0);
 			rewriteToModule(ast, rewritedQuery);
+			}
 		}
 		}
+		});
 		return module;
 		
+	}
+	
+	public void injectCreateIndexStatements(IEolModule module, String modelName, HashMap<String, HashSet<String>> potentialIndices) {
+		int count = 0;
+		Iterator<Entry<String, HashSet<String>>> it = potentialIndices.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry<String, HashSet<String>> pair = (Map.Entry<String, HashSet<String>>) it.next();
+			for (String field : pair.getValue()) {
+				//Injecting createIndex statements based on potential indices
+				ExpressionStatement statement = new ExpressionStatement();
+				statement.setExpression(new OperationCallExpression(new NameExpression(modelName),
+						new NameExpression("createIndex"), new StringLiteral(pair.getKey() + ""),
+						new StringLiteral(field)));
+				
+				module.getMain().getStatements().add(count, statement);
+				count++;
+			}
+		}
 	}
 
 }
