@@ -1,0 +1,33 @@
+model imdb driver EMF {
+nsuri = "http://movies/1.0",
+optimise = "true"
+};
+
+var data : Collection <Integer> = Collection {1..100};
+
+imdb!Movie.all.select(a|a.title = "2 Bill Hour");
+
+for(i in data) {
+imdb!Movie.all.select(a|a.title = "2 Bill Hour");
+
+}
+bar();
+foo();
+for(i in data)
+test();
+
+operation bar() {
+hello();
+}
+
+operation hello() {
+imdb!Movie.all.select(a|a.year = "2 Bill Hour");
+}
+
+operation foo() {
+imdb!Movie.all.select(a|a.title = "2 Bill Hour");
+}
+
+operation test() {
+foo();
+}
