@@ -4,6 +4,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import org.eclipse.epsilon.eol.dom.EnumerationLiteralExpression;
 import org.eclipse.epsilon.eol.dom.EqualsOperatorExpression;
 import org.eclipse.epsilon.eol.dom.ExecutableAnnotation;
 import org.eclipse.epsilon.eol.dom.ExecutableBlock;
+import org.eclipse.epsilon.eol.dom.Expression;
 import org.eclipse.epsilon.eol.dom.ExpressionInBrackets;
 import org.eclipse.epsilon.eol.dom.ExpressionStatement;
 import org.eclipse.epsilon.eol.dom.FirstOrderOperationCallExpression;
@@ -93,8 +95,10 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(AndOperatorExpression andOperatorExpression) {
-		// TODO Auto-generated method stub
-		
+		if(andOperatorExpression.getFirstOperand() != null)
+			andOperatorExpression.getFirstOperand().accept(this);
+		if(andOperatorExpression.getSecondOperand() != null)
+			andOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
@@ -129,8 +133,11 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(Case case_) {
-		// TODO Auto-generated method stub
-		
+		if (case_.getCondition() != null) {
+			case_.getCondition().accept(this);
+		}
+		else 
+			case_.getBody().accept(this);
 	}
 
 	@Override
@@ -141,8 +148,8 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(ComplexOperationCallExpression complexOperationCallExpression) {
-		// TODO Auto-generated method stub
-		
+		if(complexOperationCallExpression.getTargetExpression() != null)
+			complexOperationCallExpression.getTargetExpression().accept(this);
 	}
 
 	@Override
@@ -153,21 +160,26 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(DivOperatorExpression divOperatorExpression) {
-		// TODO Auto-generated method stub
-		
+		if(divOperatorExpression.getFirstOperand() != null)
+			divOperatorExpression.getFirstOperand().accept(this);
+		if(divOperatorExpression.getSecondOperand() != null)
+			divOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
 	public void visit(DoubleEqualsOperatorExpression doubleEqualsOperatorExpression) {
-		// TODO Auto-generated method stub
-		
+		if(doubleEqualsOperatorExpression.getFirstOperand() != null)
+			doubleEqualsOperatorExpression.getFirstOperand().accept(this);
+		if(doubleEqualsOperatorExpression.getSecondOperand() != null)
+			doubleEqualsOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
 	public void visit(ElvisOperatorExpression elvisOperatorExpression) {
-		elvisOperatorExpression.getFirstOperand().accept(this);
-		elvisOperatorExpression.getSecondOperand().accept(this);
-		
+		if(elvisOperatorExpression.getFirstOperand() != null)
+			elvisOperatorExpression.getFirstOperand().accept(this);
+		if(elvisOperatorExpression.getSecondOperand() != null)
+			elvisOperatorExpression.getSecondOperand().accept(this);	
 	}
 
 	@Override
@@ -178,8 +190,10 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(EqualsOperatorExpression equalsOperatorExpression) {
-		// TODO Auto-generated method stub
-		
+		if(equalsOperatorExpression.getFirstOperand() != null)
+			equalsOperatorExpression.getFirstOperand().accept(this);
+		if(equalsOperatorExpression.getSecondOperand() != null)
+			equalsOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
@@ -196,8 +210,7 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(ExpressionInBrackets expressionInBrackets) {
-		// TODO Auto-generated method stub
-		
+		expressionInBrackets.getExpression().accept(this);
 	}
 
 	@Override
@@ -208,7 +221,17 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(FirstOrderOperationCallExpression firstOrderOperationCallExpression) {
-		// TODO Auto-generated method stub
+		firstOrderOperationCallExpression.getTargetExpression().accept(this);
+		Iterator<Parameter> pi = firstOrderOperationCallExpression.getParameters().iterator();
+		while (pi.hasNext()) {
+			pi.next().accept(this);
+		}
+		if (!firstOrderOperationCallExpression.getExpressions().isEmpty()) {
+			Iterator<Expression> ei = firstOrderOperationCallExpression.getExpressions().iterator();
+			while (ei.hasNext()) {
+				ei.next().accept(this);
+			}
+		}
 		
 	}
 
@@ -224,14 +247,18 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(GreaterEqualOperatorExpression greaterEqualOperatorExpression) {
-		// TODO Auto-generated method stub
-		
+		if(greaterEqualOperatorExpression.getFirstOperand() != null)
+			greaterEqualOperatorExpression.getFirstOperand().accept(this);
+		if(greaterEqualOperatorExpression.getSecondOperand() != null)
+			greaterEqualOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
 	public void visit(GreaterThanOperatorExpression greaterThanOperatorExpression) {
-		// TODO Auto-generated method stub
-		
+		if(greaterThanOperatorExpression.getFirstOperand() != null)
+			greaterThanOperatorExpression.getFirstOperand().accept(this);
+		if(greaterThanOperatorExpression.getSecondOperand() != null)
+			greaterThanOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
@@ -246,14 +273,15 @@ public class CallGraphGenerator implements IEolVisitor {
 			else {
 				ifStatement.getElseStatementBlock().accept(this);
 			}
-		}
-		
+		}	
 	}
 
 	@Override
 	public void visit(ImpliesOperatorExpression impliesOperatorExpression) {
-		// TODO Auto-generated method stub
-		
+		if(impliesOperatorExpression.getFirstOperand() != null)
+			impliesOperatorExpression.getFirstOperand().accept(this);
+		if(impliesOperatorExpression.getSecondOperand() != null)
+			impliesOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
@@ -276,14 +304,18 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(LessEqualOperatorExpression lessEqualOperatorExpression) {
-		// TODO Auto-generated method stub
-		
+		if(lessEqualOperatorExpression.getFirstOperand() != null)
+			lessEqualOperatorExpression.getFirstOperand().accept(this);
+		if(lessEqualOperatorExpression.getSecondOperand() != null)
+			lessEqualOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
 	public void visit(LessThanOperatorExpression lessThanOperatorExpression) {
-		// TODO Auto-generated method stub
-		
+		if(lessThanOperatorExpression.getFirstOperand() != null)
+			lessThanOperatorExpression.getFirstOperand().accept(this);
+		if(lessThanOperatorExpression.getSecondOperand() != null)
+			lessThanOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
@@ -294,8 +326,10 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(MinusOperatorExpression minusOperatorExpression) {
-		// TODO Auto-generated method stub
-		
+		if(minusOperatorExpression.getFirstOperand() != null)
+			minusOperatorExpression.getFirstOperand().accept(this);
+		if(minusOperatorExpression.getSecondOperand() != null)
+			minusOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
@@ -318,26 +352,36 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(NegativeOperatorExpression negativeOperatorExpression) {
-		// TODO Auto-generated method stub
-		
+		if(negativeOperatorExpression.getFirstOperand() != null)
+			negativeOperatorExpression.getFirstOperand().accept(this);
+		if(negativeOperatorExpression.getSecondOperand() != null)
+			negativeOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
 	public void visit(NewInstanceExpression newInstanceExpression) {
 		newInstanceExpression.getTypeExpression().accept(this);
+		Iterator<Expression> pi = newInstanceExpression.getParameterExpressions().iterator();
+		while (pi.hasNext()) {
+			pi.next().accept(this);
+		}
 		
 	}
 
 	@Override
 	public void visit(NotEqualsOperatorExpression notEqualsOperatorExpression) {
-		// TODO Auto-generated method stub
-		
+		if(notEqualsOperatorExpression.getFirstOperand() != null)
+			notEqualsOperatorExpression.getFirstOperand().accept(this);
+		if(notEqualsOperatorExpression.getSecondOperand() != null)
+			notEqualsOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
 	public void visit(NotOperatorExpression notOperatorExpression) {
-		notOperatorExpression.getFirstOperand().accept(this);
-		
+		if(notOperatorExpression.getFirstOperand() != null)
+			notOperatorExpression.getFirstOperand().accept(this);
+		if(notOperatorExpression.getSecondOperand() != null)
+			notOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
@@ -348,6 +392,13 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(OperationCallExpression operationCallExpression) {
+		if(operationCallExpression.getTargetExpression() != null)
+			operationCallExpression.getTargetExpression().accept(this);
+		Iterator<Expression> pi = operationCallExpression.getParameterExpressions().iterator();
+		while (pi.hasNext()) {
+			pi.next().accept(this);
+		}
+		
 		String operationName = operationCallExpression.getName();
 		   if(!entry.equals("main")) 
 		 		callGraph.addVertex(entry);
@@ -366,8 +417,10 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(OrOperatorExpression orOperatorExpression) {
-		// TODO Auto-generated method stub
-		
+		if(orOperatorExpression.getFirstOperand() != null)
+			orOperatorExpression.getFirstOperand().accept(this);
+		if(orOperatorExpression.getSecondOperand() != null)
+			orOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
@@ -380,20 +433,25 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(PlusOperatorExpression plusOperatorExpression) {
-		// TODO Auto-generated method stub
-		
+		if(plusOperatorExpression.getFirstOperand() != null)
+			plusOperatorExpression.getFirstOperand().accept(this);
+		if(plusOperatorExpression.getSecondOperand() != null)
+			plusOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
 	public void visit(PostfixOperatorExpression postfixOperatorExpression) {
-		// TODO Auto-generated method stub
-		
+		if(postfixOperatorExpression.getAssignmentStatement() != null)
+		postfixOperatorExpression.getAssignmentStatement().accept(this);
+		if(postfixOperatorExpression.getFirstOperand() != null)
+			postfixOperatorExpression.getFirstOperand().accept(this);
+		if(postfixOperatorExpression.getSecondOperand() != null)
+			postfixOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
 	public void visit(PropertyCallExpression propertyCallExpression) {
 		propertyCallExpression.getTargetExpression().accept(this);
-		
 	}
 
 	@Override
@@ -438,8 +496,11 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(TernaryExpression ternaryExpression) {
+		if(ternaryExpression.getFirstOperand() != null)
 		ternaryExpression.getFirstOperand().accept(this);
+		if(ternaryExpression.getSecondOperand() != null)
 		ternaryExpression.getSecondOperand().accept(this);
+		if(ternaryExpression.getThirdOperand() != null)
 		ternaryExpression.getThirdOperand().accept(this);
 		
 	}
@@ -452,41 +513,42 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(TimesOperatorExpression timesOperatorExpression) {
-		// TODO Auto-generated method stub
-		
+		if(timesOperatorExpression.getFirstOperand() != null)
+			timesOperatorExpression.getFirstOperand().accept(this);
+		if(timesOperatorExpression.getSecondOperand() != null)
+			timesOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
 	public void visit(TransactionStatement transactionStatement) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void visit(TypeExpression typeExpression) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void visit(VariableDeclaration variableDeclaration) {
 		if (variableDeclaration.getTypeExpression() != null) 
-			variableDeclaration.getTypeExpression().accept(this);
-		
+			variableDeclaration.getTypeExpression().accept(this);	
 	}
 
 	@Override
 	public void visit(WhileStatement whileStatement) {
+		whileStatement.getConditionExpression().accept(this);
 		calledFromLoop = true;
 		whileStatement.getBodyStatementBlock().accept(this);
 		calledFromLoop = false;
-		
 	}
 
 	@Override
 	public void visit(XorOperatorExpression xorOperatorExpression) {
-		// TODO Auto-generated method stub
-		
+		if(xorOperatorExpression.getFirstOperand() != null)
+			xorOperatorExpression.getFirstOperand().accept(this);
+		if(xorOperatorExpression.getSecondOperand() != null)
+			xorOperatorExpression.getSecondOperand().accept(this);	
 	}
 	
 	public void generateCallGraph(IEolModule eolModule) {
