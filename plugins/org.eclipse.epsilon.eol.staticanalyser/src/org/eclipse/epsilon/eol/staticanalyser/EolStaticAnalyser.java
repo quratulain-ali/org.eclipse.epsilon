@@ -1312,6 +1312,10 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 	public CallGraphGenerator getCallGraph() {
 		return callGraph;
 	}
+	
+	public void exportCallGraph(String path) {
+		callGraph.exportCallGraphToDot(path);;
+	}
 
 	public void createTypeCompatibilityWarning(Expression requiredExpression, Expression providedExpression) {
 		errors.add(new ModuleMarker(providedExpression, providedExpression.getResolvedType()

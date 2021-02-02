@@ -503,17 +503,8 @@ public class CallGraphGenerator implements IEolVisitor {
 			}
 		}
 		
-		DOTExporter<String, RelationshipEdge> exporter=new DOTExporter<>(v -> v.toString());
-		exporter.setEdgeAttributeProvider((e) -> {
-            Map<String, Attribute> map = new LinkedHashMap<>();
-            map.put("label", DefaultAttribute.createAttribute(e.getLabel()));
-            return map;
-		});
-		Writer writer = new StringWriter();
-		try {
-	        exporter.exportGraph( callGraph,new FileWriter("/Users/quratulainali/runtime-EclipseApplication/TestProject/callGraph.dot"));
-	    }catch (IOException e){}
-        exporter.exportGraph(callGraph, writer);
+		exportCallGraphToDot("/Users/quratulainali/runtime-EclipseApplication/TestProject/callGraph.dot");
+
 	}
 
 	
@@ -545,5 +536,19 @@ public class CallGraphGenerator implements IEolVisitor {
 		}
 		}
 		return pathContainsLoop;
+	}
+	
+	public void exportCallGraphToDot(String fileAndPath) {
+		DOTExporter<String, RelationshipEdge> exporter=new DOTExporter<>(v -> v.toString());
+		exporter.setEdgeAttributeProvider((e) -> {
+            Map<String, Attribute> map = new LinkedHashMap<>();
+            map.put("label", DefaultAttribute.createAttribute(e.getLabel()));
+            return map;
+		});
+		Writer writer = new StringWriter();
+		try {
+	        exporter.exportGraph( callGraph,new FileWriter(fileAndPath));
+	    }catch (IOException e){}
+        exporter.exportGraph(callGraph, writer);
 	}
 }
