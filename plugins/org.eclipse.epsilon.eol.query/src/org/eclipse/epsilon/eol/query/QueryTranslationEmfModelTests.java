@@ -38,6 +38,14 @@ public class QueryTranslationEmfModelTests extends TestCase {
 		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
 	}
 	
+	@Test
+	public static void testEugenia() throws Exception {
+		
+		List<String> actualAndExpected = new ArrayList<>();
+		actualAndExpected = prepareTestCase("ECore2GMF.eol", "ECore2GMFCallGraph.dot",2);
+		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
+	}
+	
 	
 	public static List<String> prepareTestCase(String eolFileName, String rewritedFileName, Integer option) {
 		EolModule module = new EolModule();
