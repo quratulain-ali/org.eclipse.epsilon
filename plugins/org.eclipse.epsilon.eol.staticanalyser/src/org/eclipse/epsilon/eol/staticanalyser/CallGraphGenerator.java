@@ -406,7 +406,10 @@ public class CallGraphGenerator implements IEolVisitor {
 		   callGraph.addVertex(operationName);
 		   
 		   if(calledFromLoop) {
-			 callGraph.addEdge(entry, operationName,new RelationshipEdge("loop"));
+			   if(callGraph.containsEdge(entry, operationName))
+				   callGraph.getEdge(entry, operationName).editLabel("loop");
+			   else
+				   callGraph.addEdge(entry, operationName,new RelationshipEdge("loop"));
 		 	}
 		   else {
 		 	callGraph.addEdge(entry, operationName,new RelationshipEdge(""));

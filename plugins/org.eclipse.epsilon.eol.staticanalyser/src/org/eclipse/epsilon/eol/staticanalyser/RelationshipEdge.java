@@ -26,6 +26,10 @@ public String getLabel()
     return label;
 }
 
+public void editLabel(String label) {
+	this.label=label;
+}
+
 @Override
 public String toString()
 {
