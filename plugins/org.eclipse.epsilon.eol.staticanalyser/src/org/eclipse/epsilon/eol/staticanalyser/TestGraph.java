@@ -5,23 +5,27 @@ import org.jgrapht.alg.interfaces.StrongConnectivityAlgorithm;
 import org.jgrapht.alg.shortestpath.AllDirectedPaths;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.nio.Attribute;
+import org.jgrapht.nio.DefaultAttribute;
 import org.jgrapht.nio.dot.DOTExporter;
 
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
 
 public class TestGraph {
 
-	static DefaultDirectedGraph<String, DefaultEdge> callGraph;
+	static DefaultDirectedGraph<String, RelationshipEdge> callGraph;
 			
 	public static void main(String[] args) {
 		// constructs a directed graph with the specified vertices and edges
         
-        callGraph = new DefaultDirectedGraph<String, DefaultEdge>(DefaultEdge.class);
+        callGraph = new DefaultDirectedGraph<String, RelationshipEdge>(RelationshipEdge.class);
         callGraph.addVertex("main");
         callGraph.addVertex("bar");
         callGraph.addVertex("foo");

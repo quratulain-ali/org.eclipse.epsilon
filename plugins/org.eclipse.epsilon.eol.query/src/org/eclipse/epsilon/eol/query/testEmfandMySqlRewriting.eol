@@ -1,0 +1,63 @@
+model bank driver EMF{
+nsuri = "bankAccounts",
+optimise = "true"
+};
+
+model imdb driver EMF{
+nsuri = "http://movies/1.0",
+optimise = "true"
+};
+
+model imdbSql driver MySQL {
+server = "relational.fit.cvut.cz",
+port = "3306",
+database = "imdb_ijs",
+username = "guest",
+password = "relational",
+name= "imdbSql",
+optimise = "true"
+};
+
+imdbSql!actors.allInstances.println();
+imdb!Actor.all.select(b|b.name = "Ataya, Alia");
+imdbSql!actors.allInstances.first_name.asSet().println();
+if(true)
+bank!Account.all.select(b|b.sortCode="12").println("Acc");
+else
+bank!Account.all.println();
+imdb!Actor.all.select(b|b.name = "Ataya, Alia").println();
+imdb!Actor.all.select(b|b.name = "Anger, Mark").println();
+
+imdb!Movie.all.select(b|b.year = "20").println();
+var movie = imdb!Movie.all.select(b|b.title = "48 Hour Bootcamp").println();
+
+
+//Queries for World Database
+var totalCountries = imdbSql!actors.allInstances.size().println("Size=");
+var continents = imdbSql!actors.allInstances.first_name.asSet().println();
+var firstCountry = imdbSql!actors.allInstances.first_name.first().println("Actor Name = ");
+var actor = imdbSql!actors.allInstances.select(f|f.first_name = "Eloy").println("Actor Name = ");
+var allCountries =imdbSql!actors.allInstances;
+imdbSql!actors.allInstances.println();
+
+//Queries for IMDb Database
+imdb!Actor.all.select(b|b.name = "Ataya, Alia").println();
+imdb!Actor.all.select(b|b.name = "Parks, Jim (II)").println();
+imdb!Actor.all.select(b|b.name = "Anger, Mark").println();
+
+imdb!Movie.all.select(r|r.title = "48 Hour Bootcamp").println();
+imdb!Movie.all.select(r|r.title = "5 Dollars Incident").println();
+
+imdb!Actor.all.select(b|b.name = "Ataya, Alia");
+imdb!Actor.all.select(b|b.name = "Ataya, Alia");
+for(actor in imdb!Actor.all) {
+imdb!Actor.all.select(b|b.name = "Anger, Mark");
+foo();
+}
+imdb!Movie.all.select(r|r.rating = "5.0").println();
+operation foo() {
+bar();
+}
+operation bar() {
+imdb!Movie.all.select(r|r.rating = "5.0").println();
+}

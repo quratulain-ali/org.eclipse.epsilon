@@ -1,0 +1,19 @@
+model imdbSql driver MySQL {
+server = "relational.fit.cvut.cz",
+port = "3306",
+database = "imdb_ijs",
+username = "guest",
+password = "relational",
+name= "imdbSql",
+optimise = "true"
+};
+var check : Boolean = true;
+if(check){
+	imdbSql!actors.allInstances.println();
+}
+else {
+	for(p in imdbSql!actors.all) {
+		imdbSql!actors.allInstances.size().println();
+	}
+}
+imdbSql!actors.allInstances.origin.println();

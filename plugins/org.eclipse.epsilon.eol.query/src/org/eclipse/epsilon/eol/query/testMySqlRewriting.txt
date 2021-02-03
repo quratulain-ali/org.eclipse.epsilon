@@ -1,0 +1,11 @@
+model imdbSql driver MySQL {server = "relational.fit.cvut.cz", port = "3306", database = "imdb_ijs", username = "guest", password = "relational", name = "imdbSql", optimise = "true"}
+var check : Boolean = true;
+if (check) {
+	imdbSql.runSql("SELECT * FROM actors").println();
+}
+else {
+	for (p in imdbSql.runSql("SELECT * FROM actors")) {
+		imdbSql.runSql("SELECT COUNT(*) FROM actors").println();
+	}
+}
+imdbSql.runSql("SELECT origin FROM actors").println();

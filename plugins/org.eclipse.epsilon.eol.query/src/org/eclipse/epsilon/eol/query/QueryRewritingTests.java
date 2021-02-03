@@ -13,20 +13,19 @@ import org.eclipse.epsilon.emc.mysql.SubModelFactory;
 import org.eclipse.epsilon.eol.EolModule;
 import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
 import org.eclipse.epsilon.eol.dom.ModelDeclaration;
-import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.eol.parse.EolUnparser;
 import org.eclipse.epsilon.eol.staticanalyser.EolStaticAnalyser;
 import org.junit.Test;
 
 import junit.framework.TestCase;
 
-public class QueryTranslationEmfModelTests extends TestCase {
+public class QueryRewritingTests extends TestCase {
 
 	@Test
-	public static void testQueryRewriting() throws Exception {
+	public static void testEmfRewriting() throws Exception {
 		
 		List<String> actualAndExpected = new ArrayList<>();
-		actualAndExpected = prepareTestCase("CallGraphEmfRewriterTestCase.eol", "CallGraphEmf.txt",1);
+		actualAndExpected = prepareTestCase("testEmfRewriting.eol", "testEmfRewriting.txt",1);
 		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
 	}
 	
@@ -34,7 +33,15 @@ public class QueryTranslationEmfModelTests extends TestCase {
 	public static void testCallGraph() throws Exception {
 		
 		List<String> actualAndExpected = new ArrayList<>();
-		actualAndExpected = prepareTestCase("TestCallGraph.eol", "CallGraph.dot",2);
+		actualAndExpected = prepareTestCase("testCallGraph.eol", "testCallGraph.dot",2);
+		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
+	}
+	
+	@Test
+	public static void testNestedStatements() throws Exception {
+		
+		List<String> actualAndExpected = new ArrayList<>();
+		actualAndExpected = prepareTestCase("testNestedStatements.eol", "testNestedStatements.txt",1);
 		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
 	}
 	
@@ -42,7 +49,30 @@ public class QueryTranslationEmfModelTests extends TestCase {
 	public static void testEugenia() throws Exception {
 		
 		List<String> actualAndExpected = new ArrayList<>();
-		actualAndExpected = prepareTestCase("ECore2GMF.eol", "ECore2GMFCallGraph.dot",2);
+		actualAndExpected = prepareTestCase("testEugenia.eol", "testEugenia.dot",2);
+		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
+	}
+	
+	@Test
+	public static void testMultipleEmfModels() throws Exception {
+		
+		List<String> actualAndExpected = new ArrayList<>();
+		actualAndExpected = prepareTestCase("testMultipleEmfModels.eol", "testMultipleEmfModels.txt",1);
+		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
+	}
+	
+	@Test
+	public static void testEmfandMySqlRewriting() throws Exception {
+		List<String> actualAndExpected = new ArrayList<>();
+		actualAndExpected = prepareTestCase("testEmfandMySqlRewriting.eol", "testEmfandMySqlRewriting.txt",1);
+		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
+	}
+	
+	@Test
+	public static void testMySqlRewriting() throws Exception {
+		List<String> actualAndExpected = new ArrayList<>();
+		actualAndExpected = prepareTestCase("testMySqlRewriting.eol", "testMySqlRewriting.txt",1);
+		System.err.println(actualAndExpected.get(0));
 		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
 	}
 	
@@ -69,20 +99,8 @@ public class QueryTranslationEmfModelTests extends TestCase {
 		EolStaticAnalyser staticAnlayser = new EolStaticAnalyser();
 		staticAnlayser.validate(module);
 		
-		for (ModelDeclaration modelDeclaration : module.getDeclaredModelDeclarations()) {
-			if (modelDeclaration.doOptimisation().equals("true")) {
-				IModel model = modelDeclaration.getModel();
-			if (modelDeclaration.getDriverNameExpression().getName().equals("MySQL")) {
-				context.setModelFactory(new SubModelFactory());
-				new MySqlModelQueryRewriter().rewrite(model, module, context);
-			}
-
-			if (modelDeclaration.getDriverNameExpression().getName().equals("EMF")) {
-				context.setModelFactory(new SubEmfModelFactory());
-				new EmfModelQueryRewriter().rewrite(model, module, context, staticAnlayser.getCallGraph());
-			}
-			}
-		}
+		new QueryRewriter().invokeRewriters(module, staticAnlayser.getCallGraph());
+		
 		String actual = "";
 		switch(option) {
 		  case 1:

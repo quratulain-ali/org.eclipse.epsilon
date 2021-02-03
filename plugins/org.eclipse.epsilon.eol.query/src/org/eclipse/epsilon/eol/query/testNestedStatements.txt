@@ -16,7 +16,7 @@ earth.findByIndex("Person", "name", "Judy").println();
 var exists : Boolean = true;
 if (exists) {
 	if (exists) {
-		earth.union(earth.findByIndex("Person", "name", "Judy"), earth.findByIndex("Person", "name", "Julie")).println();
+		earth.findByIndex("Person", "name", "Judy").includingAll(earth.findByIndex("Person", "name", "Julie")).println();
 	}
 	earth.findByIndex("Person", "name", "Judy").println();
 }

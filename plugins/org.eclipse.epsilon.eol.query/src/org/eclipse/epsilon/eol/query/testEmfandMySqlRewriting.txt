@@ -1,0 +1,43 @@
+model bank driver EMF {nsuri = "bankAccounts", optimise = "true"}
+model imdb driver EMF {nsuri = "http://movies/1.0", optimise = "true"}
+model imdbSql driver MySQL {server = "relational.fit.cvut.cz", port = "3306", database = "imdb_ijs", username = "guest", password = "relational", name = "imdbSql", optimise = "true"}
+imdb.createIndex("Movie", "rating");
+imdb.createIndex("Actor", "name");
+imdbSql.runSql("SELECT * FROM actors").println();
+imdb.findByIndex("Actor", "name", "Ataya, Alia");
+imdbSql.runSql("SELECT DISTINCT first_name FROM actors").println();
+if (true) {
+	bank!Account.all.select(b : bank!Account|b.sortCode = "12").println("Acc");
+}
+else {
+	bank!Account.all.println();
+}
+imdb.findByIndex("Actor", "name", "Ataya, Alia").println();
+imdb.findByIndex("Actor", "name", "Anger, Mark").println();
+imdb!Movie.all.select(b : imdb!Movie|b.year = "20").println();
+var movie = imdb!Movie.all.select(b : imdb!Movie|b.title = "48 Hour Bootcamp").println();
+var totalCountries = imdbSql.runSql("SELECT COUNT(*) FROM actors").println("Size=");
+var continents = imdbSql.runSql("SELECT DISTINCT first_name FROM actors").println();
+var firstCountry = imdbSql.runSql("SELECT first_name FROM actors limit 1").println("Actor Name = ");
+var actor = imdbSql.runSql("SELECT * FROM actors WHERE first_name = 'Eloy'").println("Actor Name = ");
+var allCountries = imdbSql.runSql("SELECT * FROM actors");
+imdbSql.runSql("SELECT * FROM actors").println();
+imdb.findByIndex("Actor", "name", "Ataya, Alia").println();
+imdb.findByIndex("Actor", "name", "Parks, Jim (II)").println();
+imdb.findByIndex("Actor", "name", "Anger, Mark").println();
+imdb!Movie.all.select(r : imdb!Movie|r.title = "48 Hour Bootcamp").println();
+imdb!Movie.all.select(r : imdb!Movie|r.title = "5 Dollars Incident").println();
+imdb.findByIndex("Actor", "name", "Ataya, Alia");
+imdb.findByIndex("Actor", "name", "Ataya, Alia");
+for (actor in imdb!Actor.all) {
+	imdb.findByIndex("Actor", "name", "Anger, Mark");
+	foo();
+}
+imdb.findByIndex("Movie", "rating", "5.0").println();
+
+operation foo() {
+	bar();
+}
+operation bar() {
+	imdb.findByIndex("Movie", "rating", "5.0").println();
+}

@@ -1,0 +1,53 @@
+model earth driver EMF {nsuri = "friends", optimise = "true"}
+model imdb driver EMF {nsuri = "http://movies/1.0", optimise = "true"}
+imdb.createIndex("Movie", "rating");
+earth.createIndex("Person", "name");
+var check : Boolean = true;
+var data : Collection(Integer) = Sequence{0..9};
+var data2 : Collection(Integer) = Collection{4..9};
+data.clone().println();
+imdb!Movie.all.select(a : imdb!Movie|a.title = "7.8");
+for (i in data) {
+	movieName();
+}
+imdb!Movie.all.select(a : imdb!Movie|a.title = "7.8");
+imdb.findByIndex("Movie", "rating", "7.8");
+imdb.findByIndex("Movie", "rating", "7.8");
+if (check) {
+	earth.findByIndex("Person", "name", "Judy").println();
+}
+else {
+	for (p in earth!Person.all) {
+		earth.findByIndex("Person", "name", "Judy").println();
+	}
+}
+earth.findByIndex("Person", "name", "Judy").println();
+var exists : Boolean = true;
+if (exists) {
+	if (exists) {
+		earth.findByIndex("Person", "name", "Judy").includingAll(earth.findByIndex("Person", "name", "Julie")).println();
+	}
+	earth.findByIndex("Person", "name", "Judy").println();
+}
+else {
+	if (exists) {
+		earth.findByIndex("Person", "name", "Judy").println();
+	}
+	earth.findByIndex("Person", "name", "Julie").println();
+}
+for (p in earth!Person.all) {
+	if (exists) {
+		earth.findByIndex("Person", "name", "Judy").println();
+	}
+	earth.findByIndex("Person", "name", "Judy").println();
+	earth.findByIndex("Person", "name", "Julie").println();
+}
+earth.findByIndex("Person", "name", "Monica").println();
+earth.findByIndex("Person", "name", "Rachel").println();
+
+operation foo() {
+	imdb.findByIndex("Movie", "rating", "2 Bill Hour");
+}
+operation movieName() {
+	foo();
+}

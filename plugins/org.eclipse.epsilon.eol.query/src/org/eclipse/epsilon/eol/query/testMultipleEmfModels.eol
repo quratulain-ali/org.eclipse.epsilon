@@ -1,0 +1,68 @@
+model earth driver EMF{
+nsuri = "friends",
+optimise = "true"
+};
+
+model imdb driver EMF {
+nsuri = "http://movies/1.0",
+optimise = "true"
+};
+
+var check : Boolean = true;
+
+var data : Collection<Integer> = Sequence{0..9};
+var data2 : Collection<Integer> = Collection{4..9};
+data.clone().println();
+
+imdb!Movie.all.select(a|a.title = "7.8");
+
+for(i in data)
+movieName();
+
+imdb!Movie.all.select(a|a.title = "7.8");
+
+imdb!Movie.all.select(a|a.rating = "7.8");
+imdb!Movie.all.select(a|a.rating = "7.8");
+
+if(check){
+	earth!Person.all.select(b|b.name = "Judy").println();
+}
+else {
+	for(p in earth!Person.all) {
+		earth!Person.all.select(b|b.name = "Judy").println();
+	}
+}
+earth!Person.all.select(b|b.name = "Judy").println();
+
+var exists : Boolean = true;
+
+if(exists) {
+	if(exists) {
+		earth!Person.all.select(b|b.name = "Judy" or b.name = "Julie").println();
+	}
+	earth!Person.all.select(b|b.name = "Judy").println();
+}
+else {
+	if(exists) {
+		earth!Person.all.select(b|b.name = "Judy").println();
+	}
+	earth!Person.all.select(b|b.name = "Julie" ).println();
+}
+for (p in earth!Person.all) {
+	if(exists) {
+		earth!Person.all.select(b|b.name = "Judy").println();
+	}
+	earth!Person.all.select(b|b.name = "Judy").println();
+	earth!Person.all.select(b|b.name = "Julie" ).println();
+}
+
+earth!Person.all.select(b|b.name = "Monica").println();
+earth!Person.all.select(b|b.name = "Rachel" ).println();
+
+operation foo() {
+imdb!Movie.all.select(a|a.rating = "2 Bill Hour");
+}
+
+operation movieName() {
+foo();
+}
