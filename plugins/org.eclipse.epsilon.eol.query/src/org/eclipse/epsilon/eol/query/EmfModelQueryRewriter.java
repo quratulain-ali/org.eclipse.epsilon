@@ -157,9 +157,10 @@ public class EmfModelQueryRewriter {
 							else
 								m= ((EolModelElementType) ((OperationCallExpression) target)
 										.getTargetExpression().getResolvedType());
-							modelName = m.getModelName();
+//							modelName = m.getModelName();
 							try {
 								if (m.getModel(module.getCompilationContext()) == model) {
+									modelName = m.getModelName();
 									model.setName(modelName);
 									NameExpression targetExp = new NameExpression(modelName);
 									NameExpression operationExp = new NameExpression("findByIndex");
