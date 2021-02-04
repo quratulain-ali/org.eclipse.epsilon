@@ -72,10 +72,29 @@ public class QueryRewritingTests extends TestCase {
 	public static void testMySqlRewriting() throws Exception {
 		List<String> actualAndExpected = new ArrayList<>();
 		actualAndExpected = prepareTestCase("testMySqlRewriting.eol", "testMySqlRewriting.txt",1);
-		System.err.println(actualAndExpected.get(0));
 		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
 	}
 	
+	@Test
+	public static void testOrClausev1() throws Exception {
+		List<String> actualAndExpected = new ArrayList<>();
+		actualAndExpected = prepareTestCase("testOrClausev1.eol", "testOrClausev1.txt",1);
+		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
+	}
+	
+	@Test
+	public static void testAndClausev1() throws Exception {
+		List<String> actualAndExpected = new ArrayList<>();
+		actualAndExpected = prepareTestCase("testAndClausev1.eol", "testAndClausev1.txt",1);
+		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
+	}
+	
+	@Test
+	public static void testAndOrInLoop() throws Exception {
+		List<String> actualAndExpected = new ArrayList<>();
+		actualAndExpected = prepareTestCase("testAndOrInLoop.eol", "testAndOrInLoop.txt",1);
+		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
+	}
 	
 	public static List<String> prepareTestCase(String eolFileName, String rewritedFileName, Integer option) {
 		EolModule module = new EolModule();

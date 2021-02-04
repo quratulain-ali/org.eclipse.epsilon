@@ -1,0 +1,15 @@
+model imdb driver EMF {
+nsuri = "http://movies/1.0",
+optimise = "true"
+};
+var data : Collection = Collection {1..100};
+for(i in data){
+imdb!Movie.all.select(a|a.persons = "2010" or a.year = "8.0");//00
+imdb!Movie.all.select(a|a.year = "2010" or a.rating = "8.0");//01
+imdb!Movie.all.select(a|a.title = "2010" or a.year = "8.0");//10
+imdb!Movie.all.select(a|a.title = "2010" or a.rating = "8.0" );
+imdb!Movie.all.select(a|a.persons = "2010" and a.year = "8.0");//00
+imdb!Movie.all.select(a|a.year = "2010" and a.rating = "8.0");//01
+imdb!Movie.all.select(a|a.title = "2010" and a.year = "8.0");//10
+imdb!Movie.all.select(a|a.title = "2010" and a.rating = "8.0");//11
+}
