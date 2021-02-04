@@ -18,6 +18,7 @@ import org.eclipse.epsilon.eol.dom.BooleanLiteral;
 import org.eclipse.epsilon.eol.dom.EqualsOperatorExpression;
 import org.eclipse.epsilon.eol.dom.Expression;
 import org.eclipse.epsilon.eol.dom.ExpressionStatement;
+import org.eclipse.epsilon.eol.dom.FeatureCallExpression;
 import org.eclipse.epsilon.eol.dom.FirstOrderOperationCallExpression;
 import org.eclipse.epsilon.eol.dom.ForStatement;
 import org.eclipse.epsilon.eol.dom.IfStatement;
@@ -27,6 +28,7 @@ import org.eclipse.epsilon.eol.dom.Operation;
 import org.eclipse.epsilon.eol.dom.OperationCallExpression;
 import org.eclipse.epsilon.eol.dom.OperatorExpression;
 import org.eclipse.epsilon.eol.dom.OrOperatorExpression;
+import org.eclipse.epsilon.eol.dom.Parameter;
 import org.eclipse.epsilon.eol.dom.PropertyCallExpression;
 import org.eclipse.epsilon.eol.dom.ReturnStatement;
 import org.eclipse.epsilon.eol.dom.Statement;
@@ -173,6 +175,7 @@ public class EmfModelQueryRewriter {
 
 									Expression parameterAst = operation.getExpressions().get(0);
 									StringLiteral indexField = new StringLiteral();
+									boolean rewrited = false;
 									if (parameterAst instanceof OrOperatorExpression) {
 										cascaded = false;
 										decomposedAsts = decomposeAST(parameterAst);
@@ -180,7 +183,7 @@ public class EmfModelQueryRewriter {
 										if (cascaded)
 											decomposedAsts
 													.add(((OrOperatorExpression) parameterAst).getSecondOperand());
-										OperationCallExpression rewritedQuery = new OperationCallExpression();
+										FeatureCallExpression rewritedQuery = new OperationCallExpression();
 										for (ModuleElement firstOperand : decomposedAsts) {
 											if(firstOperand instanceof EqualsOperatorExpression) {
 											indexField = new StringLiteral(((NameExpression) firstOperand
@@ -198,89 +201,108 @@ public class EmfModelQueryRewriter {
 											else
 												possibleIndices.get(modelElementName.getValue())
 														.add(indexField.getValue());
+											if(!(indexExists || canbeExecutedMultipleTimes)&&rewritedQuery.getName() == null) 
+												return module;
+											else
+												rewrited = true;
 											if(rewritedQuery.getName() == null)
 											rewritedQuery = new OperationCallExpression(
 													targetExp, operationExp, modelElementName, indexField, indexValue);
+											else if(!indexExists && !canbeExecutedMultipleTimes) {
+												Parameter param = ((FirstOrderOperationCallExpression) ast).getParameters().get(0);
+												rewritedQuery = new FirstOrderOperationCallExpression(
+														rewritedQuery, new NameExpression("select"),param,
+																new EqualsOperatorExpression(new PropertyCallExpression(param.getNameExpression(), 
+																		new NameExpression(indexField.getValue())), indexValue));
+																//targetExp, operationExp, modelElementName, indexField, indexValue));
+											}
 											else {
 												rewritedQuery = new OperationCallExpression(
 														rewritedQuery, new NameExpression("includingAll"),new OperationCallExpression(
 																targetExp, operationExp, modelElementName, indexField, indexValue));
 											}
-											
-											}
 											if(indexExists || canbeExecutedMultipleTimes) {
 												 potentialIndices.get(modelElementName.getValue()).add(indexField.getValue());
-												 rewriteToModule(ast, rewritedQuery);
 											}
-											else {
-												if(astsOfPossibleIndices.get(modelElementName.getValue()+","+indexField.getValue()) != null)
-														astsOfPossibleIndices.get(modelElementName.getValue()+","+indexField.getValue()).add(Arrays.asList(rewritedQuery,ast));
-												else {
-													List<List<Object>> possibleAst = new ArrayList<List<Object>>();
-															possibleAst.add(Arrays.asList(rewritedQuery,ast));
-												astsOfPossibleIndices.put(modelElementName.getValue()+","+indexField.getValue(),possibleAst); 
-												}
-												}
+											if(possibleIndices.get(modelElementName.getValue()).contains(indexField.getValue())) {
 											
+											}
+											
+											}
+										}
+										if(rewrited) {
+											 rewriteToModule(ast, rewritedQuery);
+										}
+										for(String index : possibleIndices.get(modelElementName.getValue())) {
+											if(astsOfPossibleIndices.get(modelElementName.getValue()+","+index) != null)
+												astsOfPossibleIndices.get(modelElementName.getValue()+","+index).add(Arrays.asList(rewritedQuery,ast));
+										else {
+											List<List<Object>> possibleAst = new ArrayList<List<Object>>();
+													possibleAst.add(Arrays.asList(rewritedQuery,ast));
+													astsOfPossibleIndices.put(modelElementName.getValue()+","+index,possibleAst); 
+											}
 										}
 									}
+									
 									else if (parameterAst instanceof AndOperatorExpression) {
 										cascaded = false;
 										decomposedAsts = decomposeAST(parameterAst);
-
+										rewrited = false;
 										if (cascaded)
 											decomposedAsts
 													.add(((AndOperatorExpression) parameterAst).getSecondOperand());
-										
-										OperationCallExpression rewritedQuery = new OperationCallExpression();
-										
-										indexField = new StringLiteral();
-										StringLiteral indexValue = new StringLiteral();
-										
+										FeatureCallExpression rewritedQuery = new OperationCallExpression();
 										for (ModuleElement firstOperand : decomposedAsts) {
 											if(firstOperand instanceof EqualsOperatorExpression) {
-												if(indexField.getValue() != null) {
-											 indexField = new StringLiteral(indexField.getValue()+"-"+
-													 ((NameExpression) firstOperand
+											indexField = new StringLiteral(((NameExpression) firstOperand
 													.getChildren().get(0).getChildren().get(1)).getName());
-											indexValue = new StringLiteral(indexValue.getValue()+"-"+
-													((StringLiteral) firstOperand.getChildren().get(1)).getValue()); 
-												}
-												else {
-													indexField = new StringLiteral(((NameExpression) firstOperand
-															.getChildren().get(0).getChildren().get(1)).getName());
-													indexValue = new StringLiteral(((StringLiteral) firstOperand.getChildren().get(1)).getValue());
-												}
-											
-										}
-										}
+											StringLiteral indexValue = new StringLiteral(
+													((StringLiteral) firstOperand.getChildren().get(1)).getValue());
+
 											indexExists = false;
 
 											if (potentialIndices.get(modelElementName.getValue())
 													.contains(indexField.getValue())) {
 												indexExists = true;
 											}
-											
 
 											else
 												possibleIndices.get(modelElementName.getValue())
 														.add(indexField.getValue());
-										rewritedQuery = new OperationCallExpression(
-														targetExp, operationExp,modelElementName, indexField, indexValue);
-										if(indexExists && canbeExecutedMultipleTimes) {
-											potentialIndices.get(modelElementName.getValue()).add(indexField.getValue());
-											 rewriteToModule(ast, rewritedQuery);
-										}
-										else {
-											if(astsOfPossibleIndices.get(modelElementName.getValue()+","+indexField.getValue()) != null)
-													astsOfPossibleIndices.get(modelElementName.getValue()+","+indexField.getValue()).add(Arrays.asList(rewritedQuery,ast));
-											else {
-												List<List<Object>> possibleAst = new ArrayList<List<Object>>();
-														possibleAst.add(Arrays.asList(rewritedQuery,ast));
-											astsOfPossibleIndices.put(modelElementName.getValue()+","+indexField.getValue(),possibleAst); 
+											if(!(indexExists || canbeExecutedMultipleTimes)&&rewritedQuery.getName() == null) 
+												return module;
+											if(rewritedQuery.getName() == null)
+											rewritedQuery = new OperationCallExpression(
+													targetExp, operationExp, modelElementName, indexField, indexValue);
+											else if((indexExists && !canbeExecutedMultipleTimes)||!indexExists || canbeExecutedMultipleTimes) {
+												Parameter param = ((FirstOrderOperationCallExpression) ast).getParameters().get(0);
+												rewritedQuery = new FirstOrderOperationCallExpression(
+														rewritedQuery, new NameExpression("select"),param,
+																new EqualsOperatorExpression(new PropertyCallExpression(param.getNameExpression(), 
+																		new NameExpression(indexField.getValue())), indexValue));
+												rewrited = true;
+											}
+											if(indexExists || canbeExecutedMultipleTimes) {
+												 potentialIndices.get(modelElementName.getValue()).add(indexField.getValue());
+											}
+											if(possibleIndices.get(modelElementName.getValue()).contains(indexField.getValue())) {
+											
+											}
+											
 											}
 										}
-										
+										if(rewrited) {
+											 rewriteToModule(ast, rewritedQuery);
+										}
+										for(String index : possibleIndices.get(modelElementName.getValue())) {
+											if(astsOfPossibleIndices.get(modelElementName.getValue()+","+index) != null)
+												astsOfPossibleIndices.get(modelElementName.getValue()+","+index).add(Arrays.asList(rewritedQuery,ast));
+										else {
+											List<List<Object>> possibleAst = new ArrayList<List<Object>>();
+													possibleAst.add(Arrays.asList(rewritedQuery,ast));
+													astsOfPossibleIndices.put(modelElementName.getValue()+","+index,possibleAst); 
+											}
+										}
 									}
 									else {
 										if(operation.getExpressions().get(0) instanceof EqualsOperatorExpression) {
@@ -354,7 +376,7 @@ public class EmfModelQueryRewriter {
 
 	}
 	
-	public void rewriteToModule(ModuleElement ast, OperationCallExpression rewritedQuery) {
+	public void rewriteToModule(ModuleElement ast, FeatureCallExpression rewritedQuery) {
 		if (ast.getParent() instanceof ExpressionStatement)
 			((ExpressionStatement) ast.getParent()).setExpression(rewritedQuery);
 		else if (ast.getParent() instanceof AssignmentStatement)
@@ -375,7 +397,7 @@ public class EmfModelQueryRewriter {
 		if(data.containsKey(k+","+potentialIndex)){
 			for(List<Object> one : data.get(k+","+potentialIndex)) {
 			ModuleElement ast = (ModuleElement) one.get(1);
-			OperationCallExpression rewritedQuery = (OperationCallExpression) one.get(0);
+			FeatureCallExpression rewritedQuery = (FeatureCallExpression) one.get(0);
 			rewriteToModule(ast, rewritedQuery);
 			}
 		}
