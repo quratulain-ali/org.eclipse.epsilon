@@ -96,6 +96,13 @@ public class QueryRewritingTests extends TestCase {
 		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
 	}
 	
+	@Test
+	public static void testAndOrIndexAfter() throws Exception {
+		List<String> actualAndExpected = new ArrayList<>();
+		actualAndExpected = prepareTestCase("testAndOrIndexAfter.eol", "testAndOrIndexAfter.txt",1);
+		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
+	}
+	
 	public static List<String> prepareTestCase(String eolFileName, String rewritedFileName, Integer option) {
 		EolModule module = new EolModule();
 
