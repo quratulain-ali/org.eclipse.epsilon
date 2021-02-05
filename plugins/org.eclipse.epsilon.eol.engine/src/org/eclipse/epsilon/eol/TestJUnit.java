@@ -3,9 +3,6 @@ package org.eclipse.epsilon.eol;
 import java.io.File;
 import java.util.List;
 
-
-import org.eclipse.epsilon.common.parse.Region;
-import org.eclipse.epsilon.eol.dom.ExpressionStatement;
 import org.eclipse.epsilon.eol.dom.Statement;
 import org.junit.Test;
 
@@ -35,11 +32,8 @@ public class TestJUnit extends TestCase{
 					.getStart().getLine();
 			
 			String actual = module.getCompilationContext().getMarkers().get(index).getMessage();
-				System.out.println("Expected # " + index + ": " + expected);
-				System.out.println("Actual # " + index + ": " + actual);
 				
 				if(commentLine==markerLine) {
-					System.out.println(expected.equalsIgnoreCase(actual));
 					assertEquals("Failed", expected, actual);
 					index++;
 				}
