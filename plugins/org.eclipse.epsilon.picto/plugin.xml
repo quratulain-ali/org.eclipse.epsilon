@@ -63,6 +63,7 @@
       <pictoSource class="org.eclipse.epsilon.picto.source.PlantUmlSource"/>
       <pictoSource class="org.eclipse.epsilon.picto.source.MathjaxSource"/>
       <pictoSource class="org.eclipse.epsilon.picto.source.CsvSource"/>
+      <pictoSource class="org.eclipse.epsilon.picto.source.EolSource"/>
    </extension>
    <extension
          point="org.eclipse.ui.editors">
