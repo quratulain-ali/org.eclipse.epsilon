@@ -65,26 +65,8 @@ public class QueryRewritingView extends ViewPart {
 		IToolBarManager toolbar = getViewSite().getActionBars().getToolBarManager();
 		toolbar.add(new RefreshAction(this));
 
-		EolModule module = new EolModule();
-
-		try {
-			module.parse(new File(getActiveEditorFilePath()));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		context = module.getCompilationContext();
-
-		context.setModelFactory(new ModelTypeExtensionFactory());
-
-		EolStaticAnalyser staticAnlayser = new EolStaticAnalyser();
-		staticAnlayser.validate(module);
-		
-
-		new QueryRewriter().invokeRewriters(module,staticAnlayser.getCallGraph());
-		
-		translatedCode.set(new EolUnparser().unparse(module));
-		viewer.setDocument(translatedCode);
+		if(getActiveEditorFilePath().split("\\.")[1].equals("eol"))
+			doRewriting(getActiveEditorFilePath());
 	}
 
 	public class MyLabelProvider extends LabelProvider implements IColorProvider {
@@ -124,25 +106,30 @@ public class QueryRewritingView extends ViewPart {
 	}
 
 	public void render(IEditorPart editor) {
+		if(getActiveEditorFilePath().split("\\.")[1].equals("eol"))
+		doRewriting(getActiveEditorFilePath());
+	}
 
+	public void doRewriting(String activeFile) {
 		EolModule module = new EolModule();
+
 		try {
-			module.parse(new File(getActiveEditorFilePath()));
+			module.parse(new File(activeFile));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 		context = module.getCompilationContext();
+
 		context.setModelFactory(new ModelTypeExtensionFactory());
 
 		EolStaticAnalyser staticAnlayser = new EolStaticAnalyser();
 		staticAnlayser.validate(module);
+		
 
 		new QueryRewriter().invokeRewriters(module,staticAnlayser.getCallGraph());
-
+		
 		translatedCode.set(new EolUnparser().unparse(module));
 		viewer.setDocument(translatedCode);
-
 	}
-
 }
