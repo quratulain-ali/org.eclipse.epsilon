@@ -3,6 +3,10 @@ package org.eclipse.epsilon.eol.staticanalyser;
 import org.jgrapht.graph.DefaultEdge;
 
 class RelationshipEdge extends DefaultEdge {
+/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6734080945704336177L;
 private String label;
 
 /**
