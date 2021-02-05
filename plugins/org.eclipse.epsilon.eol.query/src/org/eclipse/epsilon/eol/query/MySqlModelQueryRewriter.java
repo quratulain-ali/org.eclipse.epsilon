@@ -108,8 +108,6 @@ public class MySqlModelQueryRewriter {
 					((ForStatement) ast.getParent()).setIteratedExpression(rewritedQuery);
 				else
 					((OperationCallExpression) ast.getParent()).setTargetExpression(rewritedQuery);
-
-				System.out.println("Translated = " + p.getValue());
 			}
 		}
 
