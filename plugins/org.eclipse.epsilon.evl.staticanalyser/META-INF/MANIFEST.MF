@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: EvlStaticAnalyser
+Bundle-SymbolicName: org.eclipse.epsilon.evl.staticanalyser;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Automatic-Module-Name: org.eclipse.epsilon.evl.staticanalyser
+Bundle-RequiredExecutionEnvironment: JavaSE-14
+Import-Package: org.eclipse.epsilon.common.module,
+ org.eclipse.epsilon.eol.staticanalyser,
+ org.eclipse.epsilon.evl
+Require-Bundle: org.eclipse.epsilon.eol.engine,
+ org.eclipse.epsilon.evl.engine
+Export-Package: org.eclipse.epsilon.evl.staticanalyser
