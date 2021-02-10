@@ -18,7 +18,6 @@ import org.eclipse.epsilon.eol.dom.StatementBlock;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.execute.Return;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
-import org.omg.CORBA.Context;
 
 public class NamedStatementBlockRule extends NamedRule implements IExecutableModuleElement {
 	

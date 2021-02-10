@@ -284,4 +284,10 @@ public class ConstraintContext extends AnnotatableModuleElement implements IExec
 	public void setGuardBlock(ExecutableBlock<Boolean> guardBlock) {
 		this.guardBlock = guardBlock;
 	}
+
+	@Override
+	public void compile(IEolCompilationContext context) {
+		// TODO Auto-generated method stub
+		
+	}
 }

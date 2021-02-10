@@ -296,4 +296,10 @@ public class Constraint extends NamedRule implements IExecutableModuleElementPar
 	public void accept(IEvlVisitor visitor) {
 		visitor.visit(this);
 	}
+
+	@Override
+	public void compile(IEolCompilationContext context) {
+		// TODO Auto-generated method stub
+		
+	}
 }
