@@ -66,6 +66,8 @@ target-plain
 # /plugins/org.eclipse.epsilon.workflow.eugenia/
 /plugins/org.eclipse.epsilon.workflow.eugenia/lib
 
+/plugins/org.eclipse.epsilon.evl.query/src/org/eclipse/epsilon/evl/query/imdb-1.5.xmi
+
 # /serverside/org.eclipse.epsilon.egl.servlet/
 /serverside/org.eclipse.epsilon.egl.servlet/build
 

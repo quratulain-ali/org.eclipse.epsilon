@@ -1,0 +1,17 @@
+model imdb driver EMF {nsuri = "http://movies/1.0", optimise = "true"}
+pre {
+	imdb.createIndex("Movie", "year");
+	imdb.createIndex("Movie", "rating");
+}
+context imdb!Movie {
+		constraint testConstraint {
+		
+		check  {
+				imdb.findByIndex("Movie", "year", "2010").select(a : imdb!Movie|a.rating = "4.0");
+			return true;
+		}
+
+	}
+
+}
+
