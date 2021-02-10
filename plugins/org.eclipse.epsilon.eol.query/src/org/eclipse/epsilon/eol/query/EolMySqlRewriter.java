@@ -22,7 +22,7 @@ import org.eclipse.epsilon.eol.exceptions.models.EolModelElementTypeNotFoundExce
 import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.eol.types.EolModelElementType;
 
-public class MySqlModelQueryRewriter {
+public class EolMySqlRewriter {
 	
 	String tablename;
 	String features;

@@ -39,7 +39,7 @@ import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.eol.staticanalyser.CallGraphGenerator;
 import org.eclipse.epsilon.eol.types.EolModelElementType;
 
-public class EmfModelQueryRewriter {
+public class EolEmfRewriter {
 
 	HashSet<String> optimisableOperations;
 	HashSet<String> allOperations;

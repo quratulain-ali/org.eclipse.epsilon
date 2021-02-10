@@ -9,7 +9,7 @@ import org.eclipse.epsilon.eol.IEolModule;
 import org.eclipse.epsilon.eol.dt.launching.EpsilonLaunchConfigurationDelegateListener;
 import org.eclipse.epsilon.eol.staticanalyser.EolStaticAnalyser;
 
-public class EolQueryRewriter implements EpsilonLaunchConfigurationDelegateListener {
+public class EolRewritingHandler implements EpsilonLaunchConfigurationDelegateListener {
 
 	@Override
 	public void aboutToParse(ILaunchConfiguration configuration, String mode, ILaunch launch,
@@ -29,7 +29,7 @@ public class EolQueryRewriter implements EpsilonLaunchConfigurationDelegateListe
 		
 		if (module.getMain() == null) return;
         
-		new QueryRewriter().invokeRewriters(module, staticAnlayser.getCallGraph());
+		new EolPreExecuteConfiguration().invokeRewriters(module, staticAnlayser.getCallGraph());
 		
 	}
 

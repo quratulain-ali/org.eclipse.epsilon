@@ -33,14 +33,14 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.epsilon.common.dt.editor.AbstractModuleEditorSourceViewerConfiguration;
 
-public class QueryRewritingView extends ViewPart {
+public class EolQueryRewritingView extends ViewPart {
 	protected IEditorPart editor;
 	public String text;
 	SourceViewer viewer;
 	IEolCompilationContext context;
 	Document translatedCode;
 
-	public QueryRewritingView() {
+	public EolQueryRewritingView() {
 		super();
 	}
 
@@ -127,7 +127,7 @@ public class QueryRewritingView extends ViewPart {
 		staticAnlayser.validate(module);
 		
 
-		new QueryRewriter().invokeRewriters(module,staticAnlayser.getCallGraph());
+		new EolPreExecuteConfiguration().invokeRewriters(module,staticAnlayser.getCallGraph());
 		
 		translatedCode.set(new EolUnparser().unparse(module));
 		viewer.setDocument(translatedCode);

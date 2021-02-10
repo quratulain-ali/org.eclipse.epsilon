@@ -6,7 +6,7 @@ import org.eclipse.epsilon.eol.dom.ModelDeclaration;
 import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.eol.staticanalyser.CallGraphGenerator;
 
-public class QueryRewriter {
+public class EolPreExecuteConfiguration {
 
 	public void invokeRewriters(IEolModule module, CallGraphGenerator cg) {
 		IEolCompilationContext context = module.getCompilationContext();
@@ -15,10 +15,10 @@ public class QueryRewriter {
 				IModel model = modelDeclaration.getModel();
 
 				if (modelDeclaration.getDriverNameExpression().getName().equals("MySQL"))
-					new MySqlModelQueryRewriter().rewrite(model, module, context);
+					new EolMySqlRewriter().rewrite(model, module, context);
 
 				if (modelDeclaration.getDriverNameExpression().getName().equals("EMF"))
-					new EmfModelQueryRewriter().rewrite(model, module, context,cg);
+					new EolEmfRewriter().rewrite(model, module, context,cg);
 			}
 		}
 

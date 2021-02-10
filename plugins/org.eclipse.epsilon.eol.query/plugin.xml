@@ -5,13 +5,13 @@
         <view id="org.eclipse.epsilon.eol.query.QueryRewritingView"
              name="Query Rewriting"
              category="org.eclipse.epsilon.dt"
-             class="org.eclipse.epsilon.eol.query.QueryRewritingView"
+             class="org.eclipse.epsilon.eol.query.EolQueryRewritingView"
              icon="icons/TypeOneToOneMapping.gif"/>
 </extension>
 	<extension
          point="org.eclipse.epsilon.eol.dt.launchConfigurationExtension">
       <launchConfigurationExtension
-            listener="org.eclipse.epsilon.eol.query.EolQueryRewriter">
+            listener="org.eclipse.epsilon.eol.query.EolRewritingHandler">
       </launchConfigurationExtension>
    </extension>
 

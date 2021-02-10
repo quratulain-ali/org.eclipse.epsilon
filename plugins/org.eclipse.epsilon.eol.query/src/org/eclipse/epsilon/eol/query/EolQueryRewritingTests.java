@@ -19,7 +19,7 @@ import org.junit.Test;
 
 import junit.framework.TestCase;
 
-public class QueryRewritingTests extends TestCase {
+public class EolQueryRewritingTests extends TestCase {
 
 	@Test
 	public static void testEmfRewriting() throws Exception {
@@ -125,7 +125,7 @@ public class QueryRewritingTests extends TestCase {
 		EolStaticAnalyser staticAnlayser = new EolStaticAnalyser();
 		staticAnlayser.validate(module);
 		
-		new QueryRewriter().invokeRewriters(module, staticAnlayser.getCallGraph());
+		new EolPreExecuteConfiguration().invokeRewriters(module, staticAnlayser.getCallGraph());
 		
 		String actual = "";
 		switch(option) {

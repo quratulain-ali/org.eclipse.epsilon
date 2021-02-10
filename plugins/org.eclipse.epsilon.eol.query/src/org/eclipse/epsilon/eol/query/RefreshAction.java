@@ -5,9 +5,9 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 
 public class RefreshAction extends Action implements IAction {
-   protected QueryRewritingView queryView;
+   protected EolQueryRewritingView queryView;
 	
-	public RefreshAction(QueryRewritingView queryView) {
+	public RefreshAction(EolQueryRewritingView queryView) {
 		setText("Refresh");
 		setImageDescriptor(EolPlugin.getDefault().getImageDescriptor("icons/refresh.gif"));
 		this.queryView = queryView;
