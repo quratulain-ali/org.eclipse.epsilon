@@ -44,6 +44,7 @@ import org.eclipse.epsilon.eol.dom.FirstOrderOperationCallExpression;
 import org.eclipse.epsilon.eol.dom.ForStatement;
 import org.eclipse.epsilon.eol.dom.GreaterEqualOperatorExpression;
 import org.eclipse.epsilon.eol.dom.GreaterThanOperatorExpression;
+import org.eclipse.epsilon.eol.dom.ICompilableModuleElement;
 import org.eclipse.epsilon.eol.dom.IEolVisitor;
 import org.eclipse.epsilon.eol.dom.IfStatement;
 import org.eclipse.epsilon.eol.dom.ImpliesOperatorExpression;
@@ -241,8 +242,9 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 
 	@Override
 	public void visit(ExecutableBlock<?> executableBlock) {
-		// ICompilableModuleElement body = (ICompilableModuleElement)
-		// executableBlock.getBody();
+		 ICompilableModuleElement body = (ICompilableModuleElement)
+		 executableBlock.getBody();
+		 body.accept(this);
 		// Should we add add accept method?
 	}
 

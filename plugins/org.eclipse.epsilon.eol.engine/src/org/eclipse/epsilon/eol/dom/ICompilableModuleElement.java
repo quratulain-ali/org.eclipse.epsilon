@@ -15,4 +15,6 @@ public interface ICompilableModuleElement {
 	
 	public void compile(IEolCompilationContext context);
 	
+	public void accept(IEolVisitor visitor);
+	
 }
