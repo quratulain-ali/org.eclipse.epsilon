@@ -257,8 +257,10 @@ public class EvlEmfRewriter {
 													.get(0).getChildren().get(0).getChildren().get(1)).getName());
 											ModuleElement indexValueExpression = operation.getExpressions().get(0)
 													.getChildren().get(1);
-											StringLiteral indexValue = new StringLiteral();
-											if (indexValueExpression instanceof BooleanLiteral) {
+											Expression indexValue = new StringLiteral();
+											if (indexValueExpression instanceof PropertyCallExpression) {
+												indexValue = (PropertyCallExpression)indexValueExpression;
+											}else if (indexValueExpression instanceof BooleanLiteral) {
 												indexValue = new StringLiteral(
 														((BooleanLiteral) indexValueExpression).getValue().toString());
 											} else if (indexValueExpression instanceof StringLiteral) {

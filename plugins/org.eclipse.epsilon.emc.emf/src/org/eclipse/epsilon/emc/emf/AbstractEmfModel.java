@@ -39,6 +39,7 @@ import org.eclipse.epsilon.common.util.Multimap;
 import org.eclipse.epsilon.common.util.StringProperties;
 import org.eclipse.epsilon.emc.emf.CachedResourceSet.Cache;
 import org.eclipse.epsilon.emc.emf.transactions.EmfModelTransactionSupport;
+import org.eclipse.epsilon.eol.dom.PropertyCallExpression;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.exceptions.models.EolEnumerationValueNotFoundException;
 import org.eclipse.epsilon.eol.exceptions.models.EolModelElementTypeNotFoundException;
@@ -208,7 +209,7 @@ public abstract class AbstractEmfModel extends CachedModel<EObject> {
 		return getAllFromModel(eClass::isInstance);
 	}
 	
-	public Object findByIndex(String kind, String field, String value) throws EolModelElementTypeNotFoundException {
+	public Object findByIndex(String kind, String field, Object value) throws EolModelElementTypeNotFoundException {
 		
 		if(indices.get(kind+","+field)!=null){
 			return find(indices.get(kind+","+field), value);
@@ -233,7 +234,7 @@ public abstract class AbstractEmfModel extends CachedModel<EObject> {
 		return index;
 	}
 	
-   public Object find(Multimap<Object ,String> index, String value) throws EolModelElementTypeNotFoundException {
+   public Object find(Multimap<Object ,String> index, Object value) throws EolModelElementTypeNotFoundException {
 		List<Object> elements = new ArrayList<Object>();
 	   if(index.get(value) == null) return elements;
 	   for(String val : index.get(value)) {
