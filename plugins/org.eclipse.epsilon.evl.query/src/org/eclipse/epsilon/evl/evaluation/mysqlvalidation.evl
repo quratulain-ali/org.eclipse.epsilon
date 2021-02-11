@@ -1,0 +1,23 @@
+model imdbSql driver MySQL {
+server = "relational.fit.cvut.cz",
+port = "3306",
+database = "imdb_ijs",
+username = "guest",
+password = "relational",
+name= "imdbSql",
+optimise = "true" 
+};
+model imdb driver EMF {
+nsuri = "http://movies/1.0",
+optimise = "false"
+};
+pre {
+}
+context imdb!Movie {
+constraint SameYear {
+ // check: imdbSql!movies.allInstances
+//   .exists(r|r.name = self.`title`)
+ check: imdbSql.runSql("SELECT * FROM movies WHERE name = '+ self.`title` + '").size>0
+ 
+ }
+}

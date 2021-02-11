@@ -1,0 +1,14 @@
+model imdb driver EMF {
+nsuri = "http://movies/1.0",
+optimise = "true"
+};
+pre {
+}
+context imdb!Movie {
+ constraint testConstraint{
+  check {
+	imdb!Movie.allInstances.select(a|a.rating = "6.0");
+		return true;
+}
+ }
+}

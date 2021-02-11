@@ -1,0 +1,17 @@
+model eclipse2 driver EMF {
+nsuri = "http://www.eclipse.org/MoDisco/Java/0.2.incubation/java" ,
+optimise = "false"
+};
+model eclipse5 driver EMF {
+nsuri = "http://www.eclipse.org/MoDisco/Java/0.2.incubation/java" ,
+optimise = "false"
+};
+pre {
+}
+context eclipse2!Block {
+	
+	constraint returnType {
+		check : eclipse2!MethodDeclaration.all.exists(a|self.statements.contains(a.returnType))
+	}
+	
+}

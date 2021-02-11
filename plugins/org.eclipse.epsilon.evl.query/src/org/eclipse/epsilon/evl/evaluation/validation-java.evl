@@ -1,0 +1,12 @@
+model javaMM driver EMF {
+nsuri = "http://www.eclipse.org/MoDisco/Java/0.2.incubation/java",
+optimise = "true" 
+};
+pre{
+}
+context ImportDeclaration {
+	constraint allImportsAreUsed {
+	
+		check: Package.all.exists(ne | ne.name ==  self.importedElement.name)
+	}
+}

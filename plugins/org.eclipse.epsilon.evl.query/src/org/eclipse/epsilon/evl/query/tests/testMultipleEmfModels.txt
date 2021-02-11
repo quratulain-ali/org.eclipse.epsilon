@@ -1,0 +1,30 @@
+model imdb driver EMF {nsuri = "http://movies/1.0", optimise = "true"}
+model earth driver EMF {nsuri = "friends", optimise = "true"}
+pre {
+	earth.createIndex("Person", "name");
+	imdb.createIndex("Movie", "rating");
+}
+context imdb!Movie {
+		constraint testConstraint {
+		
+		check  {
+				imdb.findByIndex("Movie", "rating", "6.0");
+			return true;
+		}
+
+	}
+
+}
+
+context imdb!Movie {
+		constraint testConstraintNo2 {
+		
+		check  {
+				earth.findByIndex("Person", "name", "Judy");
+			return true;
+		}
+
+	}
+
+}
+

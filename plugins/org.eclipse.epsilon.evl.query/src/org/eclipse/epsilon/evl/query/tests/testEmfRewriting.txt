@@ -1,0 +1,16 @@
+model imdb driver EMF {nsuri = "http://movies/1.0", optimise = "true"}
+pre {
+	imdb.createIndex("Movie", "rating");
+}
+context imdb!Movie {
+		constraint testConstraint {
+		
+		check  {
+				imdb.findByIndex("Movie", "rating", "6.0");
+			return true;
+		}
+
+	}
+
+}
+

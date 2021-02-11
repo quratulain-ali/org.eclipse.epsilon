@@ -1,0 +1,17 @@
+model imdb driver EMF {
+nsuri = "http://movies/1.0",
+optimise = "false"
+};
+model imdb2 driver EMF {
+nsuri = "http://movies/1.0",
+optimise = "false"
+};
+pre {
+}
+context imdb2!Movie {
+	constraint MovieExists {
+		check : imdb!Movie.all.exists(f|f.`title` = self.`title`)
+		message: "Movies " + self.`title` + " are not same."
+	}
+	
+}

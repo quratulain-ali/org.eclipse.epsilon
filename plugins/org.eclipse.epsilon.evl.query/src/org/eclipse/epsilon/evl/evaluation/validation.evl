@@ -1,0 +1,13 @@
+model imdb driver EMF {
+nsuri = "http://movies/1.0",
+optimise = "false"
+};
+pre {
+}
+context imdb!Movie {
+	constraint MoviesOf2015Exists {
+		check : imdb!Actor.all.exists(f|f.name = self.persons.name)
+		message: "Actor doesn't exist"
+	}
+	
+}
