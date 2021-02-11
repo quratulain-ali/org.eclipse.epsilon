@@ -16,11 +16,12 @@ import org.eclipse.epsilon.eol.dom.AndOperatorExpression;
 import org.eclipse.epsilon.eol.dom.AssignmentStatement;
 import org.eclipse.epsilon.eol.dom.BooleanLiteral;
 import org.eclipse.epsilon.eol.dom.EqualsOperatorExpression;
+import org.eclipse.epsilon.eol.dom.ExecutableBlock;
 import org.eclipse.epsilon.eol.dom.Expression;
 import org.eclipse.epsilon.eol.dom.ExpressionStatement;
-import org.eclipse.epsilon.eol.dom.FeatureCallExpression;
 import org.eclipse.epsilon.eol.dom.FirstOrderOperationCallExpression;
 import org.eclipse.epsilon.eol.dom.ForStatement;
+import org.eclipse.epsilon.eol.dom.GreaterThanOperatorExpression;
 import org.eclipse.epsilon.eol.dom.IfStatement;
 import org.eclipse.epsilon.eol.dom.IntegerLiteral;
 import org.eclipse.epsilon.eol.dom.NameExpression;
@@ -49,32 +50,26 @@ public class EvlEmfRewriter {
 	boolean cascaded = false;
 	EvlModule module;
 	String modelName;
-	boolean indexExists = false;
-	boolean canbeExecutedMultipleTimes = false;
 
 	public void rewrite(IModel model, IEolModule module, IEolCompilationContext context) {
 		EvlModule evlModule = (EvlModule) module;
 		this.module = evlModule;
-		
-//		if (module.getMain() == null) return;
-
-		for(Constraint constraint : evlModule.getConstraints()) {
-			constraint.getCheckBlock().getBody();
-		
-		List<Statement> statements = ((StatementBlock)constraint.getCheckBlock().getBody()).getStatements();
-		optimisableOperations = new HashSet<String>(Arrays.asList("select"));
+		List<Statement> statements;
+		optimisableOperations = new HashSet<String>(Arrays.asList("select","exists"));
 		allOperations = new HashSet<String>(Arrays.asList("all", "allInstances"));
-
-		optimiseStatementBlock(model, module, statements);
+		
+		for(Constraint constraint : evlModule.getConstraints()) {
+		if(	constraint.getCheckBlock().getBody() instanceof StatementBlock) {
+			statements = ((StatementBlock)constraint.getCheckBlock().getBody()).getStatements();
+			optimiseStatementBlock(model, module, statements);
+		}else {
+			List<ModuleElement> ast = constraint.getCheckBlock().getChildren();
+			optimiseAST(model, ast);
+		}
 		}
 		for (Operation operation : module.getDeclaredOperations()) {
-//			String name = operation.getName();
-				canbeExecutedMultipleTimes = true;
 				optimiseStatementBlock(model, module, operation.getBody().getStatements());
-			canbeExecutedMultipleTimes = false;
 		}
-		
-//		optimiseStatementBlock(model, module, statements);
 		injectCreateIndexStatements(evlModule, modelName, potentialIndices);
 
 	}
@@ -84,10 +79,8 @@ public class EvlEmfRewriter {
 		for (Statement statement : statements) {
 			if (statement instanceof ForStatement) {
 //				optimiseAST(model, Arrays.asList(statement.getChildren().get(1)), indexExists);
-				canbeExecutedMultipleTimes = true;
 				List<Statement> childStatements = ((ForStatement) statement).getBodyStatementBlock().getStatements();
 				optimiseStatementBlock(model, module, childStatements);
-				canbeExecutedMultipleTimes = false;
 			} else if (statement instanceof IfStatement) {
 				StatementBlock thenBlock = ((IfStatement) statement).getThenStatementBlock();
 				if (thenBlock != null) {
@@ -101,12 +94,12 @@ public class EvlEmfRewriter {
 				}
 			} else {
 				List<ModuleElement> asts = statement.getChildren();
-				module = optimiseAST(model, asts, indexExists);
+				module = optimiseAST(model, asts);
 			}
 		}
 	}
 
-	public IEolModule optimiseAST(IModel model, List<ModuleElement> asts, boolean indexExists) {
+	public IEolModule optimiseAST(IModel model, List<ModuleElement> asts) {
 
 		for (ModuleElement ast : asts) {
 
@@ -114,7 +107,19 @@ public class EvlEmfRewriter {
 				OperationCallExpression ocExp = (OperationCallExpression) ast;
 				
 				if (!(ocExp.getTargetExpression() instanceof NameExpression)) {
-					return optimiseAST(model, ast.getChildren(), indexExists);
+					return optimiseAST(model, ast.getChildren());
+				}
+			}
+			
+			if (ast instanceof EqualsOperatorExpression) {
+				EqualsOperatorExpression ocExp = (EqualsOperatorExpression) ast;
+				
+				if (!(ocExp.getFirstOperand() instanceof NameExpression)) {
+					return optimiseAST(model, ast.getChildren());
+				}
+				
+				if (!(ocExp.getSecondOperand() instanceof NameExpression)) {
+					return optimiseAST(model, ast.getChildren());
 				}
 			}
 
@@ -159,7 +164,7 @@ public class EvlEmfRewriter {
 										if (cascaded)
 											decomposedAsts.add(((OrOperatorExpression) parameterAst).getSecondOperand());
 										
-										FeatureCallExpression rewritedQuery = new OperationCallExpression();
+										Expression rewritedQuery = new OperationCallExpression();
 										
 										for (ModuleElement firstOperand : decomposedAsts) {
 											if (firstOperand instanceof EqualsOperatorExpression) {
@@ -167,42 +172,26 @@ public class EvlEmfRewriter {
 														.getChildren().get(0).getChildren().get(1)).getName());
 												
 												StringLiteral indexValue = new StringLiteral(((StringLiteral) firstOperand.getChildren().get(1)).getValue());
-
-												indexExists = false;
-
-												if (potentialIndices.get(modelElementName.getValue())
-														.contains(indexField.getValue())) {
-													indexExists = true;
-												}
-												if (!(indexExists || canbeExecutedMultipleTimes)
-														&& rewritedQuery.getName() == null)
-													return module;
-												if (rewritedQuery.getName() == null)
+												if (((OperationCallExpression)rewritedQuery).getName() == null)
 													rewritedQuery = new OperationCallExpression(targetExp, operationExp,
 															modelElementName, indexField, indexValue);
-												else if (!indexExists && !canbeExecutedMultipleTimes) {
-													Parameter param = ((FirstOrderOperationCallExpression) ast)
-															.getParameters().get(0);
-													rewritedQuery = new FirstOrderOperationCallExpression(rewritedQuery,
-															new NameExpression("select"), param,
-															new EqualsOperatorExpression(
-																	new PropertyCallExpression(
-																			param.getNameExpression(),
-																			new NameExpression(indexField.getValue())),
-																	indexValue));
-												} else {
+//												
+												else {
 													rewritedQuery = new OperationCallExpression(rewritedQuery,
 															new NameExpression("includingAll"),
 															new OperationCallExpression(targetExp, operationExp,
 																	modelElementName, indexField, indexValue));
 												}
-												if (indexExists || canbeExecutedMultipleTimes) {
 													potentialIndices.get(modelElementName.getValue())
 															.add(indexField.getValue());
-												}
 											}
 										}
-											rewriteToModule(ast, rewritedQuery);
+										if(firstoperationName.equals("exists")) {
+											IntegerLiteral i = new IntegerLiteral(0);
+											i.setText("0");
+											rewritedQuery = new GreaterThanOperatorExpression(new OperationCallExpression(rewritedQuery, new NameExpression("size")),i);
+										}
+										rewriteToModule(ast, rewritedQuery);
 									}
 
 									else if (parameterAst instanceof AndOperatorExpression) {
@@ -211,7 +200,7 @@ public class EvlEmfRewriter {
 										if (cascaded)
 											decomposedAsts
 													.add(((AndOperatorExpression) parameterAst).getSecondOperand());
-										FeatureCallExpression rewritedQuery = new OperationCallExpression();
+										Expression rewritedQuery = new OperationCallExpression();
 										for (ModuleElement firstOperand : decomposedAsts) {
 											if (firstOperand instanceof EqualsOperatorExpression) {
 												indexField = new StringLiteral(((NameExpression) firstOperand
@@ -219,20 +208,10 @@ public class EvlEmfRewriter {
 												StringLiteral indexValue = new StringLiteral(
 														((StringLiteral) firstOperand.getChildren().get(1)).getValue());
 
-												indexExists = false;
-
-												if (potentialIndices.get(modelElementName.getValue())
-														.contains(indexField.getValue())) {
-													indexExists = true;
-												}
-												if (!(indexExists || canbeExecutedMultipleTimes)
-														&& rewritedQuery.getName() == null)
-													return module;
-												if (rewritedQuery.getName() == null)
+												if (((OperationCallExpression)rewritedQuery).getName() == null)
 													rewritedQuery = new OperationCallExpression(targetExp, operationExp,
 															modelElementName, indexField, indexValue);
-												else if ((indexExists && !canbeExecutedMultipleTimes) || !indexExists
-														|| canbeExecutedMultipleTimes) {
+												else  {
 													Parameter param = ((FirstOrderOperationCallExpression) ast)
 															.getParameters().get(0);
 													rewritedQuery = new FirstOrderOperationCallExpression(rewritedQuery,
@@ -243,12 +222,16 @@ public class EvlEmfRewriter {
 																			new NameExpression(indexField.getValue())),
 																	indexValue));
 												}
-												if (indexExists || canbeExecutedMultipleTimes) {
 													potentialIndices.get(modelElementName.getValue())
 															.add(indexField.getValue());
-												}
+
 
 											}
+										}
+										if(firstoperationName.equals("exists")) {
+											IntegerLiteral i = new IntegerLiteral(0);
+											i.setText("0");
+											rewritedQuery = new GreaterThanOperatorExpression(new OperationCallExpression(rewritedQuery, new NameExpression("size")),i);
 										}
 											rewriteToModule(ast, rewritedQuery);
 									} else {
@@ -270,21 +253,18 @@ public class EvlEmfRewriter {
 												indexValue = new StringLiteral(
 														((IntegerLiteral) indexValueExpression).getValue().toString());
 											}
-											indexExists = false;
 
-											if (potentialIndices.get(modelElementName.getValue())
-													.contains(indexField.getValue())) {
-												indexExists = true;
-											}
-
-											OperationCallExpression rewritedQuery = new OperationCallExpression(
+											Expression rewritedQuery = new OperationCallExpression(
 													targetExp, operationExp, modelElementName, indexField, indexValue);
 
-											if (indexExists || canbeExecutedMultipleTimes) {
 												potentialIndices.get(modelElementName.getValue())
 														.add(indexField.getValue());
+												if(firstoperationName.equals("exists")) {
+													IntegerLiteral i = new IntegerLiteral(0);
+													i.setText("0");
+													rewritedQuery = new GreaterThanOperatorExpression(new OperationCallExpression(rewritedQuery, new NameExpression("size")),i);
+												}
 												rewriteToModule(ast, rewritedQuery);
-											} 
 										}
 										return module;
 									}
@@ -315,7 +295,7 @@ public class EvlEmfRewriter {
 
 	}
 
-	public void rewriteToModule(ModuleElement ast, FeatureCallExpression rewritedQuery) {
+	public void rewriteToModule(ModuleElement ast,Expression rewritedQuery) {
 		if (ast.getParent() instanceof ExpressionStatement)
 			((ExpressionStatement) ast.getParent()).setExpression(rewritedQuery);
 		else if (ast.getParent() instanceof AssignmentStatement)
@@ -324,8 +304,10 @@ public class EvlEmfRewriter {
 			((ForStatement) ast.getParent()).setIteratedExpression(rewritedQuery);
 		else if (ast.getParent() instanceof ReturnStatement)
 			((ReturnStatement) ast.getParent()).setReturnedExpression(rewritedQuery);
-		else
+		else if (ast.getParent() instanceof OperationCallExpression)
 			((OperationCallExpression) ast.getParent()).setTargetExpression(rewritedQuery);
+		else
+			((ExecutableBlock<?>) ast.getParent()).setBody(rewritedQuery);
 	}
 
 	public void injectCreateIndexStatements(EvlModule module, String modelName,
