@@ -13,11 +13,11 @@ public class EvlRewritingHandler {
 			if (modelDeclaration.doOptimisation().equals("true")) {
 				IModel model = modelDeclaration.getModel();
 
-//				if (modelDeclaration.getDriverNameExpression().getName().equals("MySQL"))
-//					new MySqlModelQueryRewriter().rewrite(model, module, context);
+				if (modelDeclaration.getDriverNameExpression().getName().equals("MySQL"))
+					new EvlMySqlRewriter().rewrite(model, module, context);
 
 				if (modelDeclaration.getDriverNameExpression().getName().equals("EMF"))
-					new EvlEmfRewriterv2().rewrite(model, module, context);
+					new EvlEmfRewriter().rewrite(model, module, context);
 			}
 		}
 
