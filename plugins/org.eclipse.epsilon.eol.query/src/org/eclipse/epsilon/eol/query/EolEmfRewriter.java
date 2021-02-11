@@ -57,7 +57,7 @@ public class EolEmfRewriter {
 		if (module.getMain() == null) return;
 
 		List<Statement> statements = module.getMain().getStatements();
-		optimisableOperations = new HashSet<String>(Arrays.asList("select"));
+		optimisableOperations = new HashSet<String>(Arrays.asList("select", "exists"));
 		allOperations = new HashSet<String>(Arrays.asList("all", "allInstances"));
 
 		optimiseStatementBlock(model, module, statements);
@@ -199,6 +199,8 @@ public class EolEmfRewriter {
 												}
 											}
 										}
+										if(firstoperationName.equals("exists"))
+											rewritedQuery = new OperationCallExpression(rewritedQuery, new NameExpression("isDefined"));
 											rewriteToModule(ast, rewritedQuery);
 									}
 
@@ -247,6 +249,8 @@ public class EolEmfRewriter {
 
 											}
 										}
+										if(firstoperationName.equals("exists"))
+											rewritedQuery = new OperationCallExpression(rewritedQuery, new NameExpression("isDefined"));
 											rewriteToModule(ast, rewritedQuery);
 									} else {
 										if (operation.getExpressions().get(0) instanceof EqualsOperatorExpression) {
@@ -278,6 +282,8 @@ public class EolEmfRewriter {
 											if (indexExists || canbeExecutedMultipleTimes) {
 												potentialIndices.get(modelElementName.getValue())
 														.add(indexField.getValue());
+												if(firstoperationName.equals("exists"))
+													rewritedQuery = new OperationCallExpression(rewritedQuery, new NameExpression("isDefined"));
 												rewriteToModule(ast, rewritedQuery);
 											} 
 										}
