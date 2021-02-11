@@ -1,6 +1,6 @@
 model imdb driver EMF {
 nsuri = "http://movies/1.0",
-optimise = "false"
+optimise = "true"
 };
 pre {
 }

@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.epsilon.emc.emf.SubEmfModelFactory;
 import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
+import org.eclipse.epsilon.eol.dom.ModelDeclaration;
 import org.eclipse.epsilon.evl.EvlModule;
 import org.eclipse.epsilon.evl.parse.EvlUnparser;
 import org.eclipse.epsilon.evl.staticanalyser.EvlStaticAnalyser;
@@ -27,16 +29,16 @@ public class EvlRewritingTests extends TestCase {
 		
 		List<String> actualAndExpected = new ArrayList<>();
 		actualAndExpected = prepareTestCase("testEmfRewriting.evl", "testEmfRewriting.txt",1);
-		assertEquals("Failed", removeWhitespace(actualAndExpected.get(1)), removeWhitespace(actualAndExpected.get(0)));
+		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
 	}
 	
-//	@Test
-//	public static void testCallGraph() throws Exception {
-//		
-//		List<String> actualAndExpected = new ArrayList<>();
-//		actualAndExpected = prepareTestCase("testCallGraph.eol", "testCallGraph.dot",2);
-//		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
-//	}
+	@Test
+	public static void testMySqlExistSelect() throws Exception {
+		
+		List<String> actualAndExpected = new ArrayList<>();
+		actualAndExpected = prepareTestCase("testMySqlExistSelect.evl", "testMySqlExistSelect.txt",1);
+		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
+	}
 	
 //	@Test
 //	public static void testNestedStatements() throws Exception {
@@ -114,7 +116,13 @@ public class EvlRewritingTests extends TestCase {
 			e.printStackTrace();
 		}
         EolCompilationContext context = module.getCompilationContext();
-		context.setModelFactory(new SubModelFactory());
+        for (ModelDeclaration modelDeclaration : module.getDeclaredModelDeclarations()) {
+			if (modelDeclaration.getDriverNameExpression().getName().equals("MySQL")) 
+				context.setModelFactory(new SubJdbcModelFactory());
+
+			if (modelDeclaration.getDriverNameExpression().getName().equals("EMF")) 
+				context.setModelFactory(new SubEmfModelFactory());
+		}
 		
 		EvlStaticAnalyser staticAnlayser = new EvlStaticAnalyser();
 		staticAnlayser.validate(module);
@@ -148,7 +156,7 @@ public class EvlRewritingTests extends TestCase {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return Arrays.asList(actual,expected);
+		return Arrays.asList(removeWhitespace(actual),removeWhitespace(expected));
 	}
 
 }
