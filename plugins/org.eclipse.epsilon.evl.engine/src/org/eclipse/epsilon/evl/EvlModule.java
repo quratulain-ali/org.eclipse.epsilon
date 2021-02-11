@@ -12,6 +12,9 @@ package org.eclipse.epsilon.evl;
 
 import java.io.File;
 import java.io.ObjectInputStream.GetField;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
 import java.util.*;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.Lexer;
@@ -277,6 +280,7 @@ public class EvlModule extends ErlModule implements IEvlModule{
 		for (ConstraintContext constraintContext : getConstraintContexts()) {
 			constraintContext.execute(preProcessConstraintContext(constraintContext), context);
 		}
+		
 	}
 	
 	/**
@@ -297,8 +301,14 @@ public class EvlModule extends ErlModule implements IEvlModule{
 	@SuppressWarnings("unchecked")
 	@Override
 	public Set<UnsatisfiedConstraint> execute() throws EolRuntimeException {
-		
-		return (Set<UnsatisfiedConstraint>) super.execute();
+		MemoryMXBean mbean = ManagementFactory.getMemoryMXBean();
+		MemoryUsage beforeHeapMemoryUsage = mbean.getHeapMemoryUsage();
+		Object object = super.execute();
+		MemoryUsage afterHeapMemoryUsage = mbean.getHeapMemoryUsage();
+		long consumed = afterHeapMemoryUsage.getUsed() - 
+		                beforeHeapMemoryUsage.getUsed();
+		System.out.println("Total consumed Memory:" + consumed/1000000);
+		return (Set<UnsatisfiedConstraint>) object;
 	}
 	
 	@Override
