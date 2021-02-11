@@ -11,7 +11,7 @@
 <extension
          point="org.eclipse.epsilon.eol.dt.launchConfigurationExtension">
       <launchConfigurationExtension
-            listener="org.eclipse.epsilon.evl.query.EvlQueryRewriter">
+            listener="org.eclipse.epsilon.evl.query.EvlLaunchConfiguration">
       </launchConfigurationExtension>
    </extension>
 </plugin>

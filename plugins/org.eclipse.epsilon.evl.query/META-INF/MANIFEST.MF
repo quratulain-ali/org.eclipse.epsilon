@@ -16,7 +16,10 @@ Require-Bundle: org.eclipse.epsilon.common,
  org.eclipse.ui.ide,
  org.eclipse.epsilon.eol.dt,
  org.eclipse.epsilon.evl.staticanalyser,
- org.junit
-Import-Package: org.eclipse.epsilon.emc.emf,
+ org.junit,
+ org.eclipse.epsilon.emc.jdbc.mysql,
+ org.eclipse.emf.ecore
+Import-Package: org.eclipse.emf.ecore.xmi.impl,
+ org.eclipse.epsilon.emc.emf,
  org.eclipse.epsilon.eol.dt.launching,
  org.eclipse.epsilon.eol.staticanalyser
