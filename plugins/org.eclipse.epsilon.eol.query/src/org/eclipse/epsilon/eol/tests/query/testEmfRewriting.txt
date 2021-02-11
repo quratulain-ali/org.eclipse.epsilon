@@ -4,7 +4,7 @@ imdb.createIndex("Movie", "title");
 var data : Collection = Collection{1..100};
 imdb.findByIndex("Movie", "title", "2 Bill Hour");
 for (i in data) {
-	imdb.findByIndex("Movie", "title", "7.8");
+	imdb.findByIndex("Movie", "title", "7.8").isDefined().println();
 }
 imdb.findByIndex("Movie", "title", "2 Bill Hour");
 imdb.findByIndex("Movie", "title", "7.8");

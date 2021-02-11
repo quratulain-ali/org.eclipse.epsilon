@@ -1,4 +1,4 @@
-package org.eclipse.epsilon.eol.query;
+package org.eclipse.epsilon.eol.tests.query;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,11 +9,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.epsilon.emc.emf.SubEmfModelFactory;
-import org.eclipse.epsilon.emc.mysql.SubModelFactory;
 import org.eclipse.epsilon.eol.EolModule;
 import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
 import org.eclipse.epsilon.eol.dom.ModelDeclaration;
 import org.eclipse.epsilon.eol.parse.EolUnparser;
+import org.eclipse.epsilon.eol.query.EolPreExecuteConfiguration;
+import org.eclipse.epsilon.eol.query.SubJdbcModelFactory;
 import org.eclipse.epsilon.eol.staticanalyser.EolStaticAnalyser;
 import org.junit.Test;
 
@@ -72,6 +73,7 @@ public class EolQueryRewritingTests extends TestCase {
 	public static void testMySqlRewriting() throws Exception {
 		List<String> actualAndExpected = new ArrayList<>();
 		actualAndExpected = prepareTestCase("testMySqlRewriting.eol", "testMySqlRewriting.txt",1);
+		System.out.println("Mysql"+actualAndExpected.get(0));
 		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
 	}
 	
@@ -103,11 +105,18 @@ public class EolQueryRewritingTests extends TestCase {
 		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
 	}
 	
+	@Test
+	public static void testExistsAndClause() throws Exception {
+		List<String> actualAndExpected = new ArrayList<>();
+		actualAndExpected = prepareTestCase("testExistsAndClause.eol", "testExistsAndClause.txt",1);
+		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
+	}
+	
 	public static List<String> prepareTestCase(String eolFileName, String rewritedFileName, Integer option) {
 		EolModule module = new EolModule();
 
 		try {
-			module.parse(new File("src/org/eclipse/epsilon/eol/query/"+eolFileName));
+			module.parse(new File("src/org/eclipse/epsilon/eol/tests/query/"+eolFileName));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -116,7 +125,7 @@ public class EolQueryRewritingTests extends TestCase {
 		
 		for (ModelDeclaration modelDeclaration : module.getDeclaredModelDeclarations()) {
 			if (modelDeclaration.getDriverNameExpression().getName().equals("MySQL")) 
-				context.setModelFactory(new SubModelFactory());
+				context.setModelFactory(new SubJdbcModelFactory());
 
 			if (modelDeclaration.getDriverNameExpression().getName().equals("EMF")) 
 				context.setModelFactory(new SubEmfModelFactory());
@@ -133,7 +142,7 @@ public class EolQueryRewritingTests extends TestCase {
 			  actual = new EolUnparser().unparse(module);
 		    break;
 		  case 2:
-			  String pathAndFileName = "src/org/eclipse/epsilon/eol/query/generatedCallGraph.dot";
+			  String pathAndFileName = "src/org/eclipse/epsilon/eol/tests/query/generatedCallGraph.dot";
 			  staticAnlayser.exportCallGraph(pathAndFileName);
 			  try {
 				actual = Files.readString(Path.of(pathAndFileName));
@@ -149,7 +158,7 @@ public class EolQueryRewritingTests extends TestCase {
 		
 		String expected = "";
 		try {
-			expected = Files.readString(Path.of("src/org/eclipse/epsilon/eol/query/"+rewritedFileName));
+			expected = Files.readString(Path.of("src/org/eclipse/epsilon/eol/tests/query/"+rewritedFileName));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
