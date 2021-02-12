@@ -127,7 +127,7 @@ public class EolQueryRewritingView extends ViewPart {
 		staticAnlayser.validate(module);
 		
 
-		new EolPreExecuteConfiguration().invokeRewriters(module,staticAnlayser.getCallGraph());
+		new EolRewritingHandler().invokeRewriters(module,staticAnlayser.getCallGraph());
 		
 		translatedCode.set(new EolUnparser().unparse(module));
 		viewer.setDocument(translatedCode);

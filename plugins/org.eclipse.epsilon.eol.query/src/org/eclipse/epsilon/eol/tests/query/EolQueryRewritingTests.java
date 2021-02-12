@@ -13,7 +13,7 @@ import org.eclipse.epsilon.eol.EolModule;
 import org.eclipse.epsilon.eol.compile.context.EolCompilationContext;
 import org.eclipse.epsilon.eol.dom.ModelDeclaration;
 import org.eclipse.epsilon.eol.parse.EolUnparser;
-import org.eclipse.epsilon.eol.query.EolPreExecuteConfiguration;
+import org.eclipse.epsilon.eol.query.EolRewritingHandler;
 import org.eclipse.epsilon.eol.query.SubJdbcModelFactory;
 import org.eclipse.epsilon.eol.staticanalyser.EolStaticAnalyser;
 import org.junit.Test;
@@ -134,7 +134,7 @@ public class EolQueryRewritingTests extends TestCase {
 		EolStaticAnalyser staticAnlayser = new EolStaticAnalyser();
 		staticAnlayser.validate(module);
 		
-		new EolPreExecuteConfiguration().invokeRewriters(module, staticAnlayser.getCallGraph());
+		new EolRewritingHandler().invokeRewriters(module, staticAnlayser.getCallGraph());
 		
 		String actual = "";
 		switch(option) {

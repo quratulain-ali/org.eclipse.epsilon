@@ -1,43 +1,27 @@
 package org.eclipse.epsilon.eol.query;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.debug.core.ILaunch;
-import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.epsilon.common.dt.editor.ModelTypeExtensionFactory;
 import org.eclipse.epsilon.eol.IEolModule;
-import org.eclipse.epsilon.eol.dt.launching.EpsilonLaunchConfigurationDelegateListener;
-import org.eclipse.epsilon.eol.staticanalyser.EolStaticAnalyser;
+import org.eclipse.epsilon.eol.compile.context.IEolCompilationContext;
+import org.eclipse.epsilon.eol.dom.ModelDeclaration;
+import org.eclipse.epsilon.eol.models.IModel;
+import org.eclipse.epsilon.eol.staticanalyser.CallGraphGenerator;
 
-public class EolRewritingHandler implements EpsilonLaunchConfigurationDelegateListener {
+public class EolRewritingHandler {
 
-	@Override
-	public void aboutToParse(ILaunchConfiguration configuration, String mode, ILaunch launch,
-			IProgressMonitor progressMonitor, IEolModule module) throws CoreException {
-		// TODO Auto-generated method stub
-		
-	}
+	public void invokeRewriters(IEolModule module, CallGraphGenerator cg) {
+		IEolCompilationContext context = module.getCompilationContext();
+		for (ModelDeclaration modelDeclaration : module.getDeclaredModelDeclarations()) {
+			if (modelDeclaration.doOptimisation().equals("true")) {
+				IModel model = modelDeclaration.getModel();
 
-	@Override
-	public void aboutToExecute(ILaunchConfiguration configuration, String mode, ILaunch launch,
-			IProgressMonitor progressMonitor, IEolModule module) throws Exception {
-		
-		module.getCompilationContext().setModelFactory(new ModelTypeExtensionFactory());
-		
-		EolStaticAnalyser staticAnlayser = new EolStaticAnalyser();
-		staticAnlayser.validate(module);
-		
-		if (module.getMain() == null) return;
-        
-		new EolPreExecuteConfiguration().invokeRewriters(module, staticAnlayser.getCallGraph());
-		
-	}
+				if (modelDeclaration.getDriverNameExpression().getName().equals("MySQL"))
+					new EolMySqlRewriter().rewrite(model, module, context);
 
-	@Override
-	public void executed(ILaunchConfiguration configuration, String mode, ILaunch launch,
-			IProgressMonitor progressMonitor, IEolModule module, Object result) throws Exception {
-		// TODO Auto-generated method stub
-		
+				if (modelDeclaration.getDriverNameExpression().getName().equals("EMF"))
+					new EolEmfRewriter().rewrite(model, module, context,cg);
+			}
+		}
+
 	}
 
 }
