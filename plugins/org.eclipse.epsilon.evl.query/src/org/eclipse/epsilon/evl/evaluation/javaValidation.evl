@@ -7,6 +7,6 @@ pre{
 context ImportDeclaration {
 	constraint allImportsAreUsed {
 	
-		check: Package.all.exists(ne | ne.name ==  self.importedElement.name)
+		check: Package.all.exists(ne|ne.name ==  self.importedElement.name)
 	}
 }

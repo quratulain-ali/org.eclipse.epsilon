@@ -24,11 +24,11 @@ import org.eclipse.epsilon.evl.launch.EvlRunConfiguration;
  * @author Sina Madani
  * @author Dimitrios Kolovos
  */
-public class JudoStandalone {
+public class JudoValidation {
 
 	public static void main(String... args) throws Exception {
-		Path root = Paths.get(JudoStandalone.class.getResource("").toURI()),
-			modelsRoot = root.getParent().resolve("query");
+		Path root = Paths.get(JudoValidation.class.getResource("").toURI()),
+			modelsRoot = root.getParent().resolve("evaluation");
 		
 		StringProperties model1 = StringProperties.Builder()
 			.withProperty(EmfModel.PROPERTY_NAME, "JAVATYPES")

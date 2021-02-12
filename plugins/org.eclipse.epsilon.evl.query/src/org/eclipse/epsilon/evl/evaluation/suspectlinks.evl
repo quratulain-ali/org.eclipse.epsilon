@@ -1,0 +1,32 @@
+model A1 driver EMF {
+	nsuri = "requirements",
+	optimise = "false"
+};
+
+pre {
+}
+context A1!Requirement {
+	
+	constraint IdIsUnique {
+		check : A1!Requirement.all.select(r|r.id = self.id).size() = 1
+	}
+	
+}
+
+/*context A2!TraceLink {
+	
+	constraint SuspectLink {
+	
+		check {	
+			var requirement = Requirement.all.selectOne(r|r.id = self.from.id);
+			var test = A3!Test.all.selectOne(t|t.id = self.to.id);
+			
+			return requirement.version = self.from.version 
+				and test.version = self.to.version;
+		}
+		
+		message : "Link from " + self.from.id + " to " + self.to.id + " is suspect"
+		
+	}
+	
+}*/

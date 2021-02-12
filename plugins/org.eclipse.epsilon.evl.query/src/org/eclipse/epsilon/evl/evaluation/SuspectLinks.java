@@ -24,26 +24,26 @@ import org.eclipse.epsilon.evl.launch.EvlRunConfiguration;
  * @author Sina Madani
  * @author Dimitrios Kolovos
  */
-public class JavaValidation {
+public class SuspectLinks {
 
 	public static void main(String... args) throws Exception {
-		Path root = Paths.get(JavaValidation.class.getResource("").toURI()),
+		Path root = Paths.get(SuspectLinks.class.getResource("").toURI()),
 			modelsRoot = root.getParent().resolve("evaluation");
 		
 		StringProperties model1 = StringProperties.Builder()
-			.withProperty(EmfModel.PROPERTY_NAME, "javaMM")
+			.withProperty(EmfModel.PROPERTY_NAME, "A1")
 			.withProperty(EmfModel.PROPERTY_FILE_BASED_METAMODEL_URI,
-				modelsRoot.resolve("java.ecore").toAbsolutePath().toUri()
+				modelsRoot.resolve("requirements.ecore").toAbsolutePath().toUri()
 			)
 			.withProperty(EmfModel.PROPERTY_MODEL_URI,
-				modelsRoot.resolve("eclipseModel-0.2.xmi").toAbsolutePath().toUri()
+				modelsRoot.resolve("requirements-gen.model").toAbsolutePath().toUri()
 			)
 			.withProperty(EmfModel.PROPERTY_CACHED, true)
 			.withProperty(EmfModel.PROPERTY_CONCURRENT, true)
 			.build();
 		
 		EvlRunConfiguration runConfig = EvlRunConfiguration.Builder()
-			.withScript(root.resolve("javaValidation.evl"))
+			.withScript(root.resolve("suspectlinks.evl"))
 			.withModel(new EmfModel(), model1)
 			.withParameter("greeting", "Hello from ")
 			.withProfiling()
