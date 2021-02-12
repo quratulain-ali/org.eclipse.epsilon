@@ -112,7 +112,7 @@ public class EvlRewritingTests extends TestCase {
 		EvlModule module = new EvlModule();
 
 		try {
-			module.parse(new File("src/org/eclipse/epsilon/evl/query/"+eolFileName));
+			module.parse(new File("src/org/eclipse/epsilon/evl/query/tests/"+eolFileName));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -137,7 +137,7 @@ public class EvlRewritingTests extends TestCase {
 			  actual = new EvlUnparser().unparse(module);
 		    break;
 		  case 2:
-			  String pathAndFileName = "src/org/eclipse/epsilon/evl/query/generatedCallGraph.dot";
+			  String pathAndFileName = "src/org/eclipse/epsilon/evl/query/tests/generatedCallGraph.dot";
 			  staticAnlayser.exportCallGraph(pathAndFileName);
 			  try {
 				actual = Files.readString(Path.of(pathAndFileName));
@@ -153,7 +153,7 @@ public class EvlRewritingTests extends TestCase {
 		
 		String expected = "";
 		try {
-			expected = Files.readString(Path.of("src/org/eclipse/epsilon/evl/query/"+rewritedFileName));
+			expected = Files.readString(Path.of("src/org/eclipse/epsilon/evl/query/tests/"+rewritedFileName));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

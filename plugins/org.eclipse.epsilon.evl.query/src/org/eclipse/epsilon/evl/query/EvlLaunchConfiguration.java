@@ -28,24 +28,22 @@ public class EvlLaunchConfiguration implements EpsilonLaunchConfigurationDelegat
 	@Override
 	public void aboutToExecute(ILaunchConfiguration configuration, String mode, ILaunch launch,
 			IProgressMonitor progressMonitor, IEolModule module) throws Exception {
-//		for (ModelDeclaration modelDeclaration : module.getDeclaredModelDeclarations()) {
-//			if (modelDeclaration.getDriverNameExpression().getName().equals("MySQL")) 
-//				module.getCompilationContext().setModelFactory(new SubJdbcModelFactory());
-//
-//			if (modelDeclaration.getDriverNameExpression().getName().equals("EMF")) 
-//				module.getCompilationContext().setModelFactory(new SubEmfModelFactory());
-//		}
-//		
-//		if(module instanceof EvlModule)  {
-//			module = (EvlModule)module;
-//			new EvlStaticAnalyser().validate(module);
-//        
-//		new EvlRewritingHandler().invokeRewriters(module);
-//		
-//		System.err.println(new EvlUnparser().unparse((ErlModule) module));
-//		}
-			
+		if(module instanceof EvlModule) {
+		for (ModelDeclaration modelDeclaration : module.getDeclaredModelDeclarations()) {
+			if (modelDeclaration.getDriverNameExpression().getName().equals("MySQL")) 
+				module.getCompilationContext().setModelFactory(new SubJdbcModelFactory());
 
+			if (modelDeclaration.getDriverNameExpression().getName().equals("EMF")) 
+				module.getCompilationContext().setModelFactory(new SubEmfModelFactory());
+		}
+		
+			new EvlStaticAnalyser().validate(module);
+        
+		new EvlRewritingHandler().invokeRewriters((EvlModule)module);
+		
+		System.err.println(new EvlUnparser().unparse((ErlModule) module));
+			
+		}
 	}
 
 	@Override

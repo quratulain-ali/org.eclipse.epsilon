@@ -1,15 +1,5 @@
 package org.eclipse.epsilon.evl.evaluation;
 
-import java.io.File;
-import java.io.IOException;
-
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.epsilon.emc.emf.SubEmfModelFactory;
 import org.eclipse.epsilon.eol.IEolModule;
 import org.eclipse.epsilon.eol.dom.ModelDeclaration;
@@ -50,6 +40,7 @@ public class EvlPreExecuteConfiguration extends EolRunConfiguration {
 //			resourceSet.getPackageRegistry().put(ePackage.getNsURI(), ePackage);
 //			EPackage.Registry.INSTANCE.put(ePackage.getNsURI(), ePackage);
 //		}
+//		if(module == null) return;
 		for (ModelDeclaration modelDeclaration : module.getDeclaredModelDeclarations()) {
 			if (modelDeclaration.getDriverNameExpression().getName().equals("MySQL")) 
 				module.getCompilationContext().setModelFactory(new SubJdbcModelFactory());
