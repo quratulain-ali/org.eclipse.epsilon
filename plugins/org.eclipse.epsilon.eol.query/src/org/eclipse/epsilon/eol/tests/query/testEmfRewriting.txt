@@ -8,10 +8,12 @@ for (i in data) {
 }
 imdb.findByIndex("Movie", "title", "2 Bill Hour");
 imdb.findByIndex("Movie", "title", "7.8");
+var matches : Set;
 for (i in data) {
+	matches.addAll(imdb.findByIndex("Movie", "year", "7.8"));
 	movieName();
 }
-imdb.findByIndex("Movie", "title", "7.8");
+imdb.findByIndex("Movie", "title", "7.8").select(r : imdb!Movie|r.rating = "7.8");
 imdb!Movie.all.select(a : imdb!Movie|a.rating = "7.8");
 imdb!Movie.all.select(a : imdb!Movie|a.rating = "7.8");
 imdb.findByIndex("Movie", "year", "7.8");

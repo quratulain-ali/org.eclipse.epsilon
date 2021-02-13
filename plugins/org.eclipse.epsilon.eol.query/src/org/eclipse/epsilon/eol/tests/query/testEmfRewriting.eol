@@ -12,17 +12,19 @@ imdb!Movie.all.exists(a|a.title = "7.8").println();
 
 imdb!Movie.all.select(a|a.title = "2 Bill Hour");
 imdb!Movie.all.select(a|a.title = "7.8");
-
-for(i in data)
-movieName();
-
-imdb!Movie.all.select(a|a.title = "7.8");
+var matches:Set;
+for(i in data) {
+matches.addAll(imdb!Movie.all.select(a|a.year = "7.8"));
+movieName(); }
+imdb!Movie.all.select(a|a.title = "7.8").select(r|r.rating = "7.8");
 imdb!Movie.all.select(a|a.rating = "7.8");
 imdb!Movie.all.select(a|a.rating = "7.8");
 imdb!Movie.all.select(a|a.year = "7.8");
 operation foo() {
 imdb!Movie.all.select(a|a.rating = "2 Bill Hour");
 }
+
+
 
 operation movieName() {
 //foo();
