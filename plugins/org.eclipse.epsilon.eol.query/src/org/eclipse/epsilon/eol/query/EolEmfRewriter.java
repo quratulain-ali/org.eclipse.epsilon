@@ -23,6 +23,7 @@ import org.eclipse.epsilon.eol.dom.FirstOrderOperationCallExpression;
 import org.eclipse.epsilon.eol.dom.ForStatement;
 import org.eclipse.epsilon.eol.dom.IfStatement;
 import org.eclipse.epsilon.eol.dom.IntegerLiteral;
+import org.eclipse.epsilon.eol.dom.LiteralExpression;
 import org.eclipse.epsilon.eol.dom.NameExpression;
 import org.eclipse.epsilon.eol.dom.Operation;
 import org.eclipse.epsilon.eol.dom.OperationCallExpression;
@@ -113,9 +114,26 @@ public class EolEmfRewriter {
 				if (!(ocExp.getTargetExpression() instanceof NameExpression)) {
 					return optimiseAST(model, ast.getChildren(), indexExists);
 				}
+				for(Expression parameter : ocExp.getParameterExpressions())
+				if (!(parameter instanceof NameExpression)) {
+					return optimiseAST(model, ast.getChildren(), indexExists);
+				}
+			}
+			
+			if (ast instanceof PropertyCallExpression) {
+				PropertyCallExpression ocExp = (PropertyCallExpression) ast;
+				
+				if (!(ocExp.getTargetExpression() instanceof NameExpression)) {
+					return optimiseAST(model, ast.getChildren(), indexExists);
+				}
 			}
 
 			if (ast instanceof FirstOrderOperationCallExpression) {
+				FirstOrderOperationCallExpression ocExp = (FirstOrderOperationCallExpression) ast;
+				
+				if ((ocExp.getTargetExpression() instanceof FirstOrderOperationCallExpression)) {
+					return optimiseAST(model, ast.getChildren(), indexExists);
+				}
 				ModuleElement target = ast.getChildren().get(0);
 
 				if (target instanceof PropertyCallExpression || target instanceof OperationCallExpression) {
@@ -211,12 +229,20 @@ public class EolEmfRewriter {
 											decomposedAsts
 													.add(((AndOperatorExpression) parameterAst).getSecondOperand());
 										FeatureCallExpression rewritedQuery = new OperationCallExpression();
+										boolean flag =false;
 										for (ModuleElement firstOperand : decomposedAsts) {
 											if (firstOperand instanceof EqualsOperatorExpression) {
 												indexField = new StringLiteral(((NameExpression) firstOperand
 														.getChildren().get(0).getChildren().get(1)).getName());
-												StringLiteral indexValue = new StringLiteral(
-														((StringLiteral) firstOperand.getChildren().get(1)).getValue());
+												ModuleElement indexValueExpression = firstOperand.getChildren().get(1);
+												LiteralExpression<?> indexValue = null;
+												if (indexValueExpression instanceof BooleanLiteral) {
+													indexValue = (BooleanLiteral)indexValueExpression;
+												} else if (indexValueExpression instanceof StringLiteral) {
+													indexValue = (StringLiteral)indexValueExpression;
+												} else if (indexValueExpression instanceof IntegerLiteral) {
+													indexValue = (IntegerLiteral)indexValueExpression;
+												}
 
 												indexExists = false;
 
@@ -241,8 +267,9 @@ public class EolEmfRewriter {
 																			param.getNameExpression(),
 																			new NameExpression(indexField.getValue())),
 																	indexValue));
+													flag = true;
 												}
-												if (indexExists || canbeExecutedMultipleTimes) {
+												if ((indexExists || canbeExecutedMultipleTimes)&&!flag) {
 													potentialIndices.get(modelElementName.getValue())
 															.add(indexField.getValue());
 												}
@@ -258,16 +285,13 @@ public class EolEmfRewriter {
 													.get(0).getChildren().get(0).getChildren().get(1)).getName());
 											ModuleElement indexValueExpression = operation.getExpressions().get(0)
 													.getChildren().get(1);
-											StringLiteral indexValue = new StringLiteral();
+											LiteralExpression<?> indexValue = null;
 											if (indexValueExpression instanceof BooleanLiteral) {
-												indexValue = new StringLiteral(
-														((BooleanLiteral) indexValueExpression).getValue().toString());
+												indexValue = (BooleanLiteral)indexValueExpression;
 											} else if (indexValueExpression instanceof StringLiteral) {
-												indexValue = new StringLiteral(
-														((StringLiteral) indexValueExpression).getValue());
+												indexValue = (StringLiteral)indexValueExpression;
 											} else if (indexValueExpression instanceof IntegerLiteral) {
-												indexValue = new StringLiteral(
-														((IntegerLiteral) indexValueExpression).getValue().toString());
+												indexValue = (IntegerLiteral)indexValueExpression;
 											}
 											indexExists = false;
 
@@ -319,14 +343,35 @@ public class EolEmfRewriter {
 	public void rewriteToModule(ModuleElement ast, FeatureCallExpression rewritedQuery) {
 		if (ast.getParent() instanceof ExpressionStatement)
 			((ExpressionStatement) ast.getParent()).setExpression(rewritedQuery);
-		else if (ast.getParent() instanceof AssignmentStatement)
+		else if (ast.getParent() instanceof AssignmentStatement) {
+			if(ast == (AssignmentStatement) ast.getParent())
 			((AssignmentStatement) ast.getParent()).setValueExpression(rewritedQuery);
+			else
+				((AssignmentStatement) ast.getParent()).setTargetExpression(rewritedQuery);
+		}
 		else if (ast.getParent() instanceof ForStatement)
 			((ForStatement) ast.getParent()).setIteratedExpression(rewritedQuery);
 		else if (ast.getParent() instanceof ReturnStatement)
 			((ReturnStatement) ast.getParent()).setReturnedExpression(rewritedQuery);
-		else
-			((OperationCallExpression) ast.getParent()).setTargetExpression(rewritedQuery);
+		else if (ast.getParent() instanceof PropertyCallExpression)
+			((PropertyCallExpression) ast.getParent()).setTargetExpression(rewritedQuery);
+		else if (ast.getParent() instanceof FirstOrderOperationCallExpression) {
+			((FirstOrderOperationCallExpression) ast.getParent()).setTargetExpression(rewritedQuery);
+		}
+		else if (ast.getParent() instanceof OperationCallExpression) {
+			OperationCallExpression parent = (OperationCallExpression) ast.getParent();
+			if(ast == parent.getTargetExpression())
+				parent.setTargetExpression(rewritedQuery);
+			else {
+				List<Expression> parameters = parent.getParameterExpressions();
+				for(int i = 0; i < parameters.size(); i++) {
+					if(parameters.get(i) == ast) {
+					parameters.set(i,rewritedQuery);
+					return;
+					}
+				}
+			}
+		}
 	}
 
 	public void injectCreateIndexStatements(IEolModule module, String modelName,
