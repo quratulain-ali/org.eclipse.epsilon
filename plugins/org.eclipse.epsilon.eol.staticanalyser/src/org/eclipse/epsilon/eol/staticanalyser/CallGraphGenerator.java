@@ -73,6 +73,7 @@ import org.eclipse.epsilon.eol.dom.TypeExpression;
 import org.eclipse.epsilon.eol.dom.VariableDeclaration;
 import org.eclipse.epsilon.eol.dom.WhileStatement;
 import org.eclipse.epsilon.eol.dom.XorOperatorExpression;
+import org.eclipse.epsilon.evl.EvlModule;
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.AllDirectedPaths;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -567,7 +568,7 @@ public class CallGraphGenerator implements IEolVisitor {
 				operation.accept(this);
 			}
 		}
-		
+		if(!(eolModule instanceof EvlModule))
 		exportCallGraphToDot("/Users/quratulainali/runtime-EclipseApplication/TestProject/callGraph.dot");
 
 	}
