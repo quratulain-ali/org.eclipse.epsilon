@@ -13,6 +13,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+
 import org.eclipse.epsilon.common.module.IModule;
 import org.eclipse.epsilon.common.parse.AST;
 import org.eclipse.epsilon.common.parse.problem.ParseProblem;
@@ -153,6 +154,11 @@ public class GenerationRule extends ExtensibleNamedRule implements IExecutableMo
 		
 		if (templateCache == null || (eglTemplate = templateCache.get(templateUri)) == null) {
 			eglTemplate = templateFactory.load(templateUri);
+			
+			if (!eglTemplate.getParseProblems().isEmpty()) {
+				throw new EolRuntimeException("Parse error(s) in " + templateUri, templateBlock);
+			}
+				
 			if (templateCache != null) {
 				templateCache.put(templateUri, eglTemplate);
 			}
@@ -187,6 +193,7 @@ public class GenerationRule extends ExtensibleNamedRule implements IExecutableMo
 		}
 		
 		context.getInvokedTemplates().add(eglTemplate.getTemplate());
+		
 		
 		if (postBlock != null) {
 			frameStack.enterLocal(FrameType.UNPROTECTED, postBlock, Variable.createReadOnlyVariable("generated", generated));
