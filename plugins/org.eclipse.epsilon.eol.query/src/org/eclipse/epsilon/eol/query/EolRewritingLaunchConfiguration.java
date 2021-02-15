@@ -22,14 +22,14 @@ public class EolRewritingLaunchConfiguration implements EpsilonLaunchConfigurati
 	public void aboutToExecute(ILaunchConfiguration configuration, String mode, ILaunch launch,
 			IProgressMonitor progressMonitor, IEolModule module) throws Exception {
 		
-//		module.getCompilationContext().setModelFactory(new ModelTypeExtensionFactory());
-//		
-//		EolStaticAnalyser staticAnlayser = new EolStaticAnalyser();
-//		staticAnlayser.validate(module);
-//		
-//		if (module.getMain() == null) return;
-//        
-//		new EolRewritingHandler().invokeRewriters(module, staticAnlayser.getCallGraph());
+		module.getCompilationContext().setModelFactory(new ModelTypeExtensionFactory());
+		
+		EolStaticAnalyser staticAnlayser = new EolStaticAnalyser();
+		staticAnlayser.validate(module);
+		
+		if (module.getMain() == null) return;
+        
+		new EolRewritingHandler().invokeRewriters(module, staticAnlayser.getCallGraph());
 		
 	}
 

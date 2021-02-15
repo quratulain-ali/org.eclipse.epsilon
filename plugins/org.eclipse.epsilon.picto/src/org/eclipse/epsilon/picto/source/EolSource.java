@@ -26,9 +26,13 @@ public class EolSource extends SimpleSource{
 	public ViewTree getViewTree(IEditorPart editor) throws Exception {
 		IFile iFile = waitForFile(editor);
 		if (iFile == null) return createEmptyViewTree();
-		IPath check = iFile.getLocation();
-		String trying = check.removeLastSegments(1).toOSString();
-		return new ViewTree(new File(trying+"//"+"callGraph.dot"), "graphviz-dot");
+		IPath pathAndFileName = iFile.getLocation();
+		String path = pathAndFileName.removeFileExtension().toOSString();
+		File f = new File(path+".dot");
+		if(f.exists())
+			return new ViewTree(new File(path+".dot"), "graphviz-dot");
+		else
+			return new ViewTree();
 	}
 
 }
