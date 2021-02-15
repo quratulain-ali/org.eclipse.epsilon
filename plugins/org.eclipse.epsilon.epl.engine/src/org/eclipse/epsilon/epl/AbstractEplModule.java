@@ -192,7 +192,7 @@ public abstract class AbstractEplModule extends ErlModule implements IEplModule 
 			}
 			while (repeatWhileMatchesFound && (		// If in iterative mode, terminate when:
 				!matchModel.allContents().isEmpty()	// 	the match model is empty
-				|| loops == maxLoops				// 	or when the maximum number of specified iterations is reached.
+				&& (loops < maxLoops || maxLoops == -1) // 	or when the maximum number of specified iterations is reached.
 			));
 		}
 		catch (Exception ex) {
@@ -284,11 +284,23 @@ public abstract class AbstractEplModule extends ErlModule implements IEplModule 
 	 * @return The set of pattern matches added to the model.
 	 */
 	protected Set<PatternMatch> matchPatterns(int level, PatternMatchModel model) throws EolRuntimeException {
+		
+		// Keep track of the matches identified during this pattern matching loop
+		List<PatternMatch> currentLoopMatches = new ArrayList<>();
+		
 		for (Pattern pattern : getPatterns()) {
 			if (pattern.getLevel() == level) {
-				model.addMatches(match(pattern));
+				Collection<PatternMatch> matches = match(pattern);
+				currentLoopMatches.addAll(matches);
+				model.addMatches(matches);
 			}
 		}
+		
+		// When pattern matching is over, discard old matches and keep
+		// only those identified during this loop
+		model.dispose();
+		model.addMatches(currentLoopMatches);
+		
 		return model.getMatches();
 	}
 	

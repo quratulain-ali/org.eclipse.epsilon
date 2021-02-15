@@ -15,6 +15,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -24,9 +25,11 @@ import java.util.stream.Stream;
 import org.eclipse.epsilon.common.concurrent.ConcurrencyUtils;
 import org.eclipse.epsilon.common.util.FileUtil;
 import org.eclipse.epsilon.emc.plainxml.PlainXmlModel;
+import org.eclipse.epsilon.eol.exceptions.EolInternalException;
 import org.eclipse.epsilon.eol.exceptions.models.EolModelElementTypeNotFoundException;
 import org.eclipse.epsilon.eol.execute.context.Variable;
 import org.eclipse.epsilon.eol.models.IModel;
+import org.eclipse.epsilon.epl.EplModule;
 import org.eclipse.epsilon.epl.IEplModule;
 import org.eclipse.epsilon.epl.dom.NoMatch;
 import org.eclipse.epsilon.epl.execute.PatternMatch;
@@ -172,4 +175,73 @@ public class EplTests {
 		//assertNumberOfMatches(?, "OptionalCardinality");			// TODO: implement
 		//assertNumberOfMatches(?, "KitchenSink");					// TODO: implement
 	}
+	
+	@Test
+	public void testOneLoop() throws Exception {
+		PatternMatchModel m = testRepeatWhileMatches("pattern P t : t_tree { onmatch { counter.increment(); delete t; } }", 1, 1);
+		assertEquals(1, m.getMatches().size());
+	}
+	
+	@Test
+	public void testNoMatchesInLastLoop() throws Exception {
+		PatternMatchModel m = testRepeatWhileMatches("pattern P t : t_tree { onmatch { counter.increment(); delete t; } }", 2, 1);
+		assertEquals(0, m.getMatches().size());
+	}
+	
+	@Test
+	public void testTwoMaxLoops() throws Exception {
+		PatternMatchModel m = testRepeatWhileMatches("pattern P t : t_tree { onmatch { counter.increment(); } }", 2, 2);
+		assertEquals(1, m.getMatches().size());
+	}
+	
+	@Test(expected = EolInternalException.class)
+	public void testInfiniteLoop() throws Exception {
+		testRepeatWhileMatches("pattern P t : t_tree { onmatch { counter.increment(); } }", -1, 0);
+	}
+	
+	@Test
+	public void testCountMatches() throws Exception {
+		PatternMatchModel m = testRepeatWhileMatches("pattern P t : t_tree { onmatch { counter.increment(); } }", "<tree><tree/></tree>", 1, 2);
+		assertEquals(2, m.getAllOfType("P").size());
+	}
+	
+	public PatternMatchModel testRepeatWhileMatches(String epl, int maxLoops, int expectedLoops) throws Exception {
+		return testRepeatWhileMatches(epl, "<tree/>", maxLoops, expectedLoops);
+	}
+	
+	public PatternMatchModel testRepeatWhileMatches(String epl, String xml, int maxLoops, int expectedLoops) throws Exception {
+		
+		PlainXmlModel model = new PlainXmlModel();
+		model.setXml(xml);
+		model.load();
+		
+		module = moduleGetter.get();
+		module.setRepeatWhileMatches(true);
+		module.setMaxLoops(maxLoops);
+		
+		module.parse(epl);
+		Counter counter = new Counter();
+		module.getContext().getFrameStack().put(Variable.createReadOnlyVariable("counter", counter));
+		module.getContext().getModelRepository().addModel(model);
+		PatternMatchModel patternMatchModel = (PatternMatchModel) module.execute();
+		
+		assertEquals(expectedLoops, counter.getCount());
+		return patternMatchModel;
+	}
+	
+	class Counter {
+		
+		protected int count;
+		
+		public void increment() throws InfiniteLoopException {
+			count++;
+			if (count > 5) throw new InfiniteLoopException();
+		}
+		
+		public int getCount() {
+			return count;
+		}
+	}
+	
+	class InfiniteLoopException extends Exception {};
 }
