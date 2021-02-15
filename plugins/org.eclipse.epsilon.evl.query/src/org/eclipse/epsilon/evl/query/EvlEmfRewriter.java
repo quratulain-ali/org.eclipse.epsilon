@@ -171,7 +171,8 @@ public class EvlEmfRewriter {
 												indexField = new StringLiteral(((NameExpression) firstOperand
 														.getChildren().get(0).getChildren().get(1)).getName());
 												
-												StringLiteral indexValue = new StringLiteral(((StringLiteral) firstOperand.getChildren().get(1)).getValue());
+												ModuleElement indexValueExpression = firstOperand.getChildren().get(1);
+												Expression indexValue = generateIndexValue(indexValueExpression);
 												if (((OperationCallExpression)rewritedQuery).getName() == null)
 													rewritedQuery = new OperationCallExpression(targetExp, operationExp,
 															modelElementName, indexField, indexValue);
@@ -205,8 +206,8 @@ public class EvlEmfRewriter {
 											if (firstOperand instanceof EqualsOperatorExpression) {
 												indexField = new StringLiteral(((NameExpression) firstOperand
 														.getChildren().get(0).getChildren().get(1)).getName());
-												StringLiteral indexValue = new StringLiteral(
-														((StringLiteral) firstOperand.getChildren().get(1)).getValue());
+												ModuleElement indexValueExpression = firstOperand.getChildren().get(1);
+												Expression indexValue = generateIndexValue(indexValueExpression );
 
 												if (((OperationCallExpression)rewritedQuery).getName() == null)
 													rewritedQuery = new OperationCallExpression(targetExp, operationExp,
@@ -240,19 +241,7 @@ public class EvlEmfRewriter {
 													.get(0).getChildren().get(0).getChildren().get(1)).getName());
 											ModuleElement indexValueExpression = operation.getExpressions().get(0)
 													.getChildren().get(1);
-											Expression indexValue = new StringLiteral();
-											if (indexValueExpression instanceof PropertyCallExpression) {
-												indexValue = (PropertyCallExpression)indexValueExpression;
-											}else if (indexValueExpression instanceof BooleanLiteral) {
-												indexValue = new StringLiteral(
-														((BooleanLiteral) indexValueExpression).getValue().toString());
-											} else if (indexValueExpression instanceof StringLiteral) {
-												indexValue = new StringLiteral(
-														((StringLiteral) indexValueExpression).getValue());
-											} else if (indexValueExpression instanceof IntegerLiteral) {
-												indexValue = new StringLiteral(
-														((IntegerLiteral) indexValueExpression).getValue().toString());
-											}
+											Expression indexValue = generateIndexValue(indexValueExpression);
 
 											Expression rewritedQuery = new OperationCallExpression(
 													targetExp, operationExp, modelElementName, indexField, indexValue);
@@ -327,6 +316,24 @@ public class EvlEmfRewriter {
 				count++;
 			}
 		}
+	}
+	
+	public Expression generateIndexValue(ModuleElement e) {
+		ModuleElement indexValueExpression = e;
+		Expression indexValue = null;
+		if (indexValueExpression instanceof PropertyCallExpression) {
+			indexValue = (PropertyCallExpression)indexValueExpression;
+		}else if (indexValueExpression instanceof BooleanLiteral) {
+			indexValue = (BooleanLiteral)indexValueExpression;
+		} else if (indexValueExpression instanceof StringLiteral) {
+			indexValue = (StringLiteral)indexValueExpression;
+		} else if (indexValueExpression instanceof IntegerLiteral) {
+			indexValue = (IntegerLiteral)indexValueExpression;
+		} else if (indexValueExpression instanceof OperationCallExpression) {
+				indexValue = (OperationCallExpression)indexValueExpression;
+			}
+		return indexValue;
+		
 	}
 
 }
