@@ -1,12 +1,12 @@
 strict digraph G {
   main;
-  bar;
-  foo;
-  test;
-  hello;
-  main -> bar [ label="" ];
-  main -> foo [ label="" ];
-  main -> test [ label="loop" ];
-  bar -> hello [ label="" ];
-  test -> foo [ label="" ];
+  bar__;
+  foo__;
+  test__;
+  hello__;
+  main -> bar__ [ label="" ];
+  main -> foo__ [ label="" ];
+  main -> test__ [ label="loop" ];
+  bar__ -> hello__ [ label="" ];
+  test__ -> foo__ [ label="" ];
 }
