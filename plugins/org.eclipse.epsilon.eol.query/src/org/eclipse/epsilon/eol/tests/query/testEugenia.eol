@@ -55,9 +55,9 @@ canvasMapping.domainMetaElement := getDiagramClass();
 canvasMapping.palette := palette;
 
 // Process Node EClasses
-
-for (class in getNodes()) {
-	
+var class : ECore!EClass;
+for (class: ECore!EClass in getNodes()) {
+	class = new ECore!EClass;
 	// Create GmfTool creation tool
 	var creationTool := createCreationTool(class);
 	nodesToolGroup.tools.add(creationTool);
@@ -79,6 +79,7 @@ for (class in getNodes()) {
 	
 	// If the label belongs to a compartment owning node
 	// limit its vertical size
+	//class.getCompartmentReferences();
 	if (not class.getCompartmentReferences().isEmpty()) {
 		var maxDimension := new GmfGraph!Dimension;
 		maxDimension.dx := 10000;
@@ -147,7 +148,7 @@ for (class in getNodes()) {
 	}
 	
 	// Process EAttributes (gmf.labels)
-	for (attribute in getLabelledAttributesFor(class)) {
+	for (attribute : EAttribute in getLabelledAttributesFor(class)) {
 		// Create GmfGraph label
 		var label := new GmfGraph!Label;
 		label.name := attribute.getLabelName() + 'Figure';
@@ -183,8 +184,8 @@ for (class in getNodes()) {
 	}
 }
 
-for (containment in getDiagramClass().getContainmentReferences()) {
-	for (class in containment.eType.getConcreteSubtypes().select(c|c.isNode())) {
+for (containment : ECore!EReference in getDiagramClass().getContainmentReferences()) {
+	for (class :ECore!EClass in containment.eType.getConcreteSubtypes().select(c|c.isNode())) {
 	
 		// Create GmfMap top node reference
 		if (class.~topNodeReference.isUndefined()) {
@@ -210,7 +211,7 @@ for (phantom in getPhantomNodes()) {
 }
 
 // Do affixed references
-for (class in getNodes()) {
+for (class: ECore!EClass in getNodes()) {
 	for (affixed in class.getAffixedReferences()) {
 		for (child in getNodes().select(s|not s.abstract and (s = affixed.eType or s.eAllSuperTypes.includes(affixed.eType)))) {
 			// Create GmfMap child reference
@@ -234,9 +235,9 @@ for (class in getNodes()) {
 }
 
 // Do compartment references
-for (class in getNodes()) {
+for (class: ECore!EClass in getNodes()) {
 	
-	for (containment in class.getCompartmentReferences()) {
+	for (containment:ECore!EReference in class.getCompartmentReferences()) {
 		
 		var referenceName := class.name + containment.name.firstToUpperCase();
 		
@@ -271,7 +272,7 @@ for (class in getNodes()) {
 		class.~nodeMapping.compartments.add(compartmentMapping);
 		class.~nodeMapping.relatedDiagrams.add(canvasMapping);
 		
-		for (child in getNodes().select(s|not s.abstract and (s = containment.eType or s.eAllSuperTypes.includes(containment.eType)))) {
+		for (child:ECore!EClass in getNodes().select(s|not s.abstract and (s = containment.eType or s.eAllSuperTypes.includes(containment.eType)))) {
 		
 			// Create GmfMap child reference
 			
@@ -295,7 +296,7 @@ for (class in getNodes()) {
 
 // Delete unused GmfMap node mappings
 
-for (nodeMapping in GmfMap!NodeMapping.all.clone()) {
+for (nodeMapping : GmfMap!NodeMapping in GmfMap!NodeMapping.all.clone()) {
 	if (nodeMapping.~nested.isUndefined() 
 		and (not nodeMapping.domainMetaElement.isPhantom()))
 	 delete nodeMapping;
@@ -303,7 +304,7 @@ for (nodeMapping in GmfMap!NodeMapping.all.clone()) {
 
 // Process Link EClasses
 
-for (class in getLinks()) {
+for (class :ECore!EClass in getLinks()) {
 	// Do not create links for classes that cannot be contained
 	// in the diagram or in the opposite of their sourceFeature
 	
@@ -319,7 +320,7 @@ for (class in getLinks()) {
 	figureGallery.descriptors.add(figureDescriptor);
 	
 	// Create GmfGraph polyline connection
-	var polylineConnection := new GmfGraph!PolylineConnection;
+	var polylineConnection = new GmfGraph!PolylineConnection;
 	figureDescriptor.actualFigure := polylineConnection;
 	polylineConnection.name := figureDescriptor.name;
 	polylineConnection.formatConnection(class);
@@ -388,7 +389,7 @@ for (class in getLinks()) {
 	
 }
 
-for (reference in getReferenceLinks()) {
+for (reference:ECore!EReference in getReferenceLinks()) {
 	var referenceName := reference.getLongName();
 
 	// Create GmfTool creation tool
@@ -448,11 +449,11 @@ mapping.links :=
 	mapping.links.asSequence().select(l|l.domainMetaElement.isDefined()).sortBy(l | -l.domainMetaElement.eAllSuperTypes.size()) +
 	mapping.links.asSequence().select(l|l.domainMetaElement.isUndefined());
 
-for (nodeMapping in GmfMap!NodeMapping.all) {
+for (nodeMapping: GmfMap!CompartmentMapping in GmfMap!NodeMapping.all) {
 	nodeMapping.children := nodeMapping.children.asSequence().sortBy(cr|-cr.getDomainMetaElement().eAllSuperTypes.size());
 }
 
-for (compartmentMapping in GmfMap!CompartmentMapping.all) {
+for (compartmentMapping:GmfMap!CompartmentMapping in GmfMap!CompartmentMapping.all) {
 	compartmentMapping.children := compartmentMapping.children.asSequence().sortBy(cr|-cr.getDomainMetaElement().eAllSuperTypes.size());
 }
 
