@@ -23,7 +23,6 @@ import org.eclipse.epsilon.eol.dom.FirstOrderOperationCallExpression;
 import org.eclipse.epsilon.eol.dom.ForStatement;
 import org.eclipse.epsilon.eol.dom.IfStatement;
 import org.eclipse.epsilon.eol.dom.IntegerLiteral;
-import org.eclipse.epsilon.eol.dom.LiteralExpression;
 import org.eclipse.epsilon.eol.dom.NameExpression;
 import org.eclipse.epsilon.eol.dom.Operation;
 import org.eclipse.epsilon.eol.dom.OperationCallExpression;
@@ -166,6 +165,7 @@ public class EolEmfRewriter {
 									}
 
 									Expression parameterAst = operation.getExpressions().get(0);
+									
 									StringLiteral indexField = new StringLiteral();
 									if (parameterAst instanceof OrOperatorExpression) {
 										cascaded = false;
@@ -181,7 +181,8 @@ public class EolEmfRewriter {
 												indexField = new StringLiteral(((NameExpression) firstOperand
 														.getChildren().get(0).getChildren().get(1)).getName());
 												
-												StringLiteral indexValue = new StringLiteral(((StringLiteral) firstOperand.getChildren().get(1)).getValue());
+												ModuleElement indexValueExpression = firstOperand.getChildren().get(1);
+												Expression indexValue = generateIndexValue(indexValueExpression);
 
 												indexExists = false;
 
@@ -235,14 +236,7 @@ public class EolEmfRewriter {
 												indexField = new StringLiteral(((NameExpression) firstOperand
 														.getChildren().get(0).getChildren().get(1)).getName());
 												ModuleElement indexValueExpression = firstOperand.getChildren().get(1);
-												LiteralExpression<?> indexValue = null;
-												if (indexValueExpression instanceof BooleanLiteral) {
-													indexValue = (BooleanLiteral)indexValueExpression;
-												} else if (indexValueExpression instanceof StringLiteral) {
-													indexValue = (StringLiteral)indexValueExpression;
-												} else if (indexValueExpression instanceof IntegerLiteral) {
-													indexValue = (IntegerLiteral)indexValueExpression;
-												}
+												Expression indexValue = generateIndexValue(indexValueExpression);
 
 												indexExists = false;
 
@@ -281,18 +275,12 @@ public class EolEmfRewriter {
 											rewriteToModule(ast, rewritedQuery);
 									} else {
 										if (operation.getExpressions().get(0) instanceof EqualsOperatorExpression) {
-											indexField = new StringLiteral(((NameExpression) operation.getExpressions()
-													.get(0).getChildren().get(0).getChildren().get(1)).getName());
+											EqualsOperatorExpression eq = (EqualsOperatorExpression) operation.getExpressions().get(0);
+											
+											indexField = new StringLiteral(((NameExpression) eq.getChildren().get(0).getChildren().get(1)).getName());
 											ModuleElement indexValueExpression = operation.getExpressions().get(0)
 													.getChildren().get(1);
-											LiteralExpression<?> indexValue = null;
-											if (indexValueExpression instanceof BooleanLiteral) {
-												indexValue = (BooleanLiteral)indexValueExpression;
-											} else if (indexValueExpression instanceof StringLiteral) {
-												indexValue = (StringLiteral)indexValueExpression;
-											} else if (indexValueExpression instanceof IntegerLiteral) {
-												indexValue = (IntegerLiteral)indexValueExpression;
-											}
+											Expression indexValue = generateIndexValue(indexValueExpression);
 											indexExists = false;
 
 											if (potentialIndices.get(modelElementName.getValue())
@@ -355,8 +343,15 @@ public class EolEmfRewriter {
 			((ReturnStatement) ast.getParent()).setReturnedExpression(rewritedQuery);
 		else if (ast.getParent() instanceof PropertyCallExpression)
 			((PropertyCallExpression) ast.getParent()).setTargetExpression(rewritedQuery);
-		else if (ast.getParent() instanceof FirstOrderOperationCallExpression) {
+		else if (ast.getParent() instanceof FirstOrderOperationCallExpression) 
 			((FirstOrderOperationCallExpression) ast.getParent()).setTargetExpression(rewritedQuery);
+		else if (ast.getParent() instanceof EqualsOperatorExpression) {
+			EqualsOperatorExpression parent = (EqualsOperatorExpression) ast.getParent();
+			if(ast == parent.getFirstOperand())
+				parent.setFirstOperand(rewritedQuery);
+			else
+				parent.setSecondOperand(rewritedQuery);
+			
 		}
 		else if (ast.getParent() instanceof OperationCallExpression) {
 			OperationCallExpression parent = (OperationCallExpression) ast.getParent();
@@ -391,6 +386,35 @@ public class EolEmfRewriter {
 				count++;
 			}
 		}
+	}
+	
+	public Expression generateIndexValue(ModuleElement e) {
+		ModuleElement indexValueExpression = e;
+		Expression indexValue = null;
+		if (indexValueExpression instanceof PropertyCallExpression) {
+			indexValue = (PropertyCallExpression)indexValueExpression;
+		}else if (indexValueExpression instanceof BooleanLiteral) {
+			indexValue = (BooleanLiteral)indexValueExpression;
+		} else if (indexValueExpression instanceof StringLiteral) {
+			indexValue = (StringLiteral)indexValueExpression;
+		} else if (indexValueExpression instanceof IntegerLiteral) {
+			indexValue = (IntegerLiteral)indexValueExpression;
+		} else if (indexValueExpression instanceof OperationCallExpression) {
+				indexValue = (OperationCallExpression)indexValueExpression;
+			}
+		return indexValue;
+		
+	}
+	
+	private static String removeSymbols(String str) {
+		str = str.replaceAll("[(]", "_");
+		str = str.replaceAll("[)]", "_");
+		str = str.replaceAll("\\-", "_");
+		str = str.replaceAll(":", "_");
+		str = str.replaceAll("\\s", "_");
+		str = str.replaceAll("!", "_");
+		str = str.replaceAll(",", "_");
+		return str;
 	}
 
 }

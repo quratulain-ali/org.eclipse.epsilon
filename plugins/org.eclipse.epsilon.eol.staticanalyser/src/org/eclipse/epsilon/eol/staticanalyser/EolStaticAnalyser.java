@@ -99,6 +99,7 @@ import org.eclipse.epsilon.eol.types.EolSelfCollectionType;
 import org.eclipse.epsilon.eol.types.EolSelfContentType;
 import org.eclipse.epsilon.eol.types.EolSelfExpressionType;
 import org.eclipse.epsilon.eol.types.EolType;
+import org.eclipse.epsilon.evl.EvlModule;
 
 public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 
@@ -616,7 +617,8 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 
 	@Override
 	public void visit(OperationCallExpression operationCallExpression) {
-
+		if(operationCallExpression.getName().equals("createFigure"))
+			System.err.println();
 		OperationList allOperations = ((EolModule) module).getOperations();
 		Expression targetExpression = operationCallExpression.getTargetExpression();
 		List<Expression> parameterExpressions = operationCallExpression.getParameterExpressions();
@@ -1296,10 +1298,12 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 		if (eolModule.getMain() != null)
 			eolModule.getMain().accept(this);
 		eolModule.getDeclaredOperations().forEach(o -> o.accept(this));
-		
-		callGraph = new CallGraphGenerator();
-		callGraph.generateCallGraph(module);
-		
+		if(!(imodule instanceof EvlModule)) {
+			callGraph = new CallGraphGenerator();
+			callGraph.generateCallGraph(module, this);
+			String path = module.getSourceFile().getPath().split("\\.")[0]+".dot";
+			exportCallGraph(path);
+		}
 		if (!(module instanceof BuiltinEolModule))
 			module.getOperations().removeAll(builtinModule.getDeclaredOperations());
 		
@@ -1316,7 +1320,7 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 	}
 	
 	public void exportCallGraph(String path) {
-		callGraph.exportCallGraphToDot(path);;
+		callGraph.exportCallGraphToDot(path);
 	}
 
 	public void createTypeCompatibilityWarning(Expression requiredExpression, Expression providedExpression) {
@@ -1329,6 +1333,100 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 				providedExpression.getResolvedType() + " cannot be assigned to " + requiredExpression.getResolvedType(),
 				Severity.Error));
 	}
+	
+	public Operation getExactMatchedOperation(OperationCallExpression oc) {
+		if(oc.getName().equals("getDomainMetaElement"))
+			System.err.println();
+		List<Operation> operations = matchedOperations.get(oc);
+		if (operations.size() > 1) {
+			// Check contextType
+
+			for (Operation operation : operations) {
+				if (operation.getContextTypeExpression() != null) {
+					EolType operationContextType = operation.getContextTypeExpression().getResolvedType();
+					EolType opCallExpContextType = oc.getTargetExpression().getResolvedType();
+
+					if (isCompatible(operationContextType, opCallExpContextType)) {
+						int loopCounter = 0;
+						if (oc.getParameterExpressions().size() > 1) {
+							for (Expression parameter : oc.getParameterExpressions()) {
+								EolType paramContextType = operation.getFormalParameters().get(loopCounter)
+										.getTypeExpression().getResolvedType();
+								EolType paramTargetType = parameter.getResolvedType();
+								if (isCompatible(paramContextType, paramTargetType))
+									return operation;
+								loopCounter++;
+							}
+							loopCounter = 0;
+							for (Expression parameter : oc.getParameterExpressions()) {
+								EolType paramContextType = operation.getFormalParameters().get(loopCounter)
+										.getTypeExpression().getResolvedType();
+								EolType paramTargetType = parameter.getResolvedType();
+								if (canBeCompatible(paramContextType, paramTargetType))
+									return operation;
+								loopCounter++;
+							}
+
+						}
+						return operation;
+
+					} else if (canBeCompatible(operationContextType, opCallExpContextType)) {
+						int loopCounter = 0;
+						if (oc.getParameterExpressions().size() > 1) {
+							for (Expression parameter : oc.getParameterExpressions()) {
+								EolType paramContextType = operation.getFormalParameters().get(loopCounter)
+										.getTypeExpression().getResolvedType();
+								EolType paramTargetType = parameter.getResolvedType();
+								if (isCompatible(paramContextType, paramTargetType))
+									return operation;
+								loopCounter++;
+							}
+							loopCounter = 0;
+							for (Expression parameter : oc.getParameterExpressions()) {
+								EolType paramContextType = operation.getFormalParameters().get(loopCounter)
+										.getTypeExpression().getResolvedType();
+								EolType paramTargetType = parameter.getResolvedType();
+								if (canBeCompatible(paramContextType, paramTargetType))
+									return operation;
+								loopCounter++;
+							}
+
+						}
+						return operation;
+					}
+				} else {
+					if (oc.getParameterExpressions().size() > 1) {
+						int loopCounter = 0;
+						for (Expression parameter : oc.getParameterExpressions()) {
+							EolType paramContextType = operation.getFormalParameters().get(loopCounter)
+									.getTypeExpression().getResolvedType();
+							EolType paramTargetType = parameter.getResolvedType();
+							if (isCompatible(paramContextType, paramTargetType))
+								return operation;
+							loopCounter++;
+						}
+						loopCounter = 0;
+						for (Expression parameter : oc.getParameterExpressions()) {
+							EolType paramContextType = operation.getFormalParameters().get(loopCounter)
+									.getTypeExpression().getResolvedType();
+							EolType paramTargetType = parameter.getResolvedType();
+							if (canBeCompatible(paramContextType, paramTargetType))
+								return operation;
+							loopCounter++;
+						}
+
+					}
+					return operation;
+				}
+			}
+
+		}
+		if(operations.isEmpty())
+			return null;
+		return operations.get(0);
+	}
+	
+	
 
 	public boolean isCompatible(EolType targetType, EolType valueType) {
 
