@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.epsilon.eol.IEolModule;
 import org.eclipse.epsilon.eol.dom.AbortStatement;
 import org.eclipse.epsilon.eol.dom.AndOperatorExpression;
@@ -74,6 +75,13 @@ import org.eclipse.epsilon.eol.dom.VariableDeclaration;
 import org.eclipse.epsilon.eol.dom.WhileStatement;
 import org.eclipse.epsilon.eol.dom.XorOperatorExpression;
 import org.eclipse.epsilon.evl.EvlModule;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.FileEditorInput;
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.AllDirectedPaths;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -87,6 +95,7 @@ public class CallGraphGenerator implements IEolVisitor {
 	boolean calledFromLoop = false;
 	int loopCounter = 0;
 	DefaultDirectedGraph<String, RelationshipEdge> callGraph;
+	EolStaticAnalyser staticAnalyser;
 
 	@Override
 	public void visit(AbortStatement abortStatement) {
@@ -229,9 +238,13 @@ public class CallGraphGenerator implements IEolVisitor {
 		}
 		if (!firstOrderOperationCallExpression.getExpressions().isEmpty()) {
 			Iterator<Expression> ei = firstOrderOperationCallExpression.getExpressions().iterator();
+			Boolean previousLoopCall = calledFromLoop;
+			calledFromLoop = true;
 			while (ei.hasNext()) {
 				ei.next().accept(this);
 			}
+			if(!previousLoopCall)
+			calledFromLoop = false;
 		}
 		
 	}
@@ -399,8 +412,10 @@ public class CallGraphGenerator implements IEolVisitor {
 		while (pi.hasNext()) {
 			pi.next().accept(this);
 		}
-		
-		String operationName = operationCallExpression.getName();
+		Operation exactMatch= staticAnalyser.getExactMatchedOperation(operationCallExpression);
+		if(exactMatch != null) {
+		String operationName = exactMatch.toString();
+		operationName = removeSymbols(operationName);
 		   if(!entry.equals("main")) 
 		 		callGraph.addVertex(entry);
 		   
@@ -415,6 +430,7 @@ public class CallGraphGenerator implements IEolVisitor {
 		   else {
 		 	callGraph.addEdge(entry, operationName,new RelationshipEdge(""));
 		   }
+		}
 		 	
 		  
 	}
@@ -479,6 +495,7 @@ public class CallGraphGenerator implements IEolVisitor {
 
 	@Override
 	public void visit(StatementBlock statementBlock) {
+
 		statementBlock.getStatements().forEach(s -> s.accept(this));
 		
 	}
@@ -555,7 +572,8 @@ public class CallGraphGenerator implements IEolVisitor {
 			xorOperatorExpression.getSecondOperand().accept(this);	
 	}
 	
-	public void generateCallGraph(IEolModule eolModule) {
+	public void generateCallGraph(IEolModule eolModule, EolStaticAnalyser staticAnalyser) {
+		this.staticAnalyser = staticAnalyser;
 		if (eolModule.getMain() != null) {
 			callGraph =  new DefaultDirectedGraph<String, RelationshipEdge>(RelationshipEdge.class);
 			callGraph.addVertex("main");
@@ -563,8 +581,8 @@ public class CallGraphGenerator implements IEolVisitor {
 		}
 		
 		for(Operation operation : eolModule.getDeclaredOperations()) {
-			entry = operation.getName();
-			if(callGraph.containsVertex(operation.getName())) {
+			entry = removeSymbols(operation.toString());
+			if(callGraph.containsVertex(entry)) {
 				operation.accept(this);
 			}
 		}
@@ -572,7 +590,16 @@ public class CallGraphGenerator implements IEolVisitor {
 		exportCallGraphToDot("/Users/quratulainali/runtime-EclipseApplication/TestProject/callGraph.dot");
 
 	}
-
+	
+	public String getActiveEditorFilePath() {
+		IWorkbench wb = PlatformUI.getWorkbench();
+		IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
+		IWorkbenchPage page = window.getActivePage();
+		IEditorPart editor = page.getActiveEditor();
+		IEditorInput input = editor.getEditorInput();
+		IPath path = ((FileEditorInput) input).getPath();
+		return path.toString();
+	}
 	
 	public boolean pathExists(String source, String destination){
 		if(callGraph.containsVertex(destination) && callGraph.containsVertex(source)) {
@@ -616,5 +643,78 @@ public class CallGraphGenerator implements IEolVisitor {
 	        exporter.exportGraph( callGraph,new FileWriter(fileAndPath));
 	    }catch (IOException e){}
         exporter.exportGraph(callGraph, writer);
+	}
+	
+//	public Operation getExactMatchedOperation(OperationCallExpression oc) {
+//		List<Operation> operations = staticAnalyser.getMatchedOperations(oc);
+//		if (operations.size() > 1) {
+//			// Check contextType
+//
+//			for (Operation operation : operations) {
+//				EolType operationContextType = operation.getContextTypeExpression().getResolvedType();
+//				EolType opCallExpContextType = oc.getTargetExpression().getResolvedType();
+//
+//				if (isCompatible(operationContextType, opCallExpContextType)) {
+//					int loopCounter = 0;
+//					if (oc.getParameterExpressions().size() > 1) {
+//						for (Expression parameter : oc.getParameterExpressions()) {
+//							EolType paramContextType = operation.getFormalParameters().get(loopCounter)
+//									.getTypeExpression().getResolvedType();
+//							EolType paramTargetType = parameter.getResolvedType();
+//							if (isCompatible(paramContextType, paramTargetType))
+//								return operation;
+//							loopCounter++;
+//						}
+//					loopCounter = 0;
+//						for (Expression parameter : oc.getParameterExpressions()) {
+//							EolType paramContextType = operation.getFormalParameters().get(loopCounter)
+//									.getTypeExpression().getResolvedType();
+//							EolType paramTargetType = parameter.getResolvedType();
+//							if (canBeCompatible(paramContextType, paramTargetType))
+//								return operation;
+//							loopCounter++;
+//						}
+//						
+//					}
+//					return operation;
+//
+//				} else if(canBeCompatible(operationContextType, opCallExpContextType)) {
+//					int loopCounter = 0;
+//					if (oc.getParameterExpressions().size() > 1) {
+//						for (Expression parameter : oc.getParameterExpressions()) {
+//							EolType paramContextType = operation.getFormalParameters().get(loopCounter)
+//									.getTypeExpression().getResolvedType();
+//							EolType paramTargetType = parameter.getResolvedType();
+//							if (isCompatible(paramContextType, paramTargetType))
+//								return operation;
+//							loopCounter++;
+//						}
+//					loopCounter = 0;
+//						for (Expression parameter : oc.getParameterExpressions()) {
+//							EolType paramContextType = operation.getFormalParameters().get(loopCounter)
+//									.getTypeExpression().getResolvedType();
+//							EolType paramTargetType = parameter.getResolvedType();
+//							if (canBeCompatible(paramContextType, paramTargetType))
+//								return operation;
+//							loopCounter++;
+//						}
+//						
+//					}
+//					return operation;
+//				}
+//			}
+//			
+//		}
+//		return operations.get(0);
+//	}
+	private static String removeSymbols(String str) {
+		str = str.replaceAll("[(]", "_");
+		str = str.replaceAll("[)]", "_");
+		str = str.replaceAll("\\-", "_");
+		str = str.replaceAll(":", "_");
+		str = str.replaceAll("\\s", "_");
+		str = str.replaceAll("!", "_");
+		str = str.replaceAll(",", "_");
+		return str;
 	}
 }

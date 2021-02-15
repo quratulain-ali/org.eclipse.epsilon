@@ -64,7 +64,7 @@ public class EolEmfRewriter {
 		optimiseStatementBlock(model, module, statements);
 
 		for (Operation operation : module.getDeclaredOperations()) {
-			String name = operation.getName();
+			String name = removeSymbols(operation.toString());
 			if (cg.pathContainsLoop("main", name)) 
 				canbeExecutedMultipleTimes = true;
 			if (cg.pathExists("main", name)) 
