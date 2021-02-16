@@ -18,7 +18,7 @@ public class EolRewritingHandler {
 					new EolMySqlRewriter().rewrite(model, module, context);
 
 				if (modelDeclaration.getDriverNameExpression().getName().equals("EMF"))
-					new EolEmfRewriter().rewrite(model, module, context,cg);
+					new EolEmfRewriterVisitorVersion().rewrite(model, module, context,cg);
 			}
 		}
 
