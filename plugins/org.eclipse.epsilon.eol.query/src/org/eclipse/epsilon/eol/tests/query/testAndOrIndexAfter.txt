@@ -4,7 +4,7 @@ imdb.createIndex("Movie", "title");
 var data : Collection = Collection{1..100};
 imdb!Movie.all.select(a : imdb!Movie|a.persons = "" or a.year = "2008");
 imdb!Movie.all.select(a : imdb!Movie|a.year = "2010" or a.rating = "8.0");
-imdb.findByIndex("Movie", "title", "2 Bill Hour").select(a : imdb!Movie|a.year = "2010");
+imdb.findByIndex("Movie", "title", "2 Bill Hour").includingAll(imdb!Movie.all.select(a : imdb!Movie|a.year = "2010"));
 imdb.findByIndex("Movie", "title", "2 Bill Hour").includingAll(imdb.findByIndex("Movie", "rating", "8.0"));
 imdb!Movie.all.select(a : imdb!Movie|a.persons = "2010" and a.year = "8.0");
 imdb!Movie.all.select(a : imdb!Movie|a.year = "2010" and a.rating = "8.0");

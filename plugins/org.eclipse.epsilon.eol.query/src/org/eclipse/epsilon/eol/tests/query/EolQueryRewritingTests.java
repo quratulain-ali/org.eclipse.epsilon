@@ -54,13 +54,13 @@ public class EolQueryRewritingTests extends TestCase {
 		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
 	}
 	
-	@Test
-	public static void testEugenia() throws Exception {
-		
-		List<String> actualAndExpected = new ArrayList<>();
-		actualAndExpected = prepareTestCase("testEugenia.eol", "testEugenia.dot",2);
-		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
-	}
+//	@Test
+//	public static void testEugenia() throws Exception {
+//		
+//		List<String> actualAndExpected = new ArrayList<>();
+//		actualAndExpected = prepareTestCase("testEugenia.eol", "testEugenia.dot",2);
+//		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
+//	}
 	
 	@Test
 	public static void testMultipleEmfModels() throws Exception {
@@ -107,9 +107,30 @@ public class EolQueryRewritingTests extends TestCase {
 	}
 	
 	@Test
+	public static void testOrderRewriters2() throws Exception {
+		List<String> actualAndExpected = new ArrayList<>();
+		actualAndExpected = prepareTestCase("testOrderRewriters2.eol", "testOrderRewriters2.txt",1);
+		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
+	}
+	
+	@Test
+	public static void testOrderRewriters1() throws Exception {
+		List<String> actualAndExpected = new ArrayList<>();
+		actualAndExpected = prepareTestCase("testOrderRewriters1.eol", "testOrderRewriters1.txt",1);
+		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
+	}
+	
+	@Test
 	public static void testAndOrIndexAfter() throws Exception {
 		List<String> actualAndExpected = new ArrayList<>();
 		actualAndExpected = prepareTestCase("testAndOrIndexAfter.eol", "testAndOrIndexAfter.txt",1);
+		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
+	}
+	
+	@Test
+	public static void testMultipleModelsInSameStatement() throws Exception {
+		List<String> actualAndExpected = new ArrayList<>();
+		actualAndExpected = prepareTestCase("testMultipleModelsInSameStatement.eol", "testMultipleModelsInSameStatement.txt",1);
 		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
 	}
 	
@@ -171,7 +192,11 @@ public class EolQueryRewritingTests extends TestCase {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return Arrays.asList(actual,expected);
+		return Arrays.asList(removeWhitespace(actual),removeWhitespace(expected));
+	}
+	
+	private static String removeWhitespace(String str) {
+		return str.replaceAll("\\s+","");
 	}
 
 }

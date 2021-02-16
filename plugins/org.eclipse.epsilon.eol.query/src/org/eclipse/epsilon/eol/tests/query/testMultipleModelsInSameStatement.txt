@@ -1,0 +1,8 @@
+model imdb driver EMF {nsuri = "http://movies/1.0", optimise = "true"}
+model imdb2 driver EMF {nsuri = "http://movies/1.0", optimise = "true"}
+imdb2.createIndex("Movie", "title");
+imdb.createIndex("Movie", "title");
+var data : Sequence = Collection{1..100};
+for (i in data) {
+	imdb.findByIndex("Movie", "title", imdb2.findByIndex("Movie", "title", "").first());
+}

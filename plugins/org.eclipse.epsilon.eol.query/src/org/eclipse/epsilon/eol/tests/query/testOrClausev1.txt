@@ -8,7 +8,7 @@ for (i in data) {
 }
 imdb.findByIndex("Movie", "title", "2010").includingAll(imdb.findByIndex("Movie", "rating", "8.0"));
 imdb!Movie.all.select(a : imdb!Movie|a.persons = "2010" or a.year = "8.0");
-imdb.findByIndex("Movie", "title", "2010").select(a : imdb!Movie|a.year = "8.0");
+imdb.findByIndex("Movie", "title", "2010").includingAll(imdb!Movie.all.select(a : imdb!Movie|a.year = "8.0"));
 imdb!Movie.all.select(a : imdb!Movie|a.year = "2010" or a.rating = "8.0");
 for (i in data) {
 	movieName();

@@ -1,0 +1,12 @@
+model imdb driver EMF {
+nsuri = "http://movies/1.0",
+optimise = "true"
+};
+
+model imdb2 driver EMF {
+nsuri = "http://movies/1.0",
+optimise = "true"
+};
+var data : Sequence = Collection {1..100};
+for(i in data)
+imdb!Movie.all.select(a|a.title = imdb2!Movie.all.select(a|a.title="").first());
