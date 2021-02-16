@@ -47,6 +47,14 @@ public class EolQueryRewritingTests extends TestCase {
 	}
 	
 	@Test
+	public static void testCascadedAndOr() throws Exception {
+		
+		List<String> actualAndExpected = new ArrayList<>();
+		actualAndExpected = prepareTestCase("testCascadedAndOr.eol", "testCascadedAndOr.txt",1);
+		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
+	}
+	
+	@Test
 	public static void testEugenia() throws Exception {
 		
 		List<String> actualAndExpected = new ArrayList<>();

@@ -1,0 +1,14 @@
+model imdb driver EMF {
+nsuri = "http://movies/1.0",
+optimise = "true"
+};
+model imdb2 driver EMF {
+nsuri = "http://movies/1.0",
+optimise = "true"
+};
+
+for(i in Collection {1..100}) {
+imdb!Movie.all.select(a|a.title = "2 Bill Hour" or a. rating = 7.0 or a. rating < 7.0);
+imdb!Movie.all.select(a|a.title = "2 Bill Hour" and a. rating < 7.0 and a. rating < 7.0);
+imdb!Movie.all.select(a|a.title = "2 Bill Hour" or a. rating < 7.0 or a. rating < 7.0);
+}

@@ -30,6 +30,7 @@ import org.eclipse.epsilon.eol.dom.OperatorExpression;
 import org.eclipse.epsilon.eol.dom.OrOperatorExpression;
 import org.eclipse.epsilon.eol.dom.Parameter;
 import org.eclipse.epsilon.eol.dom.PropertyCallExpression;
+import org.eclipse.epsilon.eol.dom.RealLiteral;
 import org.eclipse.epsilon.eol.dom.ReturnStatement;
 import org.eclipse.epsilon.eol.dom.Statement;
 import org.eclipse.epsilon.eol.dom.StatementBlock;
@@ -44,10 +45,11 @@ public class EolEmfRewriter {
 	HashSet<String> optimisableOperations;
 	HashSet<String> allOperations;
 	HashMap<String, HashSet<String>> potentialIndices = new HashMap<>(); 
-	List<ModuleElement> decomposedAsts = new ArrayList<ModuleElement>();
+	List<ModuleElement> decomposedAsts;
 	boolean cascaded = false;
 	IEolModule module;
 	String modelName;
+	boolean secondPass = false;
 	boolean indexExists = false;
 	boolean canbeExecutedMultipleTimes = false;
 
@@ -70,7 +72,7 @@ public class EolEmfRewriter {
 				optimiseStatementBlock(model, module, operation.getBody().getStatements());
 			canbeExecutedMultipleTimes = false;
 		}
-		
+		secondPass = true;
 		optimiseStatementBlock(model, module, statements);
 		injectCreateIndexStatements(module, modelName, potentialIndices);
 
@@ -106,10 +108,8 @@ public class EolEmfRewriter {
 	public IEolModule optimiseAST(IModel model, List<ModuleElement> asts, boolean indexExists) {
 
 		for (ModuleElement ast : asts) {
-
 			if (ast instanceof OperationCallExpression) {
 				OperationCallExpression ocExp = (OperationCallExpression) ast;
-				
 				if (!(ocExp.getTargetExpression() instanceof NameExpression)) {
 					return optimiseAST(model, ast.getChildren(), indexExists);
 				}
@@ -117,6 +117,7 @@ public class EolEmfRewriter {
 				if (!(parameter instanceof NameExpression)) {
 					return optimiseAST(model, ast.getChildren(), indexExists);
 				}
+				
 			}
 			
 			if (ast instanceof PropertyCallExpression) {
@@ -169,9 +170,10 @@ public class EolEmfRewriter {
 									StringLiteral indexField = new StringLiteral();
 									if (parameterAst instanceof OrOperatorExpression) {
 										cascaded = false;
+										decomposedAsts = new ArrayList<ModuleElement>();
 										decomposedAsts = decomposeAST(parameterAst);
 
-										if (cascaded)
+										if (cascaded && !secondPass)
 											decomposedAsts.add(((OrOperatorExpression) parameterAst).getSecondOperand());
 										
 										FeatureCallExpression rewritedQuery = new OperationCallExpression();
@@ -217,6 +219,13 @@ public class EolEmfRewriter {
 															.add(indexField.getValue());
 												}
 											}
+											else {
+												Parameter param = ((FirstOrderOperationCallExpression) ast)
+														.getParameters().get(0);
+												rewritedQuery = new FirstOrderOperationCallExpression(rewritedQuery,
+														new NameExpression("select"), param,(Expression)firstOperand);
+//												break;
+											}
 										}
 										if(firstoperationName.equals("exists"))
 											rewritedQuery = new OperationCallExpression(rewritedQuery, new NameExpression("isDefined"));
@@ -225,8 +234,9 @@ public class EolEmfRewriter {
 
 									else if (parameterAst instanceof AndOperatorExpression) {
 										cascaded = false;
+										decomposedAsts = new ArrayList<ModuleElement>();
 										decomposedAsts = decomposeAST(parameterAst);
-										if (cascaded)
+										if (cascaded && !secondPass)
 											decomposedAsts
 													.add(((AndOperatorExpression) parameterAst).getSecondOperand());
 										FeatureCallExpression rewritedQuery = new OperationCallExpression();
@@ -268,6 +278,13 @@ public class EolEmfRewriter {
 															.add(indexField.getValue());
 												}
 
+											}
+											else {
+												Parameter param = ((FirstOrderOperationCallExpression) ast)
+														.getParameters().get(0);
+												rewritedQuery = new FirstOrderOperationCallExpression(rewritedQuery,
+														new NameExpression("select"), param,(Expression)firstOperand);
+//												break;
 											}
 										}
 										if(firstoperationName.equals("exists"))
@@ -399,7 +416,9 @@ public class EolEmfRewriter {
 			indexValue = (StringLiteral)indexValueExpression;
 		} else if (indexValueExpression instanceof IntegerLiteral) {
 			indexValue = (IntegerLiteral)indexValueExpression;
-		} else if (indexValueExpression instanceof OperationCallExpression) {
+		} else if (indexValueExpression instanceof RealLiteral) {
+			indexValue = (RealLiteral)indexValueExpression;
+		}else if (indexValueExpression instanceof OperationCallExpression) {
 				indexValue = (OperationCallExpression)indexValueExpression;
 			}
 		return indexValue;
