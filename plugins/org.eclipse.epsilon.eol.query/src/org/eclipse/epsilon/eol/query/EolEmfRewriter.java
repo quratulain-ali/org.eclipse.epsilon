@@ -346,22 +346,47 @@ public class EolEmfRewriter {
 	}
 
 	public void rewriteToModule(ModuleElement ast, FeatureCallExpression rewritedQuery) {
-		if (ast.getParent() instanceof ExpressionStatement)
-			((ExpressionStatement) ast.getParent()).setExpression(rewritedQuery);
-		else if (ast.getParent() instanceof AssignmentStatement) {
-			if(ast == (AssignmentStatement) ast.getParent())
-			((AssignmentStatement) ast.getParent()).setValueExpression(rewritedQuery);
-			else
-				((AssignmentStatement) ast.getParent()).setTargetExpression(rewritedQuery);
+		if (ast.getParent() instanceof ExpressionStatement) {
+			ExpressionStatement parent = (ExpressionStatement) ast.getParent();
+			if(ast == parent.getExpression())
+			parent.setExpression(rewritedQuery);
 		}
-		else if (ast.getParent() instanceof ForStatement)
-			((ForStatement) ast.getParent()).setIteratedExpression(rewritedQuery);
-		else if (ast.getParent() instanceof ReturnStatement)
-			((ReturnStatement) ast.getParent()).setReturnedExpression(rewritedQuery);
-		else if (ast.getParent() instanceof PropertyCallExpression)
-			((PropertyCallExpression) ast.getParent()).setTargetExpression(rewritedQuery);
-		else if (ast.getParent() instanceof FirstOrderOperationCallExpression) 
-			((FirstOrderOperationCallExpression) ast.getParent()).setTargetExpression(rewritedQuery);
+		else if (ast.getParent() instanceof AssignmentStatement) {
+			AssignmentStatement parent = (AssignmentStatement) ast.getParent();
+			if(ast == parent.getValueExpression())
+				parent.setValueExpression(rewritedQuery);
+			else
+				parent.setTargetExpression(rewritedQuery);
+		}
+		else if (ast.getParent() instanceof ForStatement) {
+			ForStatement parent = (ForStatement) ast.getParent();
+			if(ast == parent.getIteratedExpression())
+			parent.setIteratedExpression(rewritedQuery);
+		}
+		else if (ast.getParent() instanceof ReturnStatement) {
+			ReturnStatement parent = (ReturnStatement) ast.getParent();
+			if(ast == parent.getReturnedExpression())
+			parent.setReturnedExpression(rewritedQuery);
+		}
+		else if (ast.getParent() instanceof PropertyCallExpression) {
+			PropertyCallExpression parent = (PropertyCallExpression) ast.getParent();
+			if(ast == parent.getTargetExpression())
+			parent.setTargetExpression(rewritedQuery);
+		}
+		else if (ast.getParent() instanceof FirstOrderOperationCallExpression) {
+			FirstOrderOperationCallExpression parent = (FirstOrderOperationCallExpression)ast.getParent();
+			if(ast == parent.getTargetExpression())
+			parent.setTargetExpression(rewritedQuery);
+			else {
+				List<Expression> parameters = parent.getExpressions();
+				for(int i = 0; i < parameters.size(); i++) {
+					if(parameters.get(i) == ast) {
+					parameters.set(i,rewritedQuery);
+					return;
+					}
+				}
+			}
+		}
 		else if (ast.getParent() instanceof EqualsOperatorExpression) {
 			EqualsOperatorExpression parent = (EqualsOperatorExpression) ast.getParent();
 			if(ast == parent.getFirstOperand())
@@ -419,8 +444,10 @@ public class EolEmfRewriter {
 		} else if (indexValueExpression instanceof RealLiteral) {
 			indexValue = (RealLiteral)indexValueExpression;
 		}else if (indexValueExpression instanceof OperationCallExpression) {
-				indexValue = (OperationCallExpression)indexValueExpression;
-			}
+			indexValue = (OperationCallExpression)indexValueExpression;
+		}else if (indexValueExpression instanceof NameExpression) {
+			indexValue = (NameExpression)indexValueExpression;
+		}
 		return indexValue;
 		
 	}

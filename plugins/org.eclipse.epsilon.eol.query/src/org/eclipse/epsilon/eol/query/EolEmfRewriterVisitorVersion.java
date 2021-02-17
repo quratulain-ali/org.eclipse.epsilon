@@ -120,52 +120,11 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 			decomposedAsts
 					.add((andOperatorExpression.getSecondOperand()));
 		rewritedQuery = new OperationCallExpression();
-		boolean flag =false;
+		
 		for (ModuleElement operand : decomposedAsts) {
-			if (operand instanceof EqualsOperatorExpression) {
-				operand = (EqualsOperatorExpression)operand;
-				Expression firstOperand = ((EqualsOperatorExpression) operand).getFirstOperand();
-				if(firstOperand!= null && firstOperand instanceof PropertyCallExpression)
-					visit((PropertyCallExpression)firstOperand, true);
-				ModuleElement indexValueExpression =((EqualsOperatorExpression) operand).getSecondOperand();
-				Expression indexValue = generateIndexValue(indexValueExpression);
-
-				indexExists = false;
-
-				if (potentialIndices.get(modelElementName.getValue())
-						.contains(indexField.getValue())) {
-					indexExists = true;
-				}
-				if (!(indexExists || canbeExecutedMultipleTimes)
-						&& rewritedQuery.getName() == null) {
-					logicalOperator = false;
-					return;
-				}
-				if (rewritedQuery.getName() == null)
-					rewritedQuery = new OperationCallExpression(targetExp, operationExp,
-							modelElementName, indexField, indexValue);
-				else if ((indexExists && !canbeExecutedMultipleTimes) || !indexExists
-						|| canbeExecutedMultipleTimes) {
-					rewritedQuery = new FirstOrderOperationCallExpression(rewritedQuery,
-							new NameExpression("select"), param,
-							new EqualsOperatorExpression(
-									new PropertyCallExpression(
-											param.getNameExpression(),
-											new NameExpression(indexField.getValue())),
-									indexValue));
-					flag = true;
-				}
-				if ((indexExists || canbeExecutedMultipleTimes)&&!flag) {
-					potentialIndices.get(modelElementName.getValue())
-							.add(indexField.getValue());
-				}
-
-			}
-			else {
-				rewritedQuery = new FirstOrderOperationCallExpression(rewritedQuery,
-						new NameExpression("select"), param,(Expression)operand);
-//				break;
-			}
+			visit((OperatorExpression) operand, "and");
+			if(!logicalOperator)
+				return;
 		}
 	}
 
@@ -317,7 +276,10 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 		logicalOperator = false;
 		rewritedQuery = new OperationCallExpression();
 		if(optimisableOperations.contains(firstOrderOperationCallExpression.getName())) {
-			firstOrderOperationCallExpression.getTargetExpression().accept(this);
+			if(firstOrderOperationCallExpression.getTargetExpression() instanceof PropertyCallExpression) {
+				PropertyCallExpression target = (PropertyCallExpression) firstOrderOperationCallExpression.getTargetExpression();
+				visit(target, false);
+			}
 			if(optimisable) {
 			Iterator<Parameter> pi = firstOrderOperationCallExpression.getParameters().iterator();
 			while (pi.hasNext()) {
@@ -333,10 +295,14 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 			}
 			if(firstOrderOperationCallExpression.getName().equals("exists"))
 				rewritedQuery = new OperationCallExpression(rewritedQuery, new NameExpression("isDefined"));
-			if((optimisable && (indexExists||canbeExecutedMultipleTimes))||logicalOperator)
+			if((optimisable && (indexExists||canbeExecutedMultipleTimes))||logicalOperator) {
 			rewriteToModule(firstOrderOperationCallExpression, rewritedQuery);
+			optimisable = false;
+			}
+			optimisable = false;
 			}
 			else {
+				optimisable = false;
 				firstOrderOperationCallExpression.getTargetExpression().accept(this);
 				Iterator<Parameter> pi = firstOrderOperationCallExpression.getParameters().iterator();
 				while (pi.hasNext()) {
@@ -350,6 +316,7 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 						ei.next().accept(this);
 					}
 				}
+				
 			}
 		}
 		
@@ -545,25 +512,96 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 		}
 		if(operationCallExpression.getTargetExpression() != null)
 			operationCallExpression.getTargetExpression().accept(this);
+		if((!operationCallExpression.getParameterExpressions().isEmpty())) {
 		Iterator<Expression> pi = operationCallExpression.getParameterExpressions().iterator();
 		while (pi.hasNext()) {
 			pi.next().accept(this);
 		} 
+		}
 	}
 
 	@Override
 	public void visit(OrOperatorExpression orOperatorExpression) {
-		logicalOperator = true;
+		if(optimisable) {
+			logicalOperator = true;
 			cascaded = false;
-		decomposedAsts = new ArrayList<ModuleElement>();
-		decomposedAsts = decomposeAST(orOperatorExpression);
+			decomposedAsts = new ArrayList<ModuleElement>();
+			decomposedAsts = decomposeAST(orOperatorExpression);
 
-		if (cascaded && !secondPass)
-			decomposedAsts.add((orOperatorExpression.getSecondOperand()));
-		
-		rewritedQuery = new OperationCallExpression();
-		
-		for (ModuleElement operand : decomposedAsts) {
+			if (cascaded && !secondPass)
+				decomposedAsts.add((orOperatorExpression.getSecondOperand()));
+
+			rewritedQuery = new OperationCallExpression();
+
+			for (ModuleElement operand : decomposedAsts) {
+				visit((OperatorExpression) operand, "or");
+				if (!logicalOperator)
+					return;
+			}
+		}
+		else {
+			if(orOperatorExpression.getFirstOperand() != null)
+				orOperatorExpression.getFirstOperand().accept(this);
+			if(orOperatorExpression.getSecondOperand() != null)
+				orOperatorExpression.getSecondOperand().accept(this);
+		}
+			
+	}
+	
+	public void visit(OperatorExpression operand, String logicalOperatorName) {
+		if(optimisable) {
+		if(logicalOperatorName.equals("or")) {
+		if (operand instanceof EqualsOperatorExpression) {
+			operand = (EqualsOperatorExpression)operand;
+			Expression firstOperand = ((EqualsOperatorExpression) operand).getFirstOperand();
+			if(firstOperand!= null && firstOperand instanceof PropertyCallExpression)
+				visit((PropertyCallExpression)firstOperand, true);
+			ModuleElement indexValueExpression =((EqualsOperatorExpression) operand).getSecondOperand();
+			Expression indexValue = generateIndexValue(indexValueExpression);
+
+			indexExists = false;
+
+			if (potentialIndices.get(modelElementName.getValue())
+					.contains(indexField.getValue())) {
+				indexExists = true;
+			}
+			if (!(indexExists || canbeExecutedMultipleTimes)
+					&& rewritedQuery.getName() == null){
+				logicalOperator = false;
+				return;
+			}
+			if (rewritedQuery.getName() == null)
+				rewritedQuery = new OperationCallExpression(targetExp, operationExp,
+						modelElementName, indexField, indexValue);
+			else if (!indexExists && !canbeExecutedMultipleTimes) {
+				FirstOrderOperationCallExpression temp = new FirstOrderOperationCallExpression(new PropertyCallExpression(param.getTypeExpression(), new NameExpression("all")),
+						new NameExpression("select"), param,
+						new EqualsOperatorExpression(
+								new PropertyCallExpression(
+										param.getNameExpression(),
+										new NameExpression(indexField.getValue())),
+								indexValue));
+				rewritedQuery = new OperationCallExpression(rewritedQuery,
+						new NameExpression("includingAll"), temp);
+			} else {
+				rewritedQuery = new OperationCallExpression(rewritedQuery,
+						new NameExpression("includingAll"),
+						new OperationCallExpression(targetExp, operationExp,
+								modelElementName, indexField, indexValue));
+			}
+			if (indexExists || canbeExecutedMultipleTimes) {
+				potentialIndices.get(modelElementName.getValue())
+						.add(indexField.getValue());
+			}
+		}
+		else {
+			rewritedQuery = new FirstOrderOperationCallExpression(rewritedQuery,
+					new NameExpression("select"), param,(Expression)operand);
+//			break;
+		}
+		}
+		if(logicalOperatorName.equals("and")) {
+			boolean flag = false;
 			if (operand instanceof EqualsOperatorExpression) {
 				operand = (EqualsOperatorExpression)operand;
 				Expression firstOperand = ((EqualsOperatorExpression) operand).getFirstOperand();
@@ -579,39 +617,44 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 					indexExists = true;
 				}
 				if (!(indexExists || canbeExecutedMultipleTimes)
-						&& rewritedQuery.getName() == null){
+						&& rewritedQuery.getName() == null) {
 					logicalOperator = false;
 					return;
 				}
 				if (rewritedQuery.getName() == null)
 					rewritedQuery = new OperationCallExpression(targetExp, operationExp,
 							modelElementName, indexField, indexValue);
-				else if (!indexExists && !canbeExecutedMultipleTimes) {
-					FirstOrderOperationCallExpression temp = new FirstOrderOperationCallExpression(new PropertyCallExpression(param.getTypeExpression(), new NameExpression("all")),
+				else if ((indexExists && !canbeExecutedMultipleTimes) || !indexExists
+						|| canbeExecutedMultipleTimes) {
+					if(!( ((FeatureCallExpression) firstOperand).getTargetExpression() instanceof NameExpression)) {
+						rewritedQuery = new FirstOrderOperationCallExpression(rewritedQuery,
+								new NameExpression("select"), param,
+								new EqualsOperatorExpression(
+										new PropertyCallExpression(((FeatureCallExpression) firstOperand).getTargetExpression(),
+												new NameExpression(indexField.getValue())),
+										indexValue));
+										
+					}else
+					rewritedQuery = new FirstOrderOperationCallExpression(rewritedQuery,
 							new NameExpression("select"), param,
 							new EqualsOperatorExpression(
 									new PropertyCallExpression(
 											param.getNameExpression(),
 											new NameExpression(indexField.getValue())),
 									indexValue));
-					rewritedQuery = new OperationCallExpression(rewritedQuery,
-							new NameExpression("includingAll"), temp);
-				} else {
-					rewritedQuery = new OperationCallExpression(rewritedQuery,
-							new NameExpression("includingAll"),
-							new OperationCallExpression(targetExp, operationExp,
-									modelElementName, indexField, indexValue));
+					flag = true;
 				}
-				if (indexExists || canbeExecutedMultipleTimes) {
+				if ((indexExists || canbeExecutedMultipleTimes)&&!flag) {
 					potentialIndices.get(modelElementName.getValue())
 							.add(indexField.getValue());
 				}
-			}
+		}
 			else {
 				rewritedQuery = new FirstOrderOperationCallExpression(rewritedQuery,
 						new NameExpression("select"), param,(Expression)operand);
 //				break;
 			}
+		}
 		}
 	}
 
@@ -644,38 +687,42 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 	@Override
 	public void visit(PropertyCallExpression propertyCallExpression) {
 		propertyCallExpression.getTargetExpression().accept(this);
-		String operationName = propertyCallExpression.getName();
-		
-		if (allOperations.contains(operationName)) {
-			
-			EolModelElementType modelElement = null;
-			if(propertyCallExpression.getTargetExpression().getResolvedType() instanceof EolModelElementType)
-				modelElement = (EolModelElementType) propertyCallExpression.getTargetExpression().getResolvedType();
-
-				try {
-					if (modelElement.getModel(module.getCompilationContext()) == model) {
-						optimisable = true;
-						modelName = modelElement.getModelName();
-						model.setName(modelName);
-						targetExp = new NameExpression(modelName);
-						operationExp = new NameExpression("findByIndex");
-						modelElementName = new StringLiteral(modelElement.getTypeName());
-
-						if (potentialIndices.get(modelElementName.getValue()) == null) {
-							potentialIndices.put(modelElementName.getValue(), new HashSet<String>());
-						}
-					}
-					else
-						optimisable = false;
-
-				} catch (EolModelElementTypeNotFoundException e) {
-					e.printStackTrace();
-				}
-		}
 	}
 	
 	public void visit(PropertyCallExpression propertyCallExpression, boolean flag) {
+		if(flag)
 		indexField = new StringLiteral(propertyCallExpression.getName());
+		else {
+			propertyCallExpression.getTargetExpression().accept(this);
+			String operationName = propertyCallExpression.getName();
+			
+			if (allOperations.contains(operationName)) {
+				
+				EolModelElementType modelElement = null;
+				if(propertyCallExpression.getTargetExpression().getResolvedType() instanceof EolModelElementType)
+					modelElement = (EolModelElementType) propertyCallExpression.getTargetExpression().getResolvedType();
+
+					try {
+						if (modelElement.getModel(module.getCompilationContext()) == model) {
+							optimisable = true;
+							modelName = modelElement.getModelName();
+							model.setName(modelName);
+							targetExp = new NameExpression(modelName);
+							operationExp = new NameExpression("findByIndex");
+							modelElementName = new StringLiteral(modelElement.getTypeName());
+
+							if (potentialIndices.get(modelElementName.getValue()) == null) {
+								potentialIndices.put(modelElementName.getValue(), new HashSet<String>());
+							}
+						}
+						else
+							optimisable = false;
+
+					} catch (EolModelElementTypeNotFoundException e) {
+						e.printStackTrace();
+					}
+			}
+		}
 	}
 
 	@Override
@@ -817,24 +864,44 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 	}
 
 	public void rewriteToModule(ModuleElement ast, FeatureCallExpression rewritedQuery) {
-		if (ast.getParent() instanceof ExpressionStatement)
-			((ExpressionStatement) ast.getParent()).setExpression(rewritedQuery);
-		else if (ast.getParent() instanceof AssignmentStatement) {
-			if(ast == (AssignmentStatement) ast.getParent())
-			((AssignmentStatement) ast.getParent()).setValueExpression(rewritedQuery);
-			else
-				((AssignmentStatement) ast.getParent()).setTargetExpression(rewritedQuery);
+		if (ast.getParent() instanceof ExpressionStatement) {
+			ExpressionStatement parent = (ExpressionStatement) ast.getParent();
+			if(ast == parent.getExpression())
+			parent.setExpression(rewritedQuery);
 		}
-		else if (ast.getParent() instanceof ForStatement)
-			((ForStatement) ast.getParent()).setIteratedExpression(rewritedQuery);
-		else if (ast.getParent() instanceof ReturnStatement)
-			((ReturnStatement) ast.getParent()).setReturnedExpression(rewritedQuery);
-		else if (ast.getParent() instanceof PropertyCallExpression)
-			((PropertyCallExpression) ast.getParent()).setTargetExpression(rewritedQuery);
+		else if (ast.getParent() instanceof AssignmentStatement) {
+			AssignmentStatement parent = (AssignmentStatement) ast.getParent();
+			if(ast == parent.getValueExpression())
+				parent.setValueExpression(rewritedQuery);
+			else
+				parent.setTargetExpression(rewritedQuery);
+		}
+		else if (ast.getParent() instanceof ForStatement) {
+			ForStatement parent = (ForStatement) ast.getParent();
+			if(ast == parent.getIteratedExpression())
+			parent.setIteratedExpression(rewritedQuery);
+		}
+		else if (ast.getParent() instanceof ReturnStatement) {
+			ReturnStatement parent = (ReturnStatement) ast.getParent();
+			if(ast == parent.getReturnedExpression())
+			parent.setReturnedExpression(rewritedQuery);
+		}
+		else if (ast.getParent() instanceof NotOperatorExpression) {
+			NotOperatorExpression parent = (NotOperatorExpression) ast.getParent();
+			if(ast == parent.getFirstOperand())
+			parent.setFirstOperand(rewritedQuery);
+			else
+				parent.setSecondOperand(rewritedQuery);
+		}
+		else if (ast.getParent() instanceof PropertyCallExpression) {
+			PropertyCallExpression parent = (PropertyCallExpression) ast.getParent();
+			if(ast == parent.getTargetExpression())
+			parent.setTargetExpression(rewritedQuery);
+		}
 		else if (ast.getParent() instanceof FirstOrderOperationCallExpression) {
 			FirstOrderOperationCallExpression parent = (FirstOrderOperationCallExpression)ast.getParent();
 			if(ast == parent.getTargetExpression())
-			((FirstOrderOperationCallExpression) ast.getParent()).setTargetExpression(rewritedQuery);
+			parent.setTargetExpression(rewritedQuery);
 			else {
 				List<Expression> parameters = parent.getExpressions();
 				for(int i = 0; i < parameters.size(); i++) {
@@ -902,8 +969,10 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 		} else if (indexValueExpression instanceof RealLiteral) {
 			indexValue = (RealLiteral)indexValueExpression;
 		}else if (indexValueExpression instanceof OperationCallExpression) {
-				indexValue = (OperationCallExpression)indexValueExpression;
-			}
+			indexValue = (OperationCallExpression)indexValueExpression;
+		}else if (indexValueExpression instanceof NameExpression) {
+			indexValue = (NameExpression)indexValueExpression;
+		}
 		return indexValue;
 		
 	}
