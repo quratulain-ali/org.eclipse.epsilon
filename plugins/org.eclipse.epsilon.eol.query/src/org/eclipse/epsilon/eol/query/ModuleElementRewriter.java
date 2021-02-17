@@ -5,9 +5,9 @@ import java.util.List;
 import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.eol.dom.AssignmentStatement;
 import org.eclipse.epsilon.eol.dom.EqualsOperatorExpression;
+import org.eclipse.epsilon.eol.dom.ExecutableBlock;
 import org.eclipse.epsilon.eol.dom.Expression;
 import org.eclipse.epsilon.eol.dom.ExpressionStatement;
-import org.eclipse.epsilon.eol.dom.FeatureCallExpression;
 import org.eclipse.epsilon.eol.dom.FirstOrderOperationCallExpression;
 import org.eclipse.epsilon.eol.dom.ForStatement;
 import org.eclipse.epsilon.eol.dom.NotOperatorExpression;
@@ -18,9 +18,9 @@ import org.eclipse.epsilon.eol.dom.ReturnStatement;
 public class ModuleElementRewriter {
 	
 	ModuleElement ast;
-	FeatureCallExpression rewritedQuery;
+	Expression rewritedQuery;
 	
-	public ModuleElementRewriter(ModuleElement me, FeatureCallExpression rewritedQuery) {
+	public ModuleElementRewriter(ModuleElement me, Expression rewritedQuery) {
 		this.ast = me;
 		this.rewritedQuery = rewritedQuery;
 	}

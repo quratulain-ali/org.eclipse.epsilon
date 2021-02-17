@@ -102,7 +102,7 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 	IModel model;
 	String modelName;
 
-	FeatureCallExpression rewritedQuery;
+	Expression rewritedQuery;
 	NameExpression targetExp;
 	NameExpression operationExp;
 	StringLiteral modelElementName;
@@ -294,8 +294,11 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 						ei.next().accept(this);
 					}
 				}
-				if (firstOrderOperationCallExpression.getName().equals("exists"))
-					rewritedQuery = new OperationCallExpression(rewritedQuery, new NameExpression("isDefined"));
+				if(firstOrderOperationCallExpression.getName().equals("exists")) {
+					IntegerLiteral i = new IntegerLiteral(0);
+					i.setText("0");
+					rewritedQuery = new GreaterThanOperatorExpression(new OperationCallExpression(rewritedQuery, new NameExpression("size")),i);
+				}
 				if ((optimisableByCurrentModel && (indexExists || canbeExecutedMultipleTimes)) || logicalOperator) {
 					new ModuleElementRewriter(firstOrderOperationCallExpression, rewritedQuery).rewrite();
 					optimisableByCurrentModel = false;
@@ -560,11 +563,11 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 					if (potentialIndices.get(modelElementName.getValue()).contains(indexField.getValue())) {
 						indexExists = true;
 					}
-					if (!(indexExists || canbeExecutedMultipleTimes) && rewritedQuery.getName() == null) {
+					if (!(indexExists || canbeExecutedMultipleTimes) && ((FeatureCallExpression) rewritedQuery).getName() == null) {
 						logicalOperator = false;
 						return;
 					}
-					if (rewritedQuery.getName() == null)
+					if (((FeatureCallExpression) rewritedQuery).getName() == null)
 						rewritedQuery = new OperationCallExpression(targetExp, operationExp, modelElementName,
 								indexField, indexValue);
 					else if (!indexExists && !canbeExecutedMultipleTimes) {
@@ -604,11 +607,11 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 					if (potentialIndices.get(modelElementName.getValue()).contains(indexField.getValue())) {
 						indexExists = true;
 					}
-					if (!(indexExists || canbeExecutedMultipleTimes) && rewritedQuery.getName() == null) {
+					if (!(indexExists || canbeExecutedMultipleTimes) && ((FeatureCallExpression) rewritedQuery).getName() == null) {
 						logicalOperator = false;
 						return;
 					}
-					if (rewritedQuery.getName() == null)
+					if (((FeatureCallExpression) rewritedQuery).getName() == null)
 						rewritedQuery = new OperationCallExpression(targetExp, operationExp, modelElementName,
 								indexField, indexValue);
 					else if ((indexExists && !canbeExecutedMultipleTimes) || !indexExists
