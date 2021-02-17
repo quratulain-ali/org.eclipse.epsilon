@@ -30,7 +30,7 @@ public class EolSource extends SimpleSource{
 		String path = pathAndFileName.removeFileExtension().toOSString();
 		File f = new File(path+".dot");
 		if(f.exists())
-			return new ViewTree(new File(path+".dot"), "graphviz-dot");
+			return new ViewTree(f, "graphviz-dot");
 		else
 			return new ViewTree();
 	}
