@@ -37,7 +37,7 @@ public class RoboChart {
 		);
 		
 		EolRunConfiguration runConfig = EolRunConfiguration.Builder()
-			.withScript(root.resolve("r3.eol"))
+			.withScript(root.resolve("robochart.eol"))
 			.withModel(new EmfModel(), modelProperties)
 			.withParameter("Thread", Thread.class)
 			.withProfiling()

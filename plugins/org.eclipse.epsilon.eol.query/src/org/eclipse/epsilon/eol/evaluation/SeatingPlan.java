@@ -37,7 +37,7 @@ public class SeatingPlan {
 		);
 		
 		EolRunConfiguration runConfig = EolRunConfiguration.Builder()
-			.withScript(root.resolve("test.eol"))
+			.withScript(root.resolve("seatingPlan.eol"))
 			.withModel(new EmfModel(), modelProperties)
 			.withParameter("Thread", Thread.class)
 			.withProfiling()
