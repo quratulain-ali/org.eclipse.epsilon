@@ -82,32 +82,37 @@ import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.eol.staticanalyser.CallGraphGenerator;
 import org.eclipse.epsilon.eol.types.EolModelElementType;
 
-public class EolEmfRewriterVisitorVersion implements IEolVisitor{
-	
-	HashSet<String> optimisableOperations;
-	HashSet<String> allOperations;
-	HashMap<String, HashSet<String>> potentialIndices = new HashMap<>(); 
+public class EolEmfRewriterVisitorVersion implements IEolVisitor {
+
+	HashSet<String> optimisableOperations = new HashSet<String>(Arrays.asList("select", "exists"));
+	HashSet<String> allOperations = new HashSet<String>(Arrays.asList("all", "allInstances"));
+
+	HashMap<String, HashSet<String>> potentialIndices = new HashMap<>();
+
 	List<ModuleElement> decomposedAsts;
+
 	boolean cascaded = false;
-	IEolModule module;
-	IModel model;
-	String modelName;
 	boolean secondPass = false;
 	boolean indexExists = false;
 	boolean canbeExecutedMultipleTimes = false;
-	boolean optimisable= false;
+	boolean optimisableByCurrentModel = false;
+	boolean logicalOperator = false;
+
+	IEolModule module;
+	IModel model;
+	String modelName;
+
+	FeatureCallExpression rewritedQuery;
 	NameExpression targetExp;
 	NameExpression operationExp;
 	StringLiteral modelElementName;
 	StringLiteral indexField;
-	FeatureCallExpression rewritedQuery;
 	Parameter param;
-	boolean logicalOperator = false;
 
 	@Override
 	public void visit(AbortStatement abortStatement) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -117,13 +122,12 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 		decomposedAsts = new ArrayList<ModuleElement>();
 		decomposedAsts = decomposeAST(andOperatorExpression);
 		if (cascaded && !secondPass)
-			decomposedAsts
-					.add((andOperatorExpression.getSecondOperand()));
+			decomposedAsts.add((andOperatorExpression.getSecondOperand()));
 		rewritedQuery = new OperationCallExpression();
-		
+
 		for (ModuleElement operand : decomposedAsts) {
 			visit((OperatorExpression) operand, "and");
-			if(!logicalOperator)
+			if (!logicalOperator)
 				return;
 		}
 	}
@@ -131,13 +135,13 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 	@Override
 	public void visit(DeleteStatement deleteStatement) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visit(AnnotationBlock annotationBlock) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -149,115 +153,111 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 	@Override
 	public void visit(BooleanLiteral booleanLiteral) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visit(BreakStatement breakStatement) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visit(Case case_) {
 		if (case_.getCondition() != null) {
 			case_.getCondition().accept(this);
-		}
-		else 
+		} else
 			case_.getBody().accept(this);
 	}
 
 	@Override
 	public void visit(CollectionLiteralExpression<?> collectionLiteralExpression) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visit(ComplexOperationCallExpression complexOperationCallExpression) {
-		if(complexOperationCallExpression.getTargetExpression() != null)
+		if (complexOperationCallExpression.getTargetExpression() != null)
 			complexOperationCallExpression.getTargetExpression().accept(this);
 	}
 
 	@Override
 	public void visit(ContinueStatement continueStatement) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visit(DivOperatorExpression divOperatorExpression) {
-		if(divOperatorExpression.getFirstOperand() != null)
+		if (divOperatorExpression.getFirstOperand() != null)
 			divOperatorExpression.getFirstOperand().accept(this);
-		if(divOperatorExpression.getSecondOperand() != null)
+		if (divOperatorExpression.getSecondOperand() != null)
 			divOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
 	public void visit(DoubleEqualsOperatorExpression doubleEqualsOperatorExpression) {
-		if(doubleEqualsOperatorExpression.getFirstOperand() != null)
+		if (doubleEqualsOperatorExpression.getFirstOperand() != null)
 			doubleEqualsOperatorExpression.getFirstOperand().accept(this);
-		if(doubleEqualsOperatorExpression.getSecondOperand() != null)
+		if (doubleEqualsOperatorExpression.getSecondOperand() != null)
 			doubleEqualsOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
 	public void visit(ElvisOperatorExpression elvisOperatorExpression) {
-		if(elvisOperatorExpression.getFirstOperand() != null)
+		if (elvisOperatorExpression.getFirstOperand() != null)
 			elvisOperatorExpression.getFirstOperand().accept(this);
-		if(elvisOperatorExpression.getSecondOperand() != null)
-			elvisOperatorExpression.getSecondOperand().accept(this);	
+		if (elvisOperatorExpression.getSecondOperand() != null)
+			elvisOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
 	public void visit(EnumerationLiteralExpression enumerationLiteralExpression) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visit(EqualsOperatorExpression equalsOperatorExpression) {
-		if(optimisable) {
-		Expression firstOperand = equalsOperatorExpression.getFirstOperand() ;
-		if(firstOperand!= null && firstOperand instanceof PropertyCallExpression)
-			visit((PropertyCallExpression)firstOperand, true);
-		
-		ModuleElement indexValueExpression = equalsOperatorExpression.getSecondOperand();
-		Expression indexValue = generateIndexValue(indexValueExpression);
-		indexExists = false;
+		if (optimisableByCurrentModel) {
+			Expression firstOperand = equalsOperatorExpression.getFirstOperand();
+			if (firstOperand != null && firstOperand instanceof PropertyCallExpression)
+				visit((PropertyCallExpression) firstOperand, true);
 
-		if (potentialIndices.get(modelElementName.getValue())
-				.contains(indexField.getValue())) {
-			indexExists = true;
-		}
+			ModuleElement indexValueExpression = equalsOperatorExpression.getSecondOperand();
+			Expression indexValue = new IndexValueGenerator(indexValueExpression).generateIndexValue();
+			indexExists = false;
 
-		rewritedQuery = new OperationCallExpression(
-				targetExp, operationExp, modelElementName, indexField, indexValue);
+			if (potentialIndices.get(modelElementName.getValue()).contains(indexField.getValue())) {
+				indexExists = true;
+			}
 
-		if (indexExists || canbeExecutedMultipleTimes) {
-			potentialIndices.get(modelElementName.getValue())
-					.add(indexField.getValue());
-			
-		} 
-		}
-		else {
-			if(equalsOperatorExpression.getFirstOperand() != null)
+			rewritedQuery = new OperationCallExpression(targetExp, operationExp, modelElementName, indexField,
+					indexValue);
+
+			if (indexExists || canbeExecutedMultipleTimes) {
+				potentialIndices.get(modelElementName.getValue()).add(indexField.getValue());
+
+			}
+		} else {
+			if (equalsOperatorExpression.getFirstOperand() != null)
 				equalsOperatorExpression.getFirstOperand().accept(this);
-			if(equalsOperatorExpression.getSecondOperand() != null)
-				equalsOperatorExpression.getSecondOperand().accept(this);	
+			if (equalsOperatorExpression.getSecondOperand() != null)
+				equalsOperatorExpression.getSecondOperand().accept(this);
 		}
 	}
 
 	@Override
 	public void visit(ExecutableAnnotation executableAnnotation) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visit(ExecutableBlock<?> executableBlock) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -268,47 +268,25 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 	@Override
 	public void visit(ExpressionStatement expressionStatement) {
 		expressionStatement.getExpression().accept(this);
-		
+
 	}
 
 	@Override
 	public void visit(FirstOrderOperationCallExpression firstOrderOperationCallExpression) {
 		logicalOperator = false;
 		rewritedQuery = new OperationCallExpression();
-		if(optimisableOperations.contains(firstOrderOperationCallExpression.getName())) {
-			if(firstOrderOperationCallExpression.getTargetExpression() instanceof PropertyCallExpression) {
-				PropertyCallExpression target = (PropertyCallExpression) firstOrderOperationCallExpression.getTargetExpression();
+		if (optimisableOperations.contains(firstOrderOperationCallExpression.getName())) {
+			if (firstOrderOperationCallExpression.getTargetExpression() instanceof PropertyCallExpression) {
+				PropertyCallExpression target = (PropertyCallExpression) firstOrderOperationCallExpression
+						.getTargetExpression();
 				visit(target, false);
 			}
-			if(optimisable) {
-			Iterator<Parameter> pi = firstOrderOperationCallExpression.getParameters().iterator();
-			while (pi.hasNext()) {
-				pi.next().accept(this);
-			}
-			
-			if (!firstOrderOperationCallExpression.getExpressions().isEmpty()) {
-				Iterator<Expression> ei = firstOrderOperationCallExpression.getExpressions().iterator();
-				while (ei.hasNext()) {
-					param = firstOrderOperationCallExpression.getParameters().get(0);
-					ei.next().accept(this);
-				}
-			}
-			if(firstOrderOperationCallExpression.getName().equals("exists"))
-				rewritedQuery = new OperationCallExpression(rewritedQuery, new NameExpression("isDefined"));
-			if((optimisable && (indexExists||canbeExecutedMultipleTimes))||logicalOperator) {
-			rewriteToModule(firstOrderOperationCallExpression, rewritedQuery);
-			optimisable = false;
-			}
-			optimisable = false;
-			}
-			else {
-				optimisable = false;
-				firstOrderOperationCallExpression.getTargetExpression().accept(this);
+			if (optimisableByCurrentModel) {
 				Iterator<Parameter> pi = firstOrderOperationCallExpression.getParameters().iterator();
 				while (pi.hasNext()) {
 					pi.next().accept(this);
 				}
-				
+
 				if (!firstOrderOperationCallExpression.getExpressions().isEmpty()) {
 					Iterator<Expression> ei = firstOrderOperationCallExpression.getExpressions().iterator();
 					while (ei.hasNext()) {
@@ -316,12 +294,32 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 						ei.next().accept(this);
 					}
 				}
-				
+				if (firstOrderOperationCallExpression.getName().equals("exists"))
+					rewritedQuery = new OperationCallExpression(rewritedQuery, new NameExpression("isDefined"));
+				if ((optimisableByCurrentModel && (indexExists || canbeExecutedMultipleTimes)) || logicalOperator) {
+					new ModuleElementRewriter(firstOrderOperationCallExpression, rewritedQuery).rewrite();
+					optimisableByCurrentModel = false;
+				}
+				optimisableByCurrentModel = false;
+			} else {
+				optimisableByCurrentModel = false;
+				firstOrderOperationCallExpression.getTargetExpression().accept(this);
+				Iterator<Parameter> pi = firstOrderOperationCallExpression.getParameters().iterator();
+				while (pi.hasNext()) {
+					pi.next().accept(this);
+				}
+
+				if (!firstOrderOperationCallExpression.getExpressions().isEmpty()) {
+					Iterator<Expression> ei = firstOrderOperationCallExpression.getExpressions().iterator();
+					while (ei.hasNext()) {
+						param = firstOrderOperationCallExpression.getParameters().get(0);
+						ei.next().accept(this);
+					}
+				}
+
 			}
 		}
-		
-			
-			
+
 	}
 
 	@Override
@@ -331,22 +329,22 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 		canbeExecutedMultipleTimes = true;
 		forStatement.getBodyStatementBlock().accept(this);
 		canbeExecutedMultipleTimes = false;
-		
+
 	}
 
 	@Override
 	public void visit(GreaterEqualOperatorExpression greaterEqualOperatorExpression) {
-		if(greaterEqualOperatorExpression.getFirstOperand() != null)
+		if (greaterEqualOperatorExpression.getFirstOperand() != null)
 			greaterEqualOperatorExpression.getFirstOperand().accept(this);
-		if(greaterEqualOperatorExpression.getSecondOperand() != null)
+		if (greaterEqualOperatorExpression.getSecondOperand() != null)
 			greaterEqualOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
 	public void visit(GreaterThanOperatorExpression greaterThanOperatorExpression) {
-		if(greaterThanOperatorExpression.getFirstOperand() != null)
+		if (greaterThanOperatorExpression.getFirstOperand() != null)
 			greaterThanOperatorExpression.getFirstOperand().accept(this);
-		if(greaterThanOperatorExpression.getSecondOperand() != null)
+		if (greaterThanOperatorExpression.getSecondOperand() != null)
 			greaterThanOperatorExpression.getSecondOperand().accept(this);
 	}
 
@@ -356,33 +354,33 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 		ifStatement.getThenStatementBlock().accept(this);
 		if (ifStatement.getElseStatementBlock() != null) {
 			StatementBlock elseStatementBlock = ifStatement.getElseStatementBlock();
-			if (elseStatementBlock.getStatements().size() == 1 && elseStatementBlock.getStatements().get(0) instanceof IfStatement) {
+			if (elseStatementBlock.getStatements().size() == 1
+					&& elseStatementBlock.getStatements().get(0) instanceof IfStatement) {
 				elseStatementBlock.getStatements().get(0).accept(this);
-			}
-			else {
+			} else {
 				ifStatement.getElseStatementBlock().accept(this);
 			}
-		}	
+		}
 	}
 
 	@Override
 	public void visit(ImpliesOperatorExpression impliesOperatorExpression) {
-		if(impliesOperatorExpression.getFirstOperand() != null)
+		if (impliesOperatorExpression.getFirstOperand() != null)
 			impliesOperatorExpression.getFirstOperand().accept(this);
-		if(impliesOperatorExpression.getSecondOperand() != null)
+		if (impliesOperatorExpression.getSecondOperand() != null)
 			impliesOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
 	public void visit(Import import_) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visit(IntegerLiteral integerLiteral) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -393,57 +391,57 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 
 	@Override
 	public void visit(LessEqualOperatorExpression lessEqualOperatorExpression) {
-		if(lessEqualOperatorExpression.getFirstOperand() != null)
+		if (lessEqualOperatorExpression.getFirstOperand() != null)
 			lessEqualOperatorExpression.getFirstOperand().accept(this);
-		if(lessEqualOperatorExpression.getSecondOperand() != null)
+		if (lessEqualOperatorExpression.getSecondOperand() != null)
 			lessEqualOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
 	public void visit(LessThanOperatorExpression lessThanOperatorExpression) {
-		if(lessThanOperatorExpression.getFirstOperand() != null)
+		if (lessThanOperatorExpression.getFirstOperand() != null)
 			lessThanOperatorExpression.getFirstOperand().accept(this);
-		if(lessThanOperatorExpression.getSecondOperand() != null)
+		if (lessThanOperatorExpression.getSecondOperand() != null)
 			lessThanOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
 	public void visit(MapLiteralExpression<?, ?> mapLiteralExpression) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visit(MinusOperatorExpression minusOperatorExpression) {
-		if(minusOperatorExpression.getFirstOperand() != null)
+		if (minusOperatorExpression.getFirstOperand() != null)
 			minusOperatorExpression.getFirstOperand().accept(this);
-		if(minusOperatorExpression.getSecondOperand() != null)
+		if (minusOperatorExpression.getSecondOperand() != null)
 			minusOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
 	public void visit(ModelDeclaration modelDeclaration) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visit(ModelDeclarationParameter modelDeclarationParameter) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visit(NameExpression nameExpression) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visit(NegativeOperatorExpression negativeOperatorExpression) {
-		if(negativeOperatorExpression.getFirstOperand() != null)
+		if (negativeOperatorExpression.getFirstOperand() != null)
 			negativeOperatorExpression.getFirstOperand().accept(this);
-		if(negativeOperatorExpression.getSecondOperand() != null)
+		if (negativeOperatorExpression.getSecondOperand() != null)
 			negativeOperatorExpression.getSecondOperand().accept(this);
 	}
 
@@ -454,75 +452,74 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 		while (pi.hasNext()) {
 			pi.next().accept(this);
 		}
-		
+
 	}
 
 	@Override
 	public void visit(NotEqualsOperatorExpression notEqualsOperatorExpression) {
-		if(notEqualsOperatorExpression.getFirstOperand() != null)
+		if (notEqualsOperatorExpression.getFirstOperand() != null)
 			notEqualsOperatorExpression.getFirstOperand().accept(this);
-		if(notEqualsOperatorExpression.getSecondOperand() != null)
+		if (notEqualsOperatorExpression.getSecondOperand() != null)
 			notEqualsOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
 	public void visit(NotOperatorExpression notOperatorExpression) {
-		if(notOperatorExpression.getFirstOperand() != null)
+		if (notOperatorExpression.getFirstOperand() != null)
 			notOperatorExpression.getFirstOperand().accept(this);
-		if(notOperatorExpression.getSecondOperand() != null)
+		if (notOperatorExpression.getSecondOperand() != null)
 			notOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
 	public void visit(Operation operation) {
 		operation.getBody().accept(this);
-		
+
 	}
 
 	@Override
 	public void visit(OperationCallExpression operationCallExpression) {
 //		operationCallExpression.getTargetExpression().accept(this);
 		String operationName = operationCallExpression.getName();
-		
+
 		if (allOperations.contains(operationName)) {
-			
+
 			EolModelElementType modelElement = null;
-			if(operationCallExpression.getTargetExpression().getResolvedType() instanceof EolModelElementType)
+			if (operationCallExpression.getTargetExpression().getResolvedType() instanceof EolModelElementType)
 				modelElement = (EolModelElementType) operationCallExpression.getTargetExpression().getResolvedType();
 
-				try {
-					if (modelElement.getModel(module.getCompilationContext()) == model) {
-						optimisable = true;
-						modelName = modelElement.getModelName();
-						model.setName(modelName);
-						targetExp = new NameExpression(modelName);
-						operationExp = new NameExpression("findByIndex");
-						modelElementName = new StringLiteral(modelElement.getTypeName());
+			try {
+				if (modelElement.getModel(module.getCompilationContext()) == model) {
+					optimisableByCurrentModel = true;
+					modelName = modelElement.getModelName();
+					model.setName(modelName);
+					targetExp = new NameExpression(modelName);
+					operationExp = new NameExpression("findByIndex");
+					modelElementName = new StringLiteral(modelElement.getTypeName());
 
-						if (potentialIndices.get(modelElementName.getValue()) == null) {
-							potentialIndices.put(modelElementName.getValue(), new HashSet<String>());
-						}
+					if (potentialIndices.get(modelElementName.getValue()) == null) {
+						potentialIndices.put(modelElementName.getValue(), new HashSet<String>());
 					}
-					else
-						optimisable = false;
+				} else
+					optimisableByCurrentModel = false;
 
-				} catch (EolModelElementTypeNotFoundException e) {
-					e.printStackTrace();
-				}
+			} catch (EolModelElementTypeNotFoundException e) {
+				e.printStackTrace();
+			}
 		}
-		if(operationCallExpression.getTargetExpression() != null)
+		if (operationCallExpression.getTargetExpression() != null)
 			operationCallExpression.getTargetExpression().accept(this);
-		if((!operationCallExpression.getParameterExpressions().isEmpty())) {
-		Iterator<Expression> pi = operationCallExpression.getParameterExpressions().iterator();
-		while (pi.hasNext()) {
-			pi.next().accept(this);
-		} 
+		if ((!operationCallExpression.getParameterExpressions().isEmpty())) {
+			Iterator<Expression> pi = operationCallExpression.getParameterExpressions().iterator();
+			while (pi.hasNext()) {
+				pi.next().accept(this);
+			}
 		}
 	}
 
 	@Override
 	public void visit(OrOperatorExpression orOperatorExpression) {
-		if(optimisable) {
+		if (optimisableByCurrentModel) {
 			logicalOperator = true;
 			cascaded = false;
 			decomposedAsts = new ArrayList<ModuleElement>();
@@ -538,123 +535,107 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 				if (!logicalOperator)
 					return;
 			}
-		}
-		else {
-			if(orOperatorExpression.getFirstOperand() != null)
+		} else {
+			if (orOperatorExpression.getFirstOperand() != null)
 				orOperatorExpression.getFirstOperand().accept(this);
-			if(orOperatorExpression.getSecondOperand() != null)
+			if (orOperatorExpression.getSecondOperand() != null)
 				orOperatorExpression.getSecondOperand().accept(this);
 		}
-			
+
 	}
-	
+
 	public void visit(OperatorExpression operand, String logicalOperatorName) {
-		if(optimisable) {
-		if(logicalOperatorName.equals("or")) {
-		if (operand instanceof EqualsOperatorExpression) {
-			operand = (EqualsOperatorExpression)operand;
-			Expression firstOperand = ((EqualsOperatorExpression) operand).getFirstOperand();
-			if(firstOperand!= null && firstOperand instanceof PropertyCallExpression)
-				visit((PropertyCallExpression)firstOperand, true);
-			ModuleElement indexValueExpression =((EqualsOperatorExpression) operand).getSecondOperand();
-			Expression indexValue = generateIndexValue(indexValueExpression);
+		if (optimisableByCurrentModel) {
+			if (logicalOperatorName.equals("or")) {
+				if (operand instanceof EqualsOperatorExpression) {
+					operand = (EqualsOperatorExpression) operand;
+					Expression firstOperand = ((EqualsOperatorExpression) operand).getFirstOperand();
+					if (firstOperand != null && firstOperand instanceof PropertyCallExpression)
+						visit((PropertyCallExpression) firstOperand, true);
+					ModuleElement indexValueExpression = ((EqualsOperatorExpression) operand).getSecondOperand();
+					Expression indexValue = new IndexValueGenerator(indexValueExpression).generateIndexValue();
 
-			indexExists = false;
+					indexExists = false;
 
-			if (potentialIndices.get(modelElementName.getValue())
-					.contains(indexField.getValue())) {
-				indexExists = true;
-			}
-			if (!(indexExists || canbeExecutedMultipleTimes)
-					&& rewritedQuery.getName() == null){
-				logicalOperator = false;
-				return;
-			}
-			if (rewritedQuery.getName() == null)
-				rewritedQuery = new OperationCallExpression(targetExp, operationExp,
-						modelElementName, indexField, indexValue);
-			else if (!indexExists && !canbeExecutedMultipleTimes) {
-				FirstOrderOperationCallExpression temp = new FirstOrderOperationCallExpression(new PropertyCallExpression(param.getTypeExpression(), new NameExpression("all")),
-						new NameExpression("select"), param,
-						new EqualsOperatorExpression(
-								new PropertyCallExpression(
-										param.getNameExpression(),
-										new NameExpression(indexField.getValue())),
-								indexValue));
-				rewritedQuery = new OperationCallExpression(rewritedQuery,
-						new NameExpression("includingAll"), temp);
-			} else {
-				rewritedQuery = new OperationCallExpression(rewritedQuery,
-						new NameExpression("includingAll"),
-						new OperationCallExpression(targetExp, operationExp,
-								modelElementName, indexField, indexValue));
-			}
-			if (indexExists || canbeExecutedMultipleTimes) {
-				potentialIndices.get(modelElementName.getValue())
-						.add(indexField.getValue());
-			}
-		}
-		else {
-			rewritedQuery = new FirstOrderOperationCallExpression(rewritedQuery,
-					new NameExpression("select"), param,(Expression)operand);
-//			break;
-		}
-		}
-		if(logicalOperatorName.equals("and")) {
-			boolean flag = false;
-			if (operand instanceof EqualsOperatorExpression) {
-				operand = (EqualsOperatorExpression)operand;
-				Expression firstOperand = ((EqualsOperatorExpression) operand).getFirstOperand();
-				if(firstOperand!= null && firstOperand instanceof PropertyCallExpression)
-					visit((PropertyCallExpression)firstOperand, true);
-				ModuleElement indexValueExpression =((EqualsOperatorExpression) operand).getSecondOperand();
-				Expression indexValue = generateIndexValue(indexValueExpression);
-
-				indexExists = false;
-
-				if (potentialIndices.get(modelElementName.getValue())
-						.contains(indexField.getValue())) {
-					indexExists = true;
-				}
-				if (!(indexExists || canbeExecutedMultipleTimes)
-						&& rewritedQuery.getName() == null) {
-					logicalOperator = false;
-					return;
-				}
-				if (rewritedQuery.getName() == null)
-					rewritedQuery = new OperationCallExpression(targetExp, operationExp,
-							modelElementName, indexField, indexValue);
-				else if ((indexExists && !canbeExecutedMultipleTimes) || !indexExists
-						|| canbeExecutedMultipleTimes) {
-					if(!( ((FeatureCallExpression) firstOperand).getTargetExpression() instanceof NameExpression)) {
-						rewritedQuery = new FirstOrderOperationCallExpression(rewritedQuery,
+					if (potentialIndices.get(modelElementName.getValue()).contains(indexField.getValue())) {
+						indexExists = true;
+					}
+					if (!(indexExists || canbeExecutedMultipleTimes) && rewritedQuery.getName() == null) {
+						logicalOperator = false;
+						return;
+					}
+					if (rewritedQuery.getName() == null)
+						rewritedQuery = new OperationCallExpression(targetExp, operationExp, modelElementName,
+								indexField, indexValue);
+					else if (!indexExists && !canbeExecutedMultipleTimes) {
+						FirstOrderOperationCallExpression temp = new FirstOrderOperationCallExpression(
+								new PropertyCallExpression(param.getTypeExpression(), new NameExpression("all")),
 								new NameExpression("select"), param,
-								new EqualsOperatorExpression(
-										new PropertyCallExpression(((FeatureCallExpression) firstOperand).getTargetExpression(),
-												new NameExpression(indexField.getValue())),
+								new EqualsOperatorExpression(new PropertyCallExpression(param.getNameExpression(),
+										new NameExpression(indexField.getValue())), indexValue));
+						rewritedQuery = new OperationCallExpression(rewritedQuery, new NameExpression("includingAll"),
+								temp);
+					} else {
+						rewritedQuery = new OperationCallExpression(rewritedQuery, new NameExpression("includingAll"),
+								new OperationCallExpression(targetExp, operationExp, modelElementName, indexField,
 										indexValue));
-										
-					}else
-					rewritedQuery = new FirstOrderOperationCallExpression(rewritedQuery,
-							new NameExpression("select"), param,
-							new EqualsOperatorExpression(
-									new PropertyCallExpression(
-											param.getNameExpression(),
-											new NameExpression(indexField.getValue())),
-									indexValue));
-					flag = true;
+					}
+					if (indexExists || canbeExecutedMultipleTimes) {
+						potentialIndices.get(modelElementName.getValue()).add(indexField.getValue());
+					}
+				} else {
+					rewritedQuery = new FirstOrderOperationCallExpression(rewritedQuery, new NameExpression("select"),
+							param, (Expression) operand);
+//			break;
 				}
-				if ((indexExists || canbeExecutedMultipleTimes)&&!flag) {
-					potentialIndices.get(modelElementName.getValue())
-							.add(indexField.getValue());
-				}
-		}
-			else {
-				rewritedQuery = new FirstOrderOperationCallExpression(rewritedQuery,
-						new NameExpression("select"), param,(Expression)operand);
-//				break;
 			}
-		}
+			if (logicalOperatorName.equals("and")) {
+				boolean flag = false;
+				if (operand instanceof EqualsOperatorExpression) {
+					operand = (EqualsOperatorExpression) operand;
+					Expression firstOperand = ((EqualsOperatorExpression) operand).getFirstOperand();
+					if (firstOperand != null && firstOperand instanceof PropertyCallExpression)
+						visit((PropertyCallExpression) firstOperand, true);
+					ModuleElement indexValueExpression = ((EqualsOperatorExpression) operand).getSecondOperand();
+					Expression indexValue = new IndexValueGenerator(indexValueExpression).generateIndexValue();
+
+					indexExists = false;
+
+					if (potentialIndices.get(modelElementName.getValue()).contains(indexField.getValue())) {
+						indexExists = true;
+					}
+					if (!(indexExists || canbeExecutedMultipleTimes) && rewritedQuery.getName() == null) {
+						logicalOperator = false;
+						return;
+					}
+					if (rewritedQuery.getName() == null)
+						rewritedQuery = new OperationCallExpression(targetExp, operationExp, modelElementName,
+								indexField, indexValue);
+					else if ((indexExists && !canbeExecutedMultipleTimes) || !indexExists
+							|| canbeExecutedMultipleTimes) {
+						if (!(((FeatureCallExpression) firstOperand).getTargetExpression() instanceof NameExpression)) {
+							rewritedQuery = new FirstOrderOperationCallExpression(rewritedQuery,
+									new NameExpression("select"), param,
+									new EqualsOperatorExpression(new PropertyCallExpression(
+											((FeatureCallExpression) firstOperand).getTargetExpression(),
+											new NameExpression(indexField.getValue())), indexValue));
+
+						} else
+							rewritedQuery = new FirstOrderOperationCallExpression(rewritedQuery,
+									new NameExpression("select"), param,
+									new EqualsOperatorExpression(new PropertyCallExpression(param.getNameExpression(),
+											new NameExpression(indexField.getValue())), indexValue));
+						flag = true;
+					}
+					if ((indexExists || canbeExecutedMultipleTimes) && !flag) {
+						potentialIndices.get(modelElementName.getValue()).add(indexField.getValue());
+					}
+				} else {
+					rewritedQuery = new FirstOrderOperationCallExpression(rewritedQuery, new NameExpression("select"),
+							param, (Expression) operand);
+//				break;
+				}
+			}
 		}
 	}
 
@@ -663,24 +644,24 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 		if (parameter.getTypeExpression() != null) {
 			parameter.getTypeExpression().accept(this);
 		}
-		
+
 	}
 
 	@Override
 	public void visit(PlusOperatorExpression plusOperatorExpression) {
-		if(plusOperatorExpression.getFirstOperand() != null)
+		if (plusOperatorExpression.getFirstOperand() != null)
 			plusOperatorExpression.getFirstOperand().accept(this);
-		if(plusOperatorExpression.getSecondOperand() != null)
+		if (plusOperatorExpression.getSecondOperand() != null)
 			plusOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
 	public void visit(PostfixOperatorExpression postfixOperatorExpression) {
-		if(postfixOperatorExpression.getAssignmentStatement() != null)
-		postfixOperatorExpression.getAssignmentStatement().accept(this);
-		if(postfixOperatorExpression.getFirstOperand() != null)
+		if (postfixOperatorExpression.getAssignmentStatement() != null)
+			postfixOperatorExpression.getAssignmentStatement().accept(this);
+		if (postfixOperatorExpression.getFirstOperand() != null)
 			postfixOperatorExpression.getFirstOperand().accept(this);
-		if(postfixOperatorExpression.getSecondOperand() != null)
+		if (postfixOperatorExpression.getSecondOperand() != null)
 			postfixOperatorExpression.getSecondOperand().accept(this);
 	}
 
@@ -688,39 +669,38 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 	public void visit(PropertyCallExpression propertyCallExpression) {
 		propertyCallExpression.getTargetExpression().accept(this);
 	}
-	
+
 	public void visit(PropertyCallExpression propertyCallExpression, boolean flag) {
-		if(flag)
-		indexField = new StringLiteral(propertyCallExpression.getName());
+		if (flag)
+			indexField = new StringLiteral(propertyCallExpression.getName());
 		else {
 			propertyCallExpression.getTargetExpression().accept(this);
 			String operationName = propertyCallExpression.getName();
-			
+
 			if (allOperations.contains(operationName)) {
-				
+
 				EolModelElementType modelElement = null;
-				if(propertyCallExpression.getTargetExpression().getResolvedType() instanceof EolModelElementType)
+				if (propertyCallExpression.getTargetExpression().getResolvedType() instanceof EolModelElementType)
 					modelElement = (EolModelElementType) propertyCallExpression.getTargetExpression().getResolvedType();
 
-					try {
-						if (modelElement.getModel(module.getCompilationContext()) == model) {
-							optimisable = true;
-							modelName = modelElement.getModelName();
-							model.setName(modelName);
-							targetExp = new NameExpression(modelName);
-							operationExp = new NameExpression("findByIndex");
-							modelElementName = new StringLiteral(modelElement.getTypeName());
+				try {
+					if (modelElement.getModel(module.getCompilationContext()) == model) {
+						optimisableByCurrentModel = true;
+						modelName = modelElement.getModelName();
+						model.setName(modelName);
+						targetExp = new NameExpression(modelName);
+						operationExp = new NameExpression("findByIndex");
+						modelElementName = new StringLiteral(modelElement.getTypeName());
 
-							if (potentialIndices.get(modelElementName.getValue()) == null) {
-								potentialIndices.put(modelElementName.getValue(), new HashSet<String>());
-							}
+						if (potentialIndices.get(modelElementName.getValue()) == null) {
+							potentialIndices.put(modelElementName.getValue(), new HashSet<String>());
 						}
-						else
-							optimisable = false;
+					} else
+						optimisableByCurrentModel = false;
 
-					} catch (EolModelElementTypeNotFoundException e) {
-						e.printStackTrace();
-					}
+				} catch (EolModelElementTypeNotFoundException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -728,7 +708,7 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 	@Override
 	public void visit(RealLiteral realLiteral) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -741,70 +721,72 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 	@Override
 	public void visit(SimpleAnnotation simpleAnnotation) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visit(StatementBlock statementBlock) {
 
 		statementBlock.getStatements().forEach(s -> s.accept(this));
-		
+
 	}
 
 	@Override
 	public void visit(StringLiteral stringLiteral) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visit(SwitchStatement switchStatement) {
 		switchStatement.getConditionExpression().accept(this);
-		switchStatement.getCases().forEach(c -> { c.accept(this); });
+		switchStatement.getCases().forEach(c -> {
+			c.accept(this);
+		});
 		if (switchStatement.getDefault() != null) {
-			switchStatement.getDefault().accept(this); 
+			switchStatement.getDefault().accept(this);
 		}
 	}
 
 	@Override
 	public void visit(TernaryExpression ternaryExpression) {
-		if(ternaryExpression.getFirstOperand() != null)
-		ternaryExpression.getFirstOperand().accept(this);
-		if(ternaryExpression.getSecondOperand() != null)
-		ternaryExpression.getSecondOperand().accept(this);
-		if(ternaryExpression.getThirdOperand() != null)
-		ternaryExpression.getThirdOperand().accept(this);
-		
+		if (ternaryExpression.getFirstOperand() != null)
+			ternaryExpression.getFirstOperand().accept(this);
+		if (ternaryExpression.getSecondOperand() != null)
+			ternaryExpression.getSecondOperand().accept(this);
+		if (ternaryExpression.getThirdOperand() != null)
+			ternaryExpression.getThirdOperand().accept(this);
+
 	}
 
 	@Override
 	public void visit(ThrowStatement throwStatement) {
-		if (throwStatement.getThrown() != null) 
+		if (throwStatement.getThrown() != null)
 			throwStatement.getThrown().accept(this);
 	}
 
 	@Override
 	public void visit(TimesOperatorExpression timesOperatorExpression) {
-		if(timesOperatorExpression.getFirstOperand() != null)
+		if (timesOperatorExpression.getFirstOperand() != null)
 			timesOperatorExpression.getFirstOperand().accept(this);
-		if(timesOperatorExpression.getSecondOperand() != null)
+		if (timesOperatorExpression.getSecondOperand() != null)
 			timesOperatorExpression.getSecondOperand().accept(this);
 	}
 
 	@Override
 	public void visit(TransactionStatement transactionStatement) {
-		
+
 	}
 
 	@Override
 	public void visit(TypeExpression typeExpression) {
-		
+
 	}
 
 	@Override
 	public void visit(VariableDeclaration variableDeclaration) {
-		if (variableDeclaration.getTypeExpression() != null) 
-			variableDeclaration.getTypeExpression().accept(this);	
+		if (variableDeclaration.getTypeExpression() != null)
+			variableDeclaration.getTypeExpression().accept(this);
 	}
 
 	@Override
@@ -815,39 +797,36 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 
 	@Override
 	public void visit(XorOperatorExpression xorOperatorExpression) {
-		if(xorOperatorExpression.getFirstOperand() != null)
+		if (xorOperatorExpression.getFirstOperand() != null)
 			xorOperatorExpression.getFirstOperand().accept(this);
-		if(xorOperatorExpression.getSecondOperand() != null)
-			xorOperatorExpression.getSecondOperand().accept(this);	
+		if (xorOperatorExpression.getSecondOperand() != null)
+			xorOperatorExpression.getSecondOperand().accept(this);
 	}
-	
+
 	public void rewrite(IModel model, IEolModule module, IEolCompilationContext context, CallGraphGenerator cg) {
 
 		this.module = module;
 		this.model = model;
-		if (module.getMain() == null) return;
-
-		
-		optimisableOperations = new HashSet<String>(Arrays.asList("select", "exists"));
-		allOperations = new HashSet<String>(Arrays.asList("all", "allInstances"));
+		if (module.getMain() == null)
+			return;
 
 		module.getMain().accept(this);
-		
-		for(Operation operation : module.getDeclaredOperations()) {
-			String name = removeSymbols(operation.toString());
-			if (cg.pathContainsLoop("main", name)) 
+
+		for (Operation operation : module.getDeclaredOperations()) {
+			String name = replaceSymbolsForGraphviz(operation.toString());
+			if (cg.pathContainsLoop("main", name))
 				canbeExecutedMultipleTimes = true;
-			if (cg.pathExists("main", name)) 
+			if (cg.pathExists("main", name))
 				operation.accept(this);
 			canbeExecutedMultipleTimes = false;
 		}
-		
+
 		secondPass = true;
 		module.getMain().accept(this);
 		injectCreateIndexStatements(module, modelName, potentialIndices);
 
 	}
-	
+
 	public List<ModuleElement> decomposeAST(Expression ast) {
 		Expression firstOperand = ((OperatorExpression) ast).getFirstOperand();
 
@@ -861,79 +840,6 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 		}
 		return ast.getChildren();
 
-	}
-
-	public void rewriteToModule(ModuleElement ast, FeatureCallExpression rewritedQuery) {
-		if (ast.getParent() instanceof ExpressionStatement) {
-			ExpressionStatement parent = (ExpressionStatement) ast.getParent();
-			if(ast == parent.getExpression())
-			parent.setExpression(rewritedQuery);
-		}
-		else if (ast.getParent() instanceof AssignmentStatement) {
-			AssignmentStatement parent = (AssignmentStatement) ast.getParent();
-			if(ast == parent.getValueExpression())
-				parent.setValueExpression(rewritedQuery);
-			else
-				parent.setTargetExpression(rewritedQuery);
-		}
-		else if (ast.getParent() instanceof ForStatement) {
-			ForStatement parent = (ForStatement) ast.getParent();
-			if(ast == parent.getIteratedExpression())
-			parent.setIteratedExpression(rewritedQuery);
-		}
-		else if (ast.getParent() instanceof ReturnStatement) {
-			ReturnStatement parent = (ReturnStatement) ast.getParent();
-			if(ast == parent.getReturnedExpression())
-			parent.setReturnedExpression(rewritedQuery);
-		}
-		else if (ast.getParent() instanceof NotOperatorExpression) {
-			NotOperatorExpression parent = (NotOperatorExpression) ast.getParent();
-			if(ast == parent.getFirstOperand())
-			parent.setFirstOperand(rewritedQuery);
-			else
-				parent.setSecondOperand(rewritedQuery);
-		}
-		else if (ast.getParent() instanceof PropertyCallExpression) {
-			PropertyCallExpression parent = (PropertyCallExpression) ast.getParent();
-			if(ast == parent.getTargetExpression())
-			parent.setTargetExpression(rewritedQuery);
-		}
-		else if (ast.getParent() instanceof FirstOrderOperationCallExpression) {
-			FirstOrderOperationCallExpression parent = (FirstOrderOperationCallExpression)ast.getParent();
-			if(ast == parent.getTargetExpression())
-			parent.setTargetExpression(rewritedQuery);
-			else {
-				List<Expression> parameters = parent.getExpressions();
-				for(int i = 0; i < parameters.size(); i++) {
-					if(parameters.get(i) == ast) {
-					parameters.set(i,rewritedQuery);
-					return;
-					}
-				}
-			}
-		}
-		else if (ast.getParent() instanceof EqualsOperatorExpression) {
-			EqualsOperatorExpression parent = (EqualsOperatorExpression) ast.getParent();
-			if(ast == parent.getFirstOperand())
-				parent.setFirstOperand(rewritedQuery);
-			else
-				parent.setSecondOperand(rewritedQuery);
-			
-		}
-		else if (ast.getParent() instanceof OperationCallExpression) {
-			OperationCallExpression parent = (OperationCallExpression) ast.getParent();
-			if(ast == parent.getTargetExpression())
-				parent.setTargetExpression(rewritedQuery);
-			else {
-				List<Expression> parameters = parent.getParameterExpressions();
-				for(int i = 0; i < parameters.size(); i++) {
-					if(parameters.get(i) == ast) {
-					parameters.set(i,rewritedQuery);
-					return;
-					}
-				}
-			}
-		}
 	}
 
 	public void injectCreateIndexStatements(IEolModule module, String modelName,
@@ -954,30 +860,8 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor{
 			}
 		}
 	}
-	
-	public Expression generateIndexValue(ModuleElement e) {
-		ModuleElement indexValueExpression = e;
-		Expression indexValue = null;
-		if (indexValueExpression instanceof PropertyCallExpression) {
-			indexValue = (PropertyCallExpression)indexValueExpression;
-		}else if (indexValueExpression instanceof BooleanLiteral) {
-			indexValue = (BooleanLiteral)indexValueExpression;
-		} else if (indexValueExpression instanceof StringLiteral) {
-			indexValue = (StringLiteral)indexValueExpression;
-		} else if (indexValueExpression instanceof IntegerLiteral) {
-			indexValue = (IntegerLiteral)indexValueExpression;
-		} else if (indexValueExpression instanceof RealLiteral) {
-			indexValue = (RealLiteral)indexValueExpression;
-		}else if (indexValueExpression instanceof OperationCallExpression) {
-			indexValue = (OperationCallExpression)indexValueExpression;
-		}else if (indexValueExpression instanceof NameExpression) {
-			indexValue = (NameExpression)indexValueExpression;
-		}
-		return indexValue;
-		
-	}
-	
-	private static String removeSymbols(String str) {
+
+	private String replaceSymbolsForGraphviz(String str) {
 		str = str.replaceAll("[(]", "_");
 		str = str.replaceAll("[)]", "_");
 		str = str.replaceAll("\\-", "_");
