@@ -246,4 +246,12 @@ operation String toLowerCase():String {
 @builtin 
 operation String toUpperCase():String {
 }
-
+@builtin
+operation Collection<Any> excludesAll(col : Collection<Any>) :Boolean {
+}
+@builtin
+operation Collection<Any> flatten() :Collection<Any> {
+}
+@builtin
+operation Collection<Any> contains(Any) :Boolean {
+}
