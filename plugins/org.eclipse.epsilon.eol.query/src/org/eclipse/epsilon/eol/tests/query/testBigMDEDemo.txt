@@ -1,0 +1,33 @@
+model library alias lib driver EMF {nsuri = "http://library/1.0", optimise = "true"}
+library.createIndex("Book", "name");
+var a = library!Author.all.first();
+var books = library!Book.all.select(b : library!Book|b.author = a);
+var aBook = library!Book.all.selectOne(b : library!Book|b.author = a);
+var authors = library!Author.all.select(a : library!Author|a.first_name = "William").select(a : library!Author|a.surname = "Shakespear");
+var authorOne = library!Author.all.first();
+var authorTwo : library!Author = Author.all.first();
+var bookOne = authorOne.books.first;
+var bookSet : Set(library!Book);
+bookSet.addAll(authorTwo.books);
+bookSet.select(b : library!Book|b = bookOne);
+if (library.findByIndex("Book", "name", "EpsilonBook").size() > 0) {
+	"There is a book called EpsilonBook".println();
+}
+var anEpsilonBook = library.findByIndex("Book", "name", "EpsilonBook").first();
+for (name : String in library!Book.all.name) {
+	var bookSet : Collection = library.findByIndex("Book", "name", name);
+	name.print();
+	bookSet.size().println();
+}
+for (name : String in library!Book.all.name) {
+	var bookSet : Collection = getBooks(name);
+	name.print();
+	bookSet.size().println();
+}
+for (book in library.findByIndex("Book", "name", "Epsilon Book")) {
+	book.println();
+}
+
+operation getBooks(name : String) : Collection {
+	return library.findByIndex("Book", "name", name);
+}

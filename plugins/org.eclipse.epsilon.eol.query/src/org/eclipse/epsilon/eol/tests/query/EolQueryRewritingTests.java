@@ -141,6 +141,27 @@ public class EolQueryRewritingTests extends TestCase {
 		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
 	}
 	
+	@Test
+	public static void testRoboChart() throws Exception {
+		List<String> actualAndExpected = new ArrayList<>();
+		actualAndExpected = prepareTestCase("testRoboChart.eol", "testRoboChart.txt",1);
+		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
+	}
+	
+	@Test
+	public static void testBigMDEDemo() throws Exception {
+		List<String> actualAndExpected = new ArrayList<>();
+		actualAndExpected = prepareTestCase("testBigMDEDemo.eol", "testBigMDEDemo.txt",1);
+		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
+	}
+	
+	@Test
+	public static void testSeatingPlan() throws Exception {
+		List<String> actualAndExpected = new ArrayList<>();
+		actualAndExpected = prepareTestCase("testSeatingPlan.eol", "testSeatingPlan.txt",1);
+		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
+	}
+	
 	public static List<String> prepareTestCase(String eolFileName, String rewritedFileName, Integer option) {
 		EolModule module = new EolModule();
 
