@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="ASCII"?>
+<Dining xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns="seatingPlan" xmi:id="_dy3b0JiTEeq-hPuBuJt65A">
+  <tables xmi:id="_sPsRwJiTEeq-hPuBuJt65A" ID="1" maximun="5" attendees="_z-YbwJiTEeq-hPuBuJt65A _03lUoJiTEeq-hPuBuJt65A">
+    <seats xmi:id="_tdStUJiTEeq-hPuBuJt65A" seatNumber="1" table="_sPsRwJiTEeq-hPuBuJt65A" attendee="_z-YbwJiTEeq-hPuBuJt65A"/>
+    <seats xmi:id="_uBdxYJiTEeq-hPuBuJt65A" seatNumber="2" table="_sPsRwJiTEeq-hPuBuJt65A" attendee="_03lUoJiTEeq-hPuBuJt65A"/>
+  </tables>
+  <tables xmi:id="_vTc9sJiTEeq-hPuBuJt65A" ID="2" maximun="5" attendees="_1z6aAJiTEeq-hPuBuJt65A _2srOAJiTEeq-hPuBuJt65A">
+    <seats xmi:id="_xKmFgJiTEeq-hPuBuJt65A" seatNumber="1" table="_vTc9sJiTEeq-hPuBuJt65A" attendee="_1z6aAJiTEeq-hPuBuJt65A"/>
+    <seats xmi:id="_x1I3UJiTEeq-hPuBuJt65A" seatNumber="2" table="_vTc9sJiTEeq-hPuBuJt65A" attendee="_2srOAJiTEeq-hPuBuJt65A"/>
+  </tables>
+  <tables xmi:id="_wbqi8JiTEeq-hPuBuJt65A" ID="3" maximun="5" attendees="_3Z78oJiTEeq-hPuBuJt65A _440VcJiTEeq-hPuBuJt65A">
+    <seats xmi:id="_ybP1EJiTEeq-hPuBuJt65A" seatNumber="1" table="_wbqi8JiTEeq-hPuBuJt65A" attendee="_3Z78oJiTEeq-hPuBuJt65A"/>
+    <seats xmi:id="_zDDb8JiTEeq-hPuBuJt65A" seatNumber="2" table="_wbqi8JiTEeq-hPuBuJt65A" attendee="_440VcJiTEeq-hPuBuJt65A"/>
+  </tables>
+  <attendees xmi:id="_z-YbwJiTEeq-hPuBuJt65A" name="A1" dept="D1">
+    <languages xmi:id="_mXicgJicEeq-hPuBuJt65A" name="E"/>
+  </attendees>
+  <attendees xmi:id="_03lUoJiTEeq-hPuBuJt65A" name="A2" dept="D1">
+    <languages xmi:id="_o5ligJicEeq-hPuBuJt65A" name="C"/>
+  </attendees>
+  <attendees xmi:id="_1z6aAJiTEeq-hPuBuJt65A" name="A3" dept="D1">
+    <languages xmi:id="_p-ZOcJicEeq-hPuBuJt65A" name="E"/>
+  </attendees>
+  <attendees xmi:id="_2srOAJiTEeq-hPuBuJt65A" name="A4" dept="D2">
+    <languages xmi:id="_rKcx4JicEeq-hPuBuJt65A" name="E"/>
+  </attendees>
+  <attendees xmi:id="_3Z78oJiTEeq-hPuBuJt65A" name="A5" dept="D2">
+    <languages xmi:id="_um2nUJicEeq-hPuBuJt65A" name="E"/>
+  </attendees>
+  <attendees xmi:id="_440VcJiTEeq-hPuBuJt65A" name="A6" dept="D2">
+    <languages xmi:id="_vPJ9cJicEeq-hPuBuJt65A" name="E"/>
+  </attendees>
+</Dining>

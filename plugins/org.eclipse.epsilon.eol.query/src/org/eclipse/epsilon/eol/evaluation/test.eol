@@ -1,0 +1,76 @@
+model Source alias lib driver EMF {
+nsuri = "seatingPlan",
+optimise = "true"
+};
+for(st: Source!Seat in Source!Seat.all)
+st.canTalk().println();
+operation Source!Attendee check() : Boolean{
+
+	//dislike
+	
+		if(not Source!Table.all.select(t|t.attendees.name.includes(self.name)).
+				attendees.flatten().name.excludesAll(self.dislikes.name)){
+				
+			self.println("dislike");
+			return false;
+		}
+	
+	//no seat
+	
+		if(not Source!Seat.all.attendee.name.includes(self.name)){
+			
+			
+			return false;
+		}
+
+	return true;
+}
+operation Source!Seat checkLan() : Boolean{
+	if(self.attendee<>null){
+		if(self.canTalk().contains(self.attendee.name)){
+		
+		
+		return true;
+		}
+		
+	}
+	
+	return false;
+}
+//get who can talk	
+operation Source!Seat Talker(){
+var haveTalker : Set;
+	for(i in Sequence{1..100}){
+
+		var j=self.seatNumber+1;
+		if(j>self.table.maximun){
+			j = 1;
+		}
+		//Source!Seat.all.select(s|s.seatNumber==self.seatNumber and s.table.ID==i).attendee.languages.flatten().name.
+		//	excludesAll(Source!Seat.all.select(s|s.seatNumber==j and s.table.ID==i).attendee.languages.flatten().
+		//		name);
+			
+		if(not Source!Seat.all.select(s|s.seatNumber==self.seatNumber and s.table.ID==i).attendee.languages.flatten().name.
+			excludesAll(Source!Seat.all.select(s|s.seatNumber==j and s.table.ID==i).attendee.languages.flatten().
+				name))
+		{
+		
+			haveTalker.add(self.attendee.name);
+			haveTalker.add(Source!Seat.all.select(s|s.seatNumber==j and s.table.ID==i).attendee.name.flatten());
+			
+		}
+
+	}
+	
+	return haveTalker.flatten();	
+}
+
+
+operation Source!Seat canTalk(){
+	var talker : Sequence;
+	talker.add(self.Talker().at(0));
+	talker.add(self.Talker().at(1));
+
+	return talker;
+
+}

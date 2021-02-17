@@ -1,0 +1,895 @@
+<?xml version="1.0" encoding="ASCII"?>
+<robochart:RCPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:robochart="http://www.robocalc.circus/RoboChart" xmi:id="_lWmc8IB_EeqHaoR0tqRP_w">
+  <interfaces xmi:id="_lWmc8YB_EeqHaoR0tqRP_w" name="Sensors">
+    <variableList xmi:id="_lWmc8oB_EeqHaoR0tqRP_w">
+      <vars xmi:id="_lWmc84B_EeqHaoR0tqRP_w" name="depth">
+        <type xsi:type="robochart:TypeRef" xmi:id="_lWnEAIB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+      </vars>
+    </variableList>
+    <variableList xmi:id="_lWnEAYB_EeqHaoR0tqRP_w">
+      <vars xmi:id="_lWnEAoB_EeqHaoR0tqRP_w" name="obs">
+        <type xsi:type="robochart:FunctionType" xmi:id="_lWnEA4B_EeqHaoR0tqRP_w">
+          <domain xsi:type="robochart:TypeRef" xmi:id="_lWnEBIB_EeqHaoR0tqRP_w" ref="_lWnrM4B_EeqHaoR0tqRP_w"/>
+          <range xsi:type="robochart:TypeRef" xmi:id="_lWnEBYB_EeqHaoR0tqRP_w" ref="_lWnrOIB_EeqHaoR0tqRP_w"/>
+        </type>
+      </vars>
+    </variableList>
+    <variableList xmi:id="_lWnEBoB_EeqHaoR0tqRP_w">
+      <vars xmi:id="_lWnEB4B_EeqHaoR0tqRP_w" name="hdng">
+        <type xsi:type="robochart:TypeRef" xmi:id="_lWnECIB_EeqHaoR0tqRP_w" ref="_lWoSOoB_EeqHaoR0tqRP_w"/>
+      </vars>
+    </variableList>
+  </interfaces>
+  <interfaces xmi:id="_lWnECYB_EeqHaoR0tqRP_w" name="Outputs">
+    <events xmi:id="_lWnECoB_EeqHaoR0tqRP_w" name="advVel">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWnEC4B_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </events>
+    <events xmi:id="_lWnEDIB_EeqHaoR0tqRP_w" name="advHdng">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWnEDYB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </events>
+  </interfaces>
+  <interfaces xmi:id="_lWnEDoB_EeqHaoR0tqRP_w" name="Inputs">
+    <events xmi:id="_lWnED4B_EeqHaoR0tqRP_w" name="endTask"/>
+    <events xmi:id="_lWnEEIB_EeqHaoR0tqRP_w" name="reqOCM"/>
+    <events xmi:id="_lWnEEYB_EeqHaoR0tqRP_w" name="reqMOM"/>
+    <events xmi:id="_lWnEEoB_EeqHaoR0tqRP_w" name="reqHCM"/>
+    <events xmi:id="_lWnEE4B_EeqHaoR0tqRP_w" name="reqVel">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWnEFIB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </events>
+    <events xmi:id="_lWnEFYB_EeqHaoR0tqRP_w" name="reqHdng">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWnEFoB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </events>
+  </interfaces>
+  <interfaces xmi:id="_lWnEF4B_EeqHaoR0tqRP_w" name="Constants">
+    <variableList xmi:id="_lWnEGIB_EeqHaoR0tqRP_w" modifier="CONST">
+      <vars xmi:id="_lWnEGYB_EeqHaoR0tqRP_w" name="AvoidanceMargin">
+        <type xsi:type="robochart:TypeRef" xmi:id="_lWnEGoB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+      </vars>
+    </variableList>
+    <variableList xmi:id="_lWnEG4B_EeqHaoR0tqRP_w" modifier="CONST">
+      <vars xmi:id="_lWnEHIB_EeqHaoR0tqRP_w" name="LREHorizon">
+        <type xsi:type="robochart:TypeRef" xmi:id="_lWnEHYB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+      </vars>
+    </variableList>
+    <variableList xmi:id="_lWnEHoB_EeqHaoR0tqRP_w" modifier="CONST">
+      <vars xmi:id="_lWnEH4B_EeqHaoR0tqRP_w" name="LRETemporalHorizon">
+        <type xsi:type="robochart:TypeRef" xmi:id="_lWnEIIB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+      </vars>
+    </variableList>
+    <variableList xmi:id="_lWnEIYB_EeqHaoR0tqRP_w" modifier="CONST">
+      <vars xmi:id="_lWnEIoB_EeqHaoR0tqRP_w" name="ODA_AUV">
+        <type xsi:type="robochart:TypeRef" xmi:id="_lWnEI4B_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+      </vars>
+    </variableList>
+    <variableList xmi:id="_lWnEJIB_EeqHaoR0tqRP_w" modifier="CONST">
+      <vars xmi:id="_lWnEJYB_EeqHaoR0tqRP_w" name="ODA_Obs">
+        <type xsi:type="robochart:TypeRef" xmi:id="_lWnEJoB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+      </vars>
+    </variableList>
+    <variableList xmi:id="_lWnEJ4B_EeqHaoR0tqRP_w" modifier="CONST">
+      <vars xmi:id="_lWnEKIB_EeqHaoR0tqRP_w" name="StaticObsHorizDist">
+        <type xsi:type="robochart:TypeRef" xmi:id="_lWnEKYB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+      </vars>
+    </variableList>
+    <variableList xmi:id="_lWnEKoB_EeqHaoR0tqRP_w" modifier="CONST">
+      <vars xmi:id="_lWnEK4B_EeqHaoR0tqRP_w" name="StaticObsVertDist">
+        <type xsi:type="robochart:TypeRef" xmi:id="_lWnELIB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+      </vars>
+    </variableList>
+    <variableList xmi:id="_lWnELYB_EeqHaoR0tqRP_w" modifier="CONST">
+      <vars xmi:id="_lWnELoB_EeqHaoR0tqRP_w" name="StaticObsDfltVertDist">
+        <type xsi:type="robochart:TypeRef" xmi:id="_lWnEL4B_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+      </vars>
+    </variableList>
+    <variableList xmi:id="_lWnEMIB_EeqHaoR0tqRP_w" modifier="CONST">
+      <vars xmi:id="_lWnEMYB_EeqHaoR0tqRP_w" name="MinSafeDist">
+        <type xsi:type="robochart:TypeRef" xmi:id="_lWnEMoB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+      </vars>
+    </variableList>
+  </interfaces>
+  <interfaces xmi:id="_lWnEM4B_EeqHaoR0tqRP_w" name="Actuators"/>
+  <interfaces xmi:id="_lWnENIB_EeqHaoR0tqRP_w" name="Ctrl_State">
+    <variableList xmi:id="_lWnENYB_EeqHaoR0tqRP_w">
+      <vars xmi:id="_lWnENoB_EeqHaoR0tqRP_w" name="adv">
+        <type xsi:type="robochart:TypeRef" xmi:id="_lWnEN4B_EeqHaoR0tqRP_w" ref="_lWoSLoB_EeqHaoR0tqRP_w"/>
+      </vars>
+    </variableList>
+    <variableList xmi:id="_lWnrEIB_EeqHaoR0tqRP_w">
+      <vars xmi:id="_lWnrEYB_EeqHaoR0tqRP_w" name="cobs">
+        <type xsi:type="robochart:TypeRef" xmi:id="_lWnrEoB_EeqHaoR0tqRP_w" ref="_lWoSM4B_EeqHaoR0tqRP_w"/>
+      </vars>
+    </variableList>
+    <variableList xmi:id="_lWnrE4B_EeqHaoR0tqRP_w">
+      <vars xmi:id="_lWnrFIB_EeqHaoR0tqRP_w" name="inOPEZ">
+        <type xsi:type="robochart:TypeRef" xmi:id="_lWnrFYB_EeqHaoR0tqRP_w" ref="_lWnrNoB_EeqHaoR0tqRP_w"/>
+      </vars>
+    </variableList>
+    <variableList xmi:id="_lWnrFoB_EeqHaoR0tqRP_w">
+      <vars xmi:id="_lWnrF4B_EeqHaoR0tqRP_w" name="hvel">
+        <type xsi:type="robochart:TypeRef" xmi:id="_lWnrGIB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+      </vars>
+    </variableList>
+    <variableList xmi:id="_lWnrGYB_EeqHaoR0tqRP_w">
+      <vars xmi:id="_lWnrGoB_EeqHaoR0tqRP_w" name="vvel">
+        <type xsi:type="robochart:TypeRef" xmi:id="_lWnrG4B_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+      </vars>
+    </variableList>
+    <variableList xmi:id="_lWnrHIB_EeqHaoR0tqRP_w">
+      <vars xmi:id="_lWnrHYB_EeqHaoR0tqRP_w" name="vel">
+        <type xsi:type="robochart:TypeRef" xmi:id="_lWnrHoB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+      </vars>
+    </variableList>
+    <variableList xmi:id="_lWnrH4B_EeqHaoR0tqRP_w">
+      <vars xmi:id="_lWnrIIB_EeqHaoR0tqRP_w" name="cstc">
+        <type xsi:type="robochart:TypeRef" xmi:id="_lWnrIYB_EeqHaoR0tqRP_w" ref="_lWnrOIB_EeqHaoR0tqRP_w"/>
+      </vars>
+    </variableList>
+    <variableList xmi:id="_lWnrIoB_EeqHaoR0tqRP_w">
+      <vars xmi:id="_lWnrI4B_EeqHaoR0tqRP_w" name="cdyn">
+        <type xsi:type="robochart:TypeRef" xmi:id="_lWnrJIB_EeqHaoR0tqRP_w" ref="_lWnrOIB_EeqHaoR0tqRP_w"/>
+      </vars>
+    </variableList>
+    <variableList xmi:id="_lWnrJYB_EeqHaoR0tqRP_w">
+      <vars xmi:id="_lWnrJoB_EeqHaoR0tqRP_w" name="x">
+        <type xsi:type="robochart:TypeRef" xmi:id="_lWnrJ4B_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+      </vars>
+    </variableList>
+    <variableList xmi:id="_lWnrKIB_EeqHaoR0tqRP_w">
+      <vars xmi:id="_lWnrKYB_EeqHaoR0tqRP_w" name="CDA">
+        <type xsi:type="robochart:TypeRef" xmi:id="_lWnrKoB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+      </vars>
+    </variableList>
+    <variableList xmi:id="_lWnrK4B_EeqHaoR0tqRP_w">
+      <vars xmi:id="_lWnrLIB_EeqHaoR0tqRP_w" name="TCPA">
+        <type xsi:type="robochart:TypeRef" xmi:id="_lWnrLYB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+      </vars>
+    </variableList>
+  </interfaces>
+  <interfaces xmi:id="_lWnrLoB_EeqHaoR0tqRP_w" name="Ctrl_Ops">
+    <operations xmi:id="_lWnrL4B_EeqHaoR0tqRP_w" name="CalcCloseObs"/>
+    <operations xmi:id="_lWnrMIB_EeqHaoR0tqRP_w" name="AdvVel">
+      <parameters xmi:id="_lWnrMYB_EeqHaoR0tqRP_w" name="v">
+        <type xsi:type="robochart:TypeRef" xmi:id="_lWnrMoB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+      </parameters>
+    </operations>
+  </interfaces>
+  <types xsi:type="robochart:PrimitiveType" xmi:id="_lWnrM4B_EeqHaoR0tqRP_w" name="nat"/>
+  <types xsi:type="robochart:PrimitiveType" xmi:id="_lWnrNIB_EeqHaoR0tqRP_w" name="int"/>
+  <types xsi:type="robochart:PrimitiveType" xmi:id="_lWnrNYB_EeqHaoR0tqRP_w" name="string"/>
+  <types xsi:type="robochart:PrimitiveType" xmi:id="_lWnrNoB_EeqHaoR0tqRP_w" name="boolean"/>
+  <types xsi:type="robochart:PrimitiveType" xmi:id="_lWnrN4B_EeqHaoR0tqRP_w" name="real"/>
+  <types xsi:type="robochart:RecordType" xmi:id="_lWnrOIB_EeqHaoR0tqRP_w" name="Obstacle">
+    <fields xmi:id="_lWnrOYB_EeqHaoR0tqRP_w" name="ns_rel_dist">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWnrOoB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </fields>
+    <fields xmi:id="_lWoSIIB_EeqHaoR0tqRP_w" name="ew_rel_dist">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWoSIYB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </fields>
+    <fields xmi:id="_lWoSIoB_EeqHaoR0tqRP_w" name="depth">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWoSI4B_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </fields>
+    <fields xmi:id="_lWoSJIB_EeqHaoR0tqRP_w" name="id">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWoSJYB_EeqHaoR0tqRP_w" ref="_lWnrM4B_EeqHaoR0tqRP_w"/>
+    </fields>
+    <fields xmi:id="_lWoSJoB_EeqHaoR0tqRP_w" name="obs_hdng">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWoSJ4B_EeqHaoR0tqRP_w" ref="_lWoSOoB_EeqHaoR0tqRP_w"/>
+    </fields>
+  </types>
+  <types xsi:type="robochart:Enumeration" xmi:id="_lWoSKIB_EeqHaoR0tqRP_w" name="Turn">
+    <literals xmi:id="_lWoSKYB_EeqHaoR0tqRP_w" name="Reverse"/>
+    <literals xmi:id="_lWoSKoB_EeqHaoR0tqRP_w" name="Port90"/>
+    <literals xmi:id="_lWoSK4B_EeqHaoR0tqRP_w" name="NoTurn"/>
+    <literals xmi:id="_lWoSLIB_EeqHaoR0tqRP_w" name="Starboard90"/>
+    <literals xmi:id="_lWoSLYB_EeqHaoR0tqRP_w" name="Starboard180"/>
+  </types>
+  <types xsi:type="robochart:RecordType" xmi:id="_lWoSLoB_EeqHaoR0tqRP_w" name="Advice">
+    <fields xmi:id="_lWoSL4B_EeqHaoR0tqRP_w" name="adv_turn">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWoSMIB_EeqHaoR0tqRP_w" ref="_lWoSKIB_EeqHaoR0tqRP_w"/>
+    </fields>
+    <fields xmi:id="_lWoSMYB_EeqHaoR0tqRP_w" name="adv_hdng">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWoSMoB_EeqHaoR0tqRP_w" ref="_lWoSOoB_EeqHaoR0tqRP_w"/>
+    </fields>
+  </types>
+  <types xsi:type="robochart:RecordType" xmi:id="_lWoSM4B_EeqHaoR0tqRP_w" name="Close">
+    <fields xmi:id="_lWoSNIB_EeqHaoR0tqRP_w" name="horiz_cda">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWoSNYB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </fields>
+    <fields xmi:id="_lWoSNoB_EeqHaoR0tqRP_w" name="vert_cda">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWoSN4B_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </fields>
+    <fields xmi:id="_lWoSOIB_EeqHaoR0tqRP_w" name="id">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWoSOYB_EeqHaoR0tqRP_w" ref="_lWnrM4B_EeqHaoR0tqRP_w"/>
+    </fields>
+  </types>
+  <types xsi:type="robochart:RecordType" xmi:id="_lWoSOoB_EeqHaoR0tqRP_w" name="SVec">
+    <fields xmi:id="_lWoSO4B_EeqHaoR0tqRP_w" name="radial">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWoSPIB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </fields>
+    <fields xmi:id="_lWoSPYB_EeqHaoR0tqRP_w" name="polar">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWoSPoB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </fields>
+    <fields xmi:id="_lWoSP4B_EeqHaoR0tqRP_w" name="azimuth">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWoSQIB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </fields>
+  </types>
+  <types xsi:type="robochart:RecordType" xmi:id="_lWoSQYB_EeqHaoR0tqRP_w" name="CVec">
+    <fields xmi:id="_lWoSQoB_EeqHaoR0tqRP_w" name="cx">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWoSQ4B_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </fields>
+    <fields xmi:id="_lWoSRIB_EeqHaoR0tqRP_w" name="cy">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWoSRYB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </fields>
+    <fields xmi:id="_lWoSRoB_EeqHaoR0tqRP_w" name="cz">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWoSR4B_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </fields>
+  </types>
+  <types xsi:type="robochart:RecordType" xmi:id="_lWoSSIB_EeqHaoR0tqRP_w" name="YVec">
+    <fields xmi:id="_lWoSSYB_EeqHaoR0tqRP_w" name="radial">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWoSSoB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </fields>
+    <fields xmi:id="_lWoSS4B_EeqHaoR0tqRP_w" name="height">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWoSTIB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </fields>
+    <fields xmi:id="_lWoSTYB_EeqHaoR0tqRP_w" name="azimuth">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWoSToB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </fields>
+  </types>
+  <machines xmi:id="_lWoST4B_EeqHaoR0tqRP_w" name="LRE_Calc"/>
+  <machines xmi:id="_lWoSUIB_EeqHaoR0tqRP_w" rInterfaces="_lWmc8YB_EeqHaoR0tqRP_w _lWnENIB_EeqHaoR0tqRP_w _lWnrLoB_EeqHaoR0tqRP_w _lWnEF4B_EeqHaoR0tqRP_w" interfaces="_lWnEDoB_EeqHaoR0tqRP_w _lWnECYB_EeqHaoR0tqRP_w" name="LRE_Beh">
+    <nodes xsi:type="robochart:State" xmi:id="_lWoSUYB_EeqHaoR0tqRP_w" name="OCM"/>
+    <nodes xsi:type="robochart:State" xmi:id="_lWoSUoB_EeqHaoR0tqRP_w" name="MOM">
+      <actions xsi:type="robochart:EntryAction" xmi:id="_lWoSU4B_EeqHaoR0tqRP_w">
+        <action xsi:type="robochart:SendEvent" xmi:id="_lWoSVIB_EeqHaoR0tqRP_w">
+          <trigger xmi:id="_lWo5MIB_EeqHaoR0tqRP_w" event="_lWnECoB_EeqHaoR0tqRP_w" _type="OUTPUT">
+            <value xsi:type="robochart:IntegerExp" xmi:id="_lWo5MYB_EeqHaoR0tqRP_w" value="1"/>
+          </trigger>
+        </action>
+      </actions>
+    </nodes>
+    <nodes xsi:type="robochart:State" xmi:id="_lWo5MoB_EeqHaoR0tqRP_w" name="HCM">
+      <actions xsi:type="robochart:EntryAction" xmi:id="_lWo5M4B_EeqHaoR0tqRP_w">
+        <action xsi:type="robochart:SendEvent" xmi:id="_lWo5NIB_EeqHaoR0tqRP_w">
+          <trigger xmi:id="_lWo5NYB_EeqHaoR0tqRP_w" event="_lWnECoB_EeqHaoR0tqRP_w" _type="OUTPUT">
+            <value xsi:type="robochart:FloatExp" xmi:id="_lWo5NoB_EeqHaoR0tqRP_w" value="0.1"/>
+          </trigger>
+        </action>
+      </actions>
+    </nodes>
+    <nodes xsi:type="robochart:Initial" xmi:id="_lWo5N4B_EeqHaoR0tqRP_w" name="i0"/>
+    <nodes xsi:type="robochart:State" xmi:id="_lWo5OIB_EeqHaoR0tqRP_w" name="CAM"/>
+    <transitions xmi:id="_lWo5OYB_EeqHaoR0tqRP_w" name="t0" source="_lWo5N4B_EeqHaoR0tqRP_w" target="_lWoSUYB_EeqHaoR0tqRP_w"/>
+    <transitions xmi:id="_lWo5OoB_EeqHaoR0tqRP_w" name="t1" source="_lWoSUYB_EeqHaoR0tqRP_w" target="_lWoSUoB_EeqHaoR0tqRP_w">
+      <trigger xmi:id="_lWo5O4B_EeqHaoR0tqRP_w" event="_lWnEEYB_EeqHaoR0tqRP_w"/>
+      <condition xsi:type="robochart:And" xmi:id="_lWo5PIB_EeqHaoR0tqRP_w">
+        <left xsi:type="robochart:And" xmi:id="_lWo5PYB_EeqHaoR0tqRP_w">
+          <left xsi:type="robochart:And" xmi:id="_lWo5PoB_EeqHaoR0tqRP_w">
+            <left xsi:type="robochart:LessOrEqual" xmi:id="_lWo5P4B_EeqHaoR0tqRP_w">
+              <left xsi:type="robochart:RefExp" xmi:id="_lWpgQIB_EeqHaoR0tqRP_w" ref="_lWnrHYB_EeqHaoR0tqRP_w"/>
+              <right xsi:type="robochart:FloatExp" xmi:id="_lWpgQYB_EeqHaoR0tqRP_w" value="0.1"/>
+            </left>
+            <right xsi:type="robochart:GreaterThan" xmi:id="_lWpgQoB_EeqHaoR0tqRP_w">
+              <left xsi:type="robochart:CallExp" xmi:id="_lWpgQ4B_EeqHaoR0tqRP_w">
+                <function xsi:type="robochart:RefExp" xmi:id="_lWpgRIB_EeqHaoR0tqRP_w" ref="_lWr8r4B_EeqHaoR0tqRP_w"/>
+                <args xsi:type="robochart:RefExp" xmi:id="_lWpgRYB_EeqHaoR0tqRP_w" ref="_lWnrI4B_EeqHaoR0tqRP_w"/>
+              </left>
+              <right xsi:type="robochart:FloatExp" xmi:id="_lWpgRoB_EeqHaoR0tqRP_w" value="7.5"/>
+            </right>
+          </left>
+          <right xsi:type="robochart:GreaterThan" xmi:id="_lWpgR4B_EeqHaoR0tqRP_w">
+            <left xsi:type="robochart:CallExp" xmi:id="_lWpgSIB_EeqHaoR0tqRP_w">
+              <function xsi:type="robochart:RefExp" xmi:id="_lWpgSYB_EeqHaoR0tqRP_w" ref="_lWr8r4B_EeqHaoR0tqRP_w"/>
+              <args xsi:type="robochart:RefExp" xmi:id="_lWpgSoB_EeqHaoR0tqRP_w" ref="_lWnrIIB_EeqHaoR0tqRP_w"/>
+            </left>
+            <right xsi:type="robochart:FloatExp" xmi:id="_lWpgS4B_EeqHaoR0tqRP_w" value="0.3"/>
+          </right>
+        </left>
+        <right xsi:type="robochart:Not" xmi:id="_lWpgTIB_EeqHaoR0tqRP_w">
+          <exp xsi:type="robochart:ParExp" xmi:id="_lWpgTYB_EeqHaoR0tqRP_w">
+            <exp xsi:type="robochart:RefExp" xmi:id="_lWpgToB_EeqHaoR0tqRP_w" ref="_lWnrFIB_EeqHaoR0tqRP_w"/>
+          </exp>
+        </right>
+      </condition>
+    </transitions>
+    <transitions xmi:id="_lWpgT4B_EeqHaoR0tqRP_w" name="t2" source="_lWoSUoB_EeqHaoR0tqRP_w" target="_lWoSUYB_EeqHaoR0tqRP_w">
+      <trigger xmi:id="_lWpgUIB_EeqHaoR0tqRP_w" event="_lWnEEIB_EeqHaoR0tqRP_w"/>
+    </transitions>
+    <transitions xmi:id="_lWpgUYB_EeqHaoR0tqRP_w" name="t3" source="_lWo5MoB_EeqHaoR0tqRP_w" target="_lWoSUYB_EeqHaoR0tqRP_w">
+      <trigger xmi:id="_lWpgUoB_EeqHaoR0tqRP_w" event="_lWnEEIB_EeqHaoR0tqRP_w"/>
+    </transitions>
+    <transitions xmi:id="_lWpgU4B_EeqHaoR0tqRP_w" name="t4" source="_lWoSUoB_EeqHaoR0tqRP_w" target="_lWo5MoB_EeqHaoR0tqRP_w">
+      <trigger xmi:id="_lWpgVIB_EeqHaoR0tqRP_w"/>
+      <condition xsi:type="robochart:And" xmi:id="_lWpgVYB_EeqHaoR0tqRP_w">
+        <left xsi:type="robochart:GreaterOrEqual" xmi:id="_lWpgVoB_EeqHaoR0tqRP_w">
+          <left xsi:type="robochart:RefExp" xmi:id="_lWpgV4B_EeqHaoR0tqRP_w" ref="_lWnrF4B_EeqHaoR0tqRP_w"/>
+          <right xsi:type="robochart:FloatExp" xmi:id="_lWpgWIB_EeqHaoR0tqRP_w" value="0.1"/>
+        </left>
+        <right xsi:type="robochart:LessOrEqual" xmi:id="_lWpgWYB_EeqHaoR0tqRP_w">
+          <left xsi:type="robochart:CallExp" xmi:id="_lWpgWoB_EeqHaoR0tqRP_w">
+            <function xsi:type="robochart:RefExp" xmi:id="_lWpgW4B_EeqHaoR0tqRP_w" ref="_lWr8p4B_EeqHaoR0tqRP_w"/>
+            <args xsi:type="robochart:RefExp" xmi:id="_lWpgXIB_EeqHaoR0tqRP_w" ref="_lWnrIIB_EeqHaoR0tqRP_w"/>
+          </left>
+          <right xsi:type="robochart:RefExp" xmi:id="_lWpgXYB_EeqHaoR0tqRP_w" ref="_lWnEKIB_EeqHaoR0tqRP_w"/>
+        </right>
+      </condition>
+    </transitions>
+    <transitions xmi:id="_lWpgXoB_EeqHaoR0tqRP_w" name="t6" source="_lWoSUoB_EeqHaoR0tqRP_w" target="_lWo5MoB_EeqHaoR0tqRP_w">
+      <trigger xmi:id="_lWpgX4B_EeqHaoR0tqRP_w" event="_lWnEEoB_EeqHaoR0tqRP_w"/>
+    </transitions>
+    <transitions xmi:id="_lWpgYIB_EeqHaoR0tqRP_w" name="t7" source="_lWoSUoB_EeqHaoR0tqRP_w" target="_lWoSUYB_EeqHaoR0tqRP_w">
+      <trigger xmi:id="_lWpgYYB_EeqHaoR0tqRP_w"/>
+      <condition xsi:type="robochart:RefExp" xmi:id="_lWpgYoB_EeqHaoR0tqRP_w" ref="_lWnrFIB_EeqHaoR0tqRP_w"/>
+    </transitions>
+    <transitions xmi:id="_lWpgY4B_EeqHaoR0tqRP_w" name="t8" source="_lWo5MoB_EeqHaoR0tqRP_w" target="_lWoSUYB_EeqHaoR0tqRP_w">
+      <trigger xmi:id="_lWpgZIB_EeqHaoR0tqRP_w"/>
+      <condition xsi:type="robochart:RefExp" xmi:id="_lWpgZYB_EeqHaoR0tqRP_w" ref="_lWnrFIB_EeqHaoR0tqRP_w"/>
+    </transitions>
+    <transitions xmi:id="_lWpgZoB_EeqHaoR0tqRP_w" name="t9" source="_lWoSUoB_EeqHaoR0tqRP_w" target="_lWo5MoB_EeqHaoR0tqRP_w">
+      <trigger xmi:id="_lWpgZ4B_EeqHaoR0tqRP_w"/>
+      <condition xsi:type="robochart:And" xmi:id="_lWpgaIB_EeqHaoR0tqRP_w">
+        <left xsi:type="robochart:GreaterOrEqual" xmi:id="_lWpgaYB_EeqHaoR0tqRP_w">
+          <left xsi:type="robochart:RefExp" xmi:id="_lWqHUIB_EeqHaoR0tqRP_w" ref="_lWnrGoB_EeqHaoR0tqRP_w"/>
+          <right xsi:type="robochart:FloatExp" xmi:id="_lWqHUYB_EeqHaoR0tqRP_w" value="0.1"/>
+        </left>
+        <right xsi:type="robochart:LessOrEqual" xmi:id="_lWqHUoB_EeqHaoR0tqRP_w">
+          <left xsi:type="robochart:CallExp" xmi:id="_lWqHU4B_EeqHaoR0tqRP_w">
+            <function xsi:type="robochart:RefExp" xmi:id="_lWqHVIB_EeqHaoR0tqRP_w" ref="_lWr8q4B_EeqHaoR0tqRP_w"/>
+            <args xsi:type="robochart:RefExp" xmi:id="_lWqHVYB_EeqHaoR0tqRP_w" ref="_lWnrIIB_EeqHaoR0tqRP_w"/>
+          </left>
+          <right xsi:type="robochart:RefExp" xmi:id="_lWqHVoB_EeqHaoR0tqRP_w" ref="_lWnEK4B_EeqHaoR0tqRP_w"/>
+        </right>
+      </condition>
+    </transitions>
+    <transitions xmi:id="_lWqHV4B_EeqHaoR0tqRP_w" name="t5" source="_lWoSUoB_EeqHaoR0tqRP_w" target="_lWo5MoB_EeqHaoR0tqRP_w">
+      <trigger xmi:id="_lWqHWIB_EeqHaoR0tqRP_w"/>
+      <condition xsi:type="robochart:LessOrEqual" xmi:id="_lWqHWYB_EeqHaoR0tqRP_w">
+        <left xsi:type="robochart:CallExp" xmi:id="_lWqHWoB_EeqHaoR0tqRP_w">
+          <function xsi:type="robochart:RefExp" xmi:id="_lWqHW4B_EeqHaoR0tqRP_w" ref="_lWr8q4B_EeqHaoR0tqRP_w"/>
+          <args xsi:type="robochart:RefExp" xmi:id="_lWqHXIB_EeqHaoR0tqRP_w" ref="_lWnrIIB_EeqHaoR0tqRP_w"/>
+        </left>
+        <right xsi:type="robochart:RefExp" xmi:id="_lWqHXYB_EeqHaoR0tqRP_w" ref="_lWnELoB_EeqHaoR0tqRP_w"/>
+      </condition>
+    </transitions>
+    <transitions xmi:id="_lWqHXoB_EeqHaoR0tqRP_w" name="t10" source="_lWo5MoB_EeqHaoR0tqRP_w" target="_lWoSUoB_EeqHaoR0tqRP_w">
+      <trigger xmi:id="_lWqHX4B_EeqHaoR0tqRP_w"/>
+      <condition xsi:type="robochart:And" xmi:id="_lWqHYIB_EeqHaoR0tqRP_w">
+        <left xsi:type="robochart:GreaterThan" xmi:id="_lWqHYYB_EeqHaoR0tqRP_w">
+          <left xsi:type="robochart:CallExp" xmi:id="_lWqHYoB_EeqHaoR0tqRP_w">
+            <function xsi:type="robochart:RefExp" xmi:id="_lWqHY4B_EeqHaoR0tqRP_w" ref="_lWr8p4B_EeqHaoR0tqRP_w"/>
+            <args xsi:type="robochart:RefExp" xmi:id="_lWqHZIB_EeqHaoR0tqRP_w" ref="_lWnrIIB_EeqHaoR0tqRP_w"/>
+          </left>
+          <right xsi:type="robochart:RefExp" xmi:id="_lWqHZYB_EeqHaoR0tqRP_w" ref="_lWnEKIB_EeqHaoR0tqRP_w"/>
+        </left>
+        <right xsi:type="robochart:GreaterThan" xmi:id="_lWqHZoB_EeqHaoR0tqRP_w">
+          <left xsi:type="robochart:CallExp" xmi:id="_lWqHZ4B_EeqHaoR0tqRP_w">
+            <function xsi:type="robochart:RefExp" xmi:id="_lWqHaIB_EeqHaoR0tqRP_w" ref="_lWr8q4B_EeqHaoR0tqRP_w"/>
+            <args xsi:type="robochart:RefExp" xmi:id="_lWqHaYB_EeqHaoR0tqRP_w" ref="_lWnrIIB_EeqHaoR0tqRP_w"/>
+          </left>
+          <right xsi:type="robochart:RefExp" xmi:id="_lWqHaoB_EeqHaoR0tqRP_w" ref="_lWnEK4B_EeqHaoR0tqRP_w"/>
+        </right>
+      </condition>
+    </transitions>
+    <transitions xmi:id="_lWqHa4B_EeqHaoR0tqRP_w" name="t11" source="_lWoSUYB_EeqHaoR0tqRP_w" target="_lWoSUYB_EeqHaoR0tqRP_w">
+      <trigger xmi:id="_lWqHbIB_EeqHaoR0tqRP_w" event="_lWnEE4B_EeqHaoR0tqRP_w" parameter="_lWnrJoB_EeqHaoR0tqRP_w" _type="INPUT"/>
+      <action xsi:type="robochart:SendEvent" xmi:id="_lWqHbYB_EeqHaoR0tqRP_w">
+        <trigger xmi:id="_lWqHboB_EeqHaoR0tqRP_w" event="_lWnECoB_EeqHaoR0tqRP_w" _type="OUTPUT">
+          <value xsi:type="robochart:RefExp" xmi:id="_lWqHb4B_EeqHaoR0tqRP_w" ref="_lWnrJoB_EeqHaoR0tqRP_w"/>
+        </trigger>
+      </action>
+    </transitions>
+    <transitions xmi:id="_lWqHcIB_EeqHaoR0tqRP_w" name="t12" source="_lWoSUYB_EeqHaoR0tqRP_w" target="_lWoSUYB_EeqHaoR0tqRP_w">
+      <trigger xmi:id="_lWqHcYB_EeqHaoR0tqRP_w" event="_lWnEFYB_EeqHaoR0tqRP_w" parameter="_lWnrJoB_EeqHaoR0tqRP_w" _type="INPUT"/>
+      <action xsi:type="robochart:SendEvent" xmi:id="_lWqHcoB_EeqHaoR0tqRP_w">
+        <trigger xmi:id="_lWqHc4B_EeqHaoR0tqRP_w" event="_lWnEDIB_EeqHaoR0tqRP_w" _type="OUTPUT">
+          <value xsi:type="robochart:RefExp" xmi:id="_lWqHdIB_EeqHaoR0tqRP_w" ref="_lWnrJoB_EeqHaoR0tqRP_w"/>
+        </trigger>
+      </action>
+    </transitions>
+    <transitions xmi:id="_lWqHdYB_EeqHaoR0tqRP_w" name="t13" source="_lWoSUoB_EeqHaoR0tqRP_w" target="_lWoSUYB_EeqHaoR0tqRP_w">
+      <trigger xmi:id="_lWqHdoB_EeqHaoR0tqRP_w" event="_lWnED4B_EeqHaoR0tqRP_w"/>
+      <action xsi:type="robochart:SendEvent" xmi:id="_lWqHd4B_EeqHaoR0tqRP_w">
+        <trigger xmi:id="_lWqHeIB_EeqHaoR0tqRP_w" event="_lWnECoB_EeqHaoR0tqRP_w" _type="OUTPUT">
+          <value xsi:type="robochart:IntegerExp" xmi:id="_lWqHeYB_EeqHaoR0tqRP_w"/>
+        </trigger>
+      </action>
+    </transitions>
+    <transitions xmi:id="_lWqHeoB_EeqHaoR0tqRP_w" name="t14" source="_lWo5MoB_EeqHaoR0tqRP_w" target="_lWo5OIB_EeqHaoR0tqRP_w">
+      <trigger xmi:id="_lWqHe4B_EeqHaoR0tqRP_w"/>
+      <condition xsi:type="robochart:And" xmi:id="_lWqHfIB_EeqHaoR0tqRP_w">
+        <left xsi:type="robochart:LessThan" xmi:id="_lWqHfYB_EeqHaoR0tqRP_w">
+          <left xsi:type="robochart:RefExp" xmi:id="_lWqHfoB_EeqHaoR0tqRP_w" ref="_lWnrKYB_EeqHaoR0tqRP_w"/>
+          <right xsi:type="robochart:RefExp" xmi:id="_lWqHf4B_EeqHaoR0tqRP_w" ref="_lWnEMYB_EeqHaoR0tqRP_w"/>
+        </left>
+        <right xsi:type="robochart:GreaterOrEqual" xmi:id="_lWqHgIB_EeqHaoR0tqRP_w">
+          <left xsi:type="robochart:RefExp" xmi:id="_lWqHgYB_EeqHaoR0tqRP_w" ref="_lWnrLIB_EeqHaoR0tqRP_w"/>
+          <right xsi:type="robochart:IntegerExp" xmi:id="_lWqHgoB_EeqHaoR0tqRP_w"/>
+        </right>
+      </condition>
+    </transitions>
+    <transitions xmi:id="_lWqHg4B_EeqHaoR0tqRP_w" name="t15" source="_lWoSUoB_EeqHaoR0tqRP_w" target="_lWo5OIB_EeqHaoR0tqRP_w">
+      <trigger xmi:id="_lWqHhIB_EeqHaoR0tqRP_w"/>
+      <condition xsi:type="robochart:And" xmi:id="_lWqHhYB_EeqHaoR0tqRP_w">
+        <left xsi:type="robochart:LessThan" xmi:id="_lWqHhoB_EeqHaoR0tqRP_w">
+          <left xsi:type="robochart:RefExp" xmi:id="_lWqHh4B_EeqHaoR0tqRP_w" ref="_lWnrKYB_EeqHaoR0tqRP_w"/>
+          <right xsi:type="robochart:RefExp" xmi:id="_lWqHiIB_EeqHaoR0tqRP_w" ref="_lWnEMYB_EeqHaoR0tqRP_w"/>
+        </left>
+        <right xsi:type="robochart:GreaterOrEqual" xmi:id="_lWqHiYB_EeqHaoR0tqRP_w">
+          <left xsi:type="robochart:RefExp" xmi:id="_lWquYIB_EeqHaoR0tqRP_w" ref="_lWnrLIB_EeqHaoR0tqRP_w"/>
+          <right xsi:type="robochart:IntegerExp" xmi:id="_lWquYYB_EeqHaoR0tqRP_w"/>
+        </right>
+      </condition>
+    </transitions>
+    <transitions xmi:id="_lWquYoB_EeqHaoR0tqRP_w" name="t16" source="_lWo5OIB_EeqHaoR0tqRP_w" target="_lWoSUYB_EeqHaoR0tqRP_w">
+      <trigger xmi:id="_lWquY4B_EeqHaoR0tqRP_w"/>
+      <condition xsi:type="robochart:GreaterOrEqual" xmi:id="_lWquZIB_EeqHaoR0tqRP_w">
+        <left xsi:type="robochart:RefExp" xmi:id="_lWquZYB_EeqHaoR0tqRP_w" ref="_lWnrKYB_EeqHaoR0tqRP_w"/>
+        <right xsi:type="robochart:RefExp" xmi:id="_lWquZoB_EeqHaoR0tqRP_w" ref="_lWnEMYB_EeqHaoR0tqRP_w"/>
+      </condition>
+    </transitions>
+    <transitions xmi:id="_lWquZ4B_EeqHaoR0tqRP_w" name="t17" source="_lWo5OIB_EeqHaoR0tqRP_w" target="_lWoSUYB_EeqHaoR0tqRP_w">
+      <trigger xmi:id="_lWquaIB_EeqHaoR0tqRP_w" event="_lWnEEIB_EeqHaoR0tqRP_w"/>
+    </transitions>
+  </machines>
+  <controllers xmi:id="_lWquaYB_EeqHaoR0tqRP_w" rInterfaces="_lWmc8YB_EeqHaoR0tqRP_w" interfaces="_lWnEDoB_EeqHaoR0tqRP_w _lWnECYB_EeqHaoR0tqRP_w _lWnENIB_EeqHaoR0tqRP_w _lWnEF4B_EeqHaoR0tqRP_w" name="LRE_Ctrl">
+    <machines xsi:type="robochart:StateMachineRef" xmi:id="_lWquaoB_EeqHaoR0tqRP_w" name="lre_beh" ref="_lWoSUIB_EeqHaoR0tqRP_w"/>
+    <lOperations xsi:type="robochart:OperationDef" xmi:id="_lWqua4B_EeqHaoR0tqRP_w" name="CalcCloseObs"/>
+    <lOperations xsi:type="robochart:OperationDef" xmi:id="_lWqubIB_EeqHaoR0tqRP_w" name="CalcVel"/>
+    <lOperations xsi:type="robochart:OperationRef" xmi:id="_lWqubYB_EeqHaoR0tqRP_w" name="op_ref0" ref="_lWrVfIB_EeqHaoR0tqRP_w"/>
+    <lOperations xsi:type="robochart:OperationRef" xmi:id="_lWquboB_EeqHaoR0tqRP_w" name="op_ref1" ref="_lWrVlYB_EeqHaoR0tqRP_w"/>
+    <connections xmi:id="_lWqub4B_EeqHaoR0tqRP_w" from="_lWquaYB_EeqHaoR0tqRP_w" to="_lWquaoB_EeqHaoR0tqRP_w" efrom="_lWnED4B_EeqHaoR0tqRP_w" eto="_lWnED4B_EeqHaoR0tqRP_w"/>
+    <connections xmi:id="_lWqucIB_EeqHaoR0tqRP_w" from="_lWquaYB_EeqHaoR0tqRP_w" to="_lWquaoB_EeqHaoR0tqRP_w" efrom="_lWnEEIB_EeqHaoR0tqRP_w" eto="_lWnEEIB_EeqHaoR0tqRP_w"/>
+    <connections xmi:id="_lWqucYB_EeqHaoR0tqRP_w" from="_lWquaYB_EeqHaoR0tqRP_w" to="_lWquaoB_EeqHaoR0tqRP_w" efrom="_lWnEEYB_EeqHaoR0tqRP_w" eto="_lWnEEYB_EeqHaoR0tqRP_w"/>
+    <connections xmi:id="_lWqucoB_EeqHaoR0tqRP_w" from="_lWquaYB_EeqHaoR0tqRP_w" to="_lWquaoB_EeqHaoR0tqRP_w" efrom="_lWnEEoB_EeqHaoR0tqRP_w" eto="_lWnEEoB_EeqHaoR0tqRP_w"/>
+    <connections xmi:id="_lWquc4B_EeqHaoR0tqRP_w" from="_lWquaoB_EeqHaoR0tqRP_w" to="_lWquaYB_EeqHaoR0tqRP_w" efrom="_lWnEDIB_EeqHaoR0tqRP_w" eto="_lWnEDIB_EeqHaoR0tqRP_w"/>
+    <connections xmi:id="_lWqudIB_EeqHaoR0tqRP_w" from="_lWquaoB_EeqHaoR0tqRP_w" to="_lWquaYB_EeqHaoR0tqRP_w" efrom="_lWnECoB_EeqHaoR0tqRP_w" eto="_lWnECoB_EeqHaoR0tqRP_w"/>
+    <connections xmi:id="_lWqudYB_EeqHaoR0tqRP_w" from="_lWquaYB_EeqHaoR0tqRP_w" to="_lWquaoB_EeqHaoR0tqRP_w" efrom="_lWnEE4B_EeqHaoR0tqRP_w" eto="_lWnEE4B_EeqHaoR0tqRP_w"/>
+    <connections xmi:id="_lWqudoB_EeqHaoR0tqRP_w" from="_lWquaYB_EeqHaoR0tqRP_w" to="_lWquaoB_EeqHaoR0tqRP_w" efrom="_lWnEFYB_EeqHaoR0tqRP_w" eto="_lWnEFYB_EeqHaoR0tqRP_w"/>
+  </controllers>
+  <modules xmi:id="_lWqud4B_EeqHaoR0tqRP_w" name="AUV_Module">
+    <connections xmi:id="_lWqueIB_EeqHaoR0tqRP_w" from="_lWrVeIB_EeqHaoR0tqRP_w" to="_lWrVdoB_EeqHaoR0tqRP_w" efrom="_lWnEEIB_EeqHaoR0tqRP_w" eto="_lWnEEIB_EeqHaoR0tqRP_w"/>
+    <connections xmi:id="_lWqueYB_EeqHaoR0tqRP_w" from="_lWrVeIB_EeqHaoR0tqRP_w" to="_lWrVdoB_EeqHaoR0tqRP_w" efrom="_lWnEEYB_EeqHaoR0tqRP_w" eto="_lWnEEYB_EeqHaoR0tqRP_w"/>
+    <connections xmi:id="_lWrVcIB_EeqHaoR0tqRP_w" from="_lWrVeIB_EeqHaoR0tqRP_w" to="_lWrVdoB_EeqHaoR0tqRP_w" efrom="_lWnEEoB_EeqHaoR0tqRP_w" eto="_lWnEEoB_EeqHaoR0tqRP_w"/>
+    <connections xmi:id="_lWrVcYB_EeqHaoR0tqRP_w" from="_lWrVeIB_EeqHaoR0tqRP_w" to="_lWrVdoB_EeqHaoR0tqRP_w" efrom="_lWnED4B_EeqHaoR0tqRP_w" eto="_lWnED4B_EeqHaoR0tqRP_w"/>
+    <connections xmi:id="_lWrVcoB_EeqHaoR0tqRP_w" from="_lWrVeIB_EeqHaoR0tqRP_w" to="_lWrVdoB_EeqHaoR0tqRP_w" efrom="_lWnEE4B_EeqHaoR0tqRP_w" eto="_lWnEE4B_EeqHaoR0tqRP_w"/>
+    <connections xmi:id="_lWrVc4B_EeqHaoR0tqRP_w" from="_lWrVeIB_EeqHaoR0tqRP_w" to="_lWrVdoB_EeqHaoR0tqRP_w" efrom="_lWnEFYB_EeqHaoR0tqRP_w" eto="_lWnEFYB_EeqHaoR0tqRP_w"/>
+    <connections xmi:id="_lWrVdIB_EeqHaoR0tqRP_w" from="_lWrVdoB_EeqHaoR0tqRP_w" to="_lWrVeoB_EeqHaoR0tqRP_w" efrom="_lWnEDIB_EeqHaoR0tqRP_w" eto="_lWnEDIB_EeqHaoR0tqRP_w"/>
+    <connections xmi:id="_lWrVdYB_EeqHaoR0tqRP_w" from="_lWrVdoB_EeqHaoR0tqRP_w" to="_lWrVeoB_EeqHaoR0tqRP_w" efrom="_lWnECoB_EeqHaoR0tqRP_w" eto="_lWnECoB_EeqHaoR0tqRP_w"/>
+    <nodes xsi:type="robochart:ControllerRef" xmi:id="_lWrVdoB_EeqHaoR0tqRP_w" name="ctrl_ref0" ref="_lWquaYB_EeqHaoR0tqRP_w"/>
+    <nodes xsi:type="robochart:RoboticPlatformDef" xmi:id="_lWrVd4B_EeqHaoR0tqRP_w" pInterfaces="_lWmc8YB_EeqHaoR0tqRP_w _lWnEM4B_EeqHaoR0tqRP_w" name="AUV_Platform"/>
+    <nodes xsi:type="robochart:ControllerDef" xmi:id="_lWrVeIB_EeqHaoR0tqRP_w" interfaces="_lWnEDoB_EeqHaoR0tqRP_w" name="AUV_Operator">
+      <machines xsi:type="robochart:StateMachineDef" xmi:id="_lWrVeYB_EeqHaoR0tqRP_w" name="TBD"/>
+    </nodes>
+    <nodes xsi:type="robochart:ControllerDef" xmi:id="_lWrVeoB_EeqHaoR0tqRP_w" interfaces="_lWnECYB_EeqHaoR0tqRP_w" name="AUV_Autopilot">
+      <machines xsi:type="robochart:StateMachineDef" xmi:id="_lWrVe4B_EeqHaoR0tqRP_w" name="TBD"/>
+    </nodes>
+  </modules>
+  <operations xmi:id="_lWrVfIB_EeqHaoR0tqRP_w" name="AdvVel" rInterfaces="_lWnENIB_EeqHaoR0tqRP_w">
+    <parameters xmi:id="_lWrVfYB_EeqHaoR0tqRP_w" name="v">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWrVfoB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </parameters>
+    <events xmi:id="_lWrVf4B_EeqHaoR0tqRP_w" name="advice">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWrVgIB_EeqHaoR0tqRP_w" ref="_lWoSLoB_EeqHaoR0tqRP_w"/>
+    </events>
+    <nodes xsi:type="robochart:Initial" xmi:id="_lWrVgYB_EeqHaoR0tqRP_w" name="i0"/>
+    <nodes xsi:type="robochart:Final" xmi:id="_lWrVgoB_EeqHaoR0tqRP_w" name="f0"/>
+    <transitions xmi:id="_lWrVg4B_EeqHaoR0tqRP_w" name="t0" source="_lWrVgYB_EeqHaoR0tqRP_w" target="_lWrVgoB_EeqHaoR0tqRP_w">
+      <trigger xmi:id="_lWrVhIB_EeqHaoR0tqRP_w"/>
+      <action xsi:type="robochart:SendEvent" xmi:id="_lWrVhYB_EeqHaoR0tqRP_w">
+        <trigger xmi:id="_lWrVhoB_EeqHaoR0tqRP_w" event="_lWrVf4B_EeqHaoR0tqRP_w" _type="OUTPUT">
+          <value xsi:type="robochart:CallExp" xmi:id="_lWrVh4B_EeqHaoR0tqRP_w">
+            <function xsi:type="robochart:RefExp" xmi:id="_lWrViIB_EeqHaoR0tqRP_w" ref="_lWrVpoB_EeqHaoR0tqRP_w"/>
+            <args xsi:type="robochart:EnumExp" xmi:id="_lWrViYB_EeqHaoR0tqRP_w" type="_lWoSKIB_EeqHaoR0tqRP_w" literal="_lWoSK4B_EeqHaoR0tqRP_w"/>
+            <args xsi:type="robochart:CallExp" xmi:id="_lWrVioB_EeqHaoR0tqRP_w">
+              <function xsi:type="robochart:RefExp" xmi:id="_lWrVi4B_EeqHaoR0tqRP_w" ref="_lWsj-oB_EeqHaoR0tqRP_w"/>
+              <args xsi:type="robochart:Selection" xmi:id="_lWrVjIB_EeqHaoR0tqRP_w" member="_lWoSO4B_EeqHaoR0tqRP_w">
+                <receiver xsi:type="robochart:Selection" xmi:id="_lWrVjYB_EeqHaoR0tqRP_w" member="_lWoSMYB_EeqHaoR0tqRP_w">
+                  <receiver xsi:type="robochart:RefExp" xmi:id="_lWrVjoB_EeqHaoR0tqRP_w" ref="_lWnENoB_EeqHaoR0tqRP_w"/>
+                </receiver>
+              </args>
+              <args xsi:type="robochart:Selection" xmi:id="_lWrVj4B_EeqHaoR0tqRP_w" member="_lWoSPYB_EeqHaoR0tqRP_w">
+                <receiver xsi:type="robochart:Selection" xmi:id="_lWrVkIB_EeqHaoR0tqRP_w" member="_lWoSMYB_EeqHaoR0tqRP_w">
+                  <receiver xsi:type="robochart:RefExp" xmi:id="_lWrVkYB_EeqHaoR0tqRP_w" ref="_lWnENoB_EeqHaoR0tqRP_w"/>
+                </receiver>
+              </args>
+              <args xsi:type="robochart:Selection" xmi:id="_lWrVkoB_EeqHaoR0tqRP_w" member="_lWoSP4B_EeqHaoR0tqRP_w">
+                <receiver xsi:type="robochart:Selection" xmi:id="_lWrVk4B_EeqHaoR0tqRP_w" member="_lWoSMYB_EeqHaoR0tqRP_w">
+                  <receiver xsi:type="robochart:RefExp" xmi:id="_lWrVlIB_EeqHaoR0tqRP_w" ref="_lWnENoB_EeqHaoR0tqRP_w"/>
+                </receiver>
+              </args>
+            </args>
+          </value>
+        </trigger>
+      </action>
+    </transitions>
+  </operations>
+  <operations xmi:id="_lWrVlYB_EeqHaoR0tqRP_w" name="CheckOPEZ" rInterfaces="_lWnENIB_EeqHaoR0tqRP_w _lWmc8YB_EeqHaoR0tqRP_w">
+    <nodes xsi:type="robochart:Initial" xmi:id="_lWrVloB_EeqHaoR0tqRP_w" name="i0"/>
+    <nodes xsi:type="robochart:Final" xmi:id="_lWrVl4B_EeqHaoR0tqRP_w" name="f0"/>
+    <transitions xmi:id="_lWrVmIB_EeqHaoR0tqRP_w" name="t0" source="_lWrVloB_EeqHaoR0tqRP_w" target="_lWrVl4B_EeqHaoR0tqRP_w">
+      <trigger xmi:id="_lWrVmYB_EeqHaoR0tqRP_w"/>
+      <action xsi:type="robochart:Assignment" xmi:id="_lWrVmoB_EeqHaoR0tqRP_w">
+        <left xsi:type="robochart:VarRef" xmi:id="_lWrVm4B_EeqHaoR0tqRP_w" name="_lWnrFIB_EeqHaoR0tqRP_w"/>
+        <right xsi:type="robochart:ParExp" xmi:id="_lWrVnIB_EeqHaoR0tqRP_w">
+          <exp xsi:type="robochart:Or" xmi:id="_lWrVnYB_EeqHaoR0tqRP_w">
+            <left xsi:type="robochart:LessOrEqual" xmi:id="_lWrVnoB_EeqHaoR0tqRP_w">
+              <left xsi:type="robochart:CallExp" xmi:id="_lWrVn4B_EeqHaoR0tqRP_w">
+                <function xsi:type="robochart:RefExp" xmi:id="_lWrVoIB_EeqHaoR0tqRP_w" ref="_lWr8r4B_EeqHaoR0tqRP_w"/>
+                <args xsi:type="robochart:RefExp" xmi:id="_lWrVoYB_EeqHaoR0tqRP_w" ref="_lWnrIIB_EeqHaoR0tqRP_w"/>
+              </left>
+              <right xsi:type="robochart:FloatExp" xmi:id="_lWrVooB_EeqHaoR0tqRP_w" value="0.3"/>
+            </left>
+            <right xsi:type="robochart:LessOrEqual" xmi:id="_lWrVo4B_EeqHaoR0tqRP_w">
+              <left xsi:type="robochart:RefExp" xmi:id="_lWrVpIB_EeqHaoR0tqRP_w" ref="_lWmc84B_EeqHaoR0tqRP_w"/>
+              <right xsi:type="robochart:FloatExp" xmi:id="_lWrVpYB_EeqHaoR0tqRP_w" value="0.3"/>
+            </right>
+          </exp>
+        </right>
+      </action>
+    </transitions>
+  </operations>
+  <functions xmi:id="_lWrVpoB_EeqHaoR0tqRP_w" name="mk_Advice">
+    <type xsi:type="robochart:TypeRef" xmi:id="_lWr8gIB_EeqHaoR0tqRP_w" ref="_lWoSLoB_EeqHaoR0tqRP_w"/>
+    <parameters xmi:id="_lWr8gYB_EeqHaoR0tqRP_w" name="t">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWr8goB_EeqHaoR0tqRP_w" ref="_lWoSKIB_EeqHaoR0tqRP_w"/>
+    </parameters>
+    <parameters xmi:id="_lWr8g4B_EeqHaoR0tqRP_w" name="h">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWr8hIB_EeqHaoR0tqRP_w" ref="_lWoSOoB_EeqHaoR0tqRP_w"/>
+    </parameters>
+    <postconditions xsi:type="robochart:Equals" xmi:id="_lWr8hYB_EeqHaoR0tqRP_w">
+      <left xsi:type="robochart:Selection" xmi:id="_lWr8hoB_EeqHaoR0tqRP_w" member="_lWoSL4B_EeqHaoR0tqRP_w">
+        <receiver xsi:type="robochart:ResultExp" xmi:id="_lWr8h4B_EeqHaoR0tqRP_w"/>
+      </left>
+      <right xsi:type="robochart:RefExp" xmi:id="_lWr8iIB_EeqHaoR0tqRP_w" ref="_lWr8gYB_EeqHaoR0tqRP_w"/>
+    </postconditions>
+    <postconditions xsi:type="robochart:Equals" xmi:id="_lWr8iYB_EeqHaoR0tqRP_w">
+      <left xsi:type="robochart:Selection" xmi:id="_lWr8ioB_EeqHaoR0tqRP_w" member="_lWoSMYB_EeqHaoR0tqRP_w">
+        <receiver xsi:type="robochart:ResultExp" xmi:id="_lWr8i4B_EeqHaoR0tqRP_w"/>
+      </left>
+      <right xsi:type="robochart:RefExp" xmi:id="_lWr8jIB_EeqHaoR0tqRP_w" ref="_lWr8g4B_EeqHaoR0tqRP_w"/>
+    </postconditions>
+  </functions>
+  <functions xmi:id="_lWr8jYB_EeqHaoR0tqRP_w" name="change_velocity">
+    <type xsi:type="robochart:TypeRef" xmi:id="_lWr8joB_EeqHaoR0tqRP_w" ref="_lWoSOoB_EeqHaoR0tqRP_w"/>
+    <parameters xmi:id="_lWr8j4B_EeqHaoR0tqRP_w" name="v">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWr8kIB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </parameters>
+    <parameters xmi:id="_lWr8kYB_EeqHaoR0tqRP_w" name="h">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWr8koB_EeqHaoR0tqRP_w" ref="_lWoSOoB_EeqHaoR0tqRP_w"/>
+    </parameters>
+  </functions>
+  <functions xmi:id="_lWr8k4B_EeqHaoR0tqRP_w" name="advice_vel">
+    <type xsi:type="robochart:TypeRef" xmi:id="_lWr8lIB_EeqHaoR0tqRP_w" ref="_lWoSLoB_EeqHaoR0tqRP_w"/>
+    <parameters xmi:id="_lWr8lYB_EeqHaoR0tqRP_w" name="v">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWr8loB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </parameters>
+    <parameters xmi:id="_lWr8l4B_EeqHaoR0tqRP_w" name="a">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWr8mIB_EeqHaoR0tqRP_w" ref="_lWoSLoB_EeqHaoR0tqRP_w"/>
+    </parameters>
+    <postconditions xsi:type="robochart:Equals" xmi:id="_lWr8mYB_EeqHaoR0tqRP_w">
+      <left xsi:type="robochart:ResultExp" xmi:id="_lWr8moB_EeqHaoR0tqRP_w"/>
+      <right xsi:type="robochart:CallExp" xmi:id="_lWr8m4B_EeqHaoR0tqRP_w">
+        <function xsi:type="robochart:RefExp" xmi:id="_lWr8nIB_EeqHaoR0tqRP_w" ref="_lWrVpoB_EeqHaoR0tqRP_w"/>
+        <args xsi:type="robochart:EnumExp" xmi:id="_lWr8nYB_EeqHaoR0tqRP_w" type="_lWoSKIB_EeqHaoR0tqRP_w" literal="_lWoSK4B_EeqHaoR0tqRP_w"/>
+        <args xsi:type="robochart:CallExp" xmi:id="_lWr8noB_EeqHaoR0tqRP_w">
+          <function xsi:type="robochart:RefExp" xmi:id="_lWr8n4B_EeqHaoR0tqRP_w" ref="_lWsj-oB_EeqHaoR0tqRP_w"/>
+          <args xsi:type="robochart:RefExp" xmi:id="_lWr8oIB_EeqHaoR0tqRP_w" ref="_lWr8lYB_EeqHaoR0tqRP_w"/>
+          <args xsi:type="robochart:Selection" xmi:id="_lWr8oYB_EeqHaoR0tqRP_w" member="_lWoSPYB_EeqHaoR0tqRP_w">
+            <receiver xsi:type="robochart:Selection" xmi:id="_lWr8ooB_EeqHaoR0tqRP_w" member="_lWoSMYB_EeqHaoR0tqRP_w">
+              <receiver xsi:type="robochart:RefExp" xmi:id="_lWr8o4B_EeqHaoR0tqRP_w" ref="_lWr8l4B_EeqHaoR0tqRP_w"/>
+            </receiver>
+          </args>
+          <args xsi:type="robochart:Selection" xmi:id="_lWr8pIB_EeqHaoR0tqRP_w" member="_lWoSP4B_EeqHaoR0tqRP_w">
+            <receiver xsi:type="robochart:Selection" xmi:id="_lWr8pYB_EeqHaoR0tqRP_w" member="_lWoSMYB_EeqHaoR0tqRP_w">
+              <receiver xsi:type="robochart:RefExp" xmi:id="_lWr8poB_EeqHaoR0tqRP_w" ref="_lWr8l4B_EeqHaoR0tqRP_w"/>
+            </receiver>
+          </args>
+        </args>
+      </right>
+    </postconditions>
+  </functions>
+  <functions xmi:id="_lWr8p4B_EeqHaoR0tqRP_w" name="hdist">
+    <type xsi:type="robochart:TypeRef" xmi:id="_lWr8qIB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    <parameters xmi:id="_lWr8qYB_EeqHaoR0tqRP_w" name="o">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWr8qoB_EeqHaoR0tqRP_w" ref="_lWnrOIB_EeqHaoR0tqRP_w"/>
+    </parameters>
+  </functions>
+  <functions xmi:id="_lWr8q4B_EeqHaoR0tqRP_w" name="vdist">
+    <type xsi:type="robochart:TypeRef" xmi:id="_lWr8rIB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    <parameters xmi:id="_lWr8rYB_EeqHaoR0tqRP_w" name="o">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWr8roB_EeqHaoR0tqRP_w" ref="_lWnrOIB_EeqHaoR0tqRP_w"/>
+    </parameters>
+  </functions>
+  <functions xmi:id="_lWr8r4B_EeqHaoR0tqRP_w" name="odist">
+    <type xsi:type="robochart:TypeRef" xmi:id="_lWr8sIB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    <parameters xmi:id="_lWr8sYB_EeqHaoR0tqRP_w" name="o">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWr8soB_EeqHaoR0tqRP_w" ref="_lWnrOIB_EeqHaoR0tqRP_w"/>
+    </parameters>
+  </functions>
+  <functions xmi:id="_lWr8s4B_EeqHaoR0tqRP_w" name="mk_CVec">
+    <type xsi:type="robochart:TypeRef" xmi:id="_lWr8tIB_EeqHaoR0tqRP_w" ref="_lWoSQYB_EeqHaoR0tqRP_w"/>
+    <parameters xmi:id="_lWr8tYB_EeqHaoR0tqRP_w" name="x">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWr8toB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </parameters>
+    <parameters xmi:id="_lWr8t4B_EeqHaoR0tqRP_w" name="y">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWr8uIB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </parameters>
+    <parameters xmi:id="_lWr8uYB_EeqHaoR0tqRP_w" name="z">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWr8uoB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </parameters>
+    <postconditions xsi:type="robochart:Equals" xmi:id="_lWr8u4B_EeqHaoR0tqRP_w">
+      <left xsi:type="robochart:Selection" xmi:id="_lWr8vIB_EeqHaoR0tqRP_w" member="_lWoSQoB_EeqHaoR0tqRP_w">
+        <receiver xsi:type="robochart:ResultExp" xmi:id="_lWr8vYB_EeqHaoR0tqRP_w"/>
+      </left>
+      <right xsi:type="robochart:RefExp" xmi:id="_lWr8voB_EeqHaoR0tqRP_w" ref="_lWr8tYB_EeqHaoR0tqRP_w"/>
+    </postconditions>
+    <postconditions xsi:type="robochart:Equals" xmi:id="_lWr8v4B_EeqHaoR0tqRP_w">
+      <left xsi:type="robochart:Selection" xmi:id="_lWr8wIB_EeqHaoR0tqRP_w" member="_lWoSRIB_EeqHaoR0tqRP_w">
+        <receiver xsi:type="robochart:ResultExp" xmi:id="_lWr8wYB_EeqHaoR0tqRP_w"/>
+      </left>
+      <right xsi:type="robochart:RefExp" xmi:id="_lWr8woB_EeqHaoR0tqRP_w" ref="_lWr8t4B_EeqHaoR0tqRP_w"/>
+    </postconditions>
+    <postconditions xsi:type="robochart:Equals" xmi:id="_lWr8w4B_EeqHaoR0tqRP_w">
+      <left xsi:type="robochart:Selection" xmi:id="_lWr8xIB_EeqHaoR0tqRP_w" member="_lWoSRoB_EeqHaoR0tqRP_w">
+        <receiver xsi:type="robochart:ResultExp" xmi:id="_lWr8xYB_EeqHaoR0tqRP_w"/>
+      </left>
+      <right xsi:type="robochart:RefExp" xmi:id="_lWr8xoB_EeqHaoR0tqRP_w" ref="_lWr8uYB_EeqHaoR0tqRP_w"/>
+    </postconditions>
+  </functions>
+  <functions xmi:id="_lWr8x4B_EeqHaoR0tqRP_w" name="sin">
+    <type xsi:type="robochart:TypeRef" xmi:id="_lWr8yIB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    <parameters xmi:id="_lWr8yYB_EeqHaoR0tqRP_w" name="x">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWr8yoB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </parameters>
+  </functions>
+  <functions xmi:id="_lWr8y4B_EeqHaoR0tqRP_w" name="cos">
+    <type xsi:type="robochart:TypeRef" xmi:id="_lWr8zIB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    <parameters xmi:id="_lWr8zYB_EeqHaoR0tqRP_w" name="x">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWr8zoB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </parameters>
+  </functions>
+  <functions xmi:id="_lWr8z4B_EeqHaoR0tqRP_w" name="tan">
+    <type xsi:type="robochart:TypeRef" xmi:id="_lWr80IB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    <parameters xmi:id="_lWr80YB_EeqHaoR0tqRP_w" name="x">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWr80oB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </parameters>
+  </functions>
+  <functions xmi:id="_lWr804B_EeqHaoR0tqRP_w" name="arcsin">
+    <type xsi:type="robochart:TypeRef" xmi:id="_lWr81IB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    <parameters xmi:id="_lWr81YB_EeqHaoR0tqRP_w" name="x">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWr81oB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </parameters>
+  </functions>
+  <functions xmi:id="_lWr814B_EeqHaoR0tqRP_w" name="arccos">
+    <type xsi:type="robochart:TypeRef" xmi:id="_lWr82IB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    <parameters xmi:id="_lWr82YB_EeqHaoR0tqRP_w" name="x">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWr82oB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </parameters>
+  </functions>
+  <functions xmi:id="_lWr824B_EeqHaoR0tqRP_w" name="arctan">
+    <type xsi:type="robochart:TypeRef" xmi:id="_lWr83IB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    <parameters xmi:id="_lWr83YB_EeqHaoR0tqRP_w" name="x">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWr83oB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </parameters>
+  </functions>
+  <functions xmi:id="_lWr834B_EeqHaoR0tqRP_w" name="svec2cvec">
+    <type xsi:type="robochart:TypeRef" xmi:id="_lWr84IB_EeqHaoR0tqRP_w" ref="_lWoSQYB_EeqHaoR0tqRP_w"/>
+    <parameters xmi:id="_lWr84YB_EeqHaoR0tqRP_w" name="v">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWr84oB_EeqHaoR0tqRP_w" ref="_lWoSOoB_EeqHaoR0tqRP_w"/>
+    </parameters>
+    <postconditions xsi:type="robochart:Equals" xmi:id="_lWr844B_EeqHaoR0tqRP_w">
+      <left xsi:type="robochart:Selection" xmi:id="_lWr85IB_EeqHaoR0tqRP_w" member="_lWoSQoB_EeqHaoR0tqRP_w">
+        <receiver xsi:type="robochart:ResultExp" xmi:id="_lWr85YB_EeqHaoR0tqRP_w"/>
+      </left>
+      <right xsi:type="robochart:Mult" xmi:id="_lWr85oB_EeqHaoR0tqRP_w">
+        <left xsi:type="robochart:Mult" xmi:id="_lWr854B_EeqHaoR0tqRP_w">
+          <left xsi:type="robochart:Selection" xmi:id="_lWr86IB_EeqHaoR0tqRP_w" member="_lWoSO4B_EeqHaoR0tqRP_w">
+            <receiver xsi:type="robochart:RefExp" xmi:id="_lWr86YB_EeqHaoR0tqRP_w" ref="_lWr84YB_EeqHaoR0tqRP_w"/>
+          </left>
+          <right xsi:type="robochart:CallExp" xmi:id="_lWr86oB_EeqHaoR0tqRP_w">
+            <function xsi:type="robochart:RefExp" xmi:id="_lWr864B_EeqHaoR0tqRP_w" ref="_lWr8x4B_EeqHaoR0tqRP_w"/>
+            <args xsi:type="robochart:Selection" xmi:id="_lWsjkIB_EeqHaoR0tqRP_w" member="_lWoSPYB_EeqHaoR0tqRP_w">
+              <receiver xsi:type="robochart:RefExp" xmi:id="_lWsjkYB_EeqHaoR0tqRP_w" ref="_lWr84YB_EeqHaoR0tqRP_w"/>
+            </args>
+          </right>
+        </left>
+        <right xsi:type="robochart:CallExp" xmi:id="_lWsjkoB_EeqHaoR0tqRP_w">
+          <function xsi:type="robochart:RefExp" xmi:id="_lWsjk4B_EeqHaoR0tqRP_w" ref="_lWr8y4B_EeqHaoR0tqRP_w"/>
+          <args xsi:type="robochart:Selection" xmi:id="_lWsjlIB_EeqHaoR0tqRP_w" member="_lWoSP4B_EeqHaoR0tqRP_w">
+            <receiver xsi:type="robochart:RefExp" xmi:id="_lWsjlYB_EeqHaoR0tqRP_w" ref="_lWr84YB_EeqHaoR0tqRP_w"/>
+          </args>
+        </right>
+      </right>
+    </postconditions>
+    <postconditions xsi:type="robochart:Equals" xmi:id="_lWsjloB_EeqHaoR0tqRP_w">
+      <left xsi:type="robochart:Selection" xmi:id="_lWsjl4B_EeqHaoR0tqRP_w" member="_lWoSRIB_EeqHaoR0tqRP_w">
+        <receiver xsi:type="robochart:ResultExp" xmi:id="_lWsjmIB_EeqHaoR0tqRP_w"/>
+      </left>
+      <right xsi:type="robochart:Mult" xmi:id="_lWsjmYB_EeqHaoR0tqRP_w">
+        <left xsi:type="robochart:Mult" xmi:id="_lWsjmoB_EeqHaoR0tqRP_w">
+          <left xsi:type="robochart:Selection" xmi:id="_lWsjm4B_EeqHaoR0tqRP_w" member="_lWoSO4B_EeqHaoR0tqRP_w">
+            <receiver xsi:type="robochart:RefExp" xmi:id="_lWsjnIB_EeqHaoR0tqRP_w" ref="_lWr84YB_EeqHaoR0tqRP_w"/>
+          </left>
+          <right xsi:type="robochart:CallExp" xmi:id="_lWsjnYB_EeqHaoR0tqRP_w">
+            <function xsi:type="robochart:RefExp" xmi:id="_lWsjnoB_EeqHaoR0tqRP_w" ref="_lWr8x4B_EeqHaoR0tqRP_w"/>
+            <args xsi:type="robochart:Selection" xmi:id="_lWsjn4B_EeqHaoR0tqRP_w" member="_lWoSPYB_EeqHaoR0tqRP_w">
+              <receiver xsi:type="robochart:RefExp" xmi:id="_lWsjoIB_EeqHaoR0tqRP_w" ref="_lWr84YB_EeqHaoR0tqRP_w"/>
+            </args>
+          </right>
+        </left>
+        <right xsi:type="robochart:CallExp" xmi:id="_lWsjoYB_EeqHaoR0tqRP_w">
+          <function xsi:type="robochart:RefExp" xmi:id="_lWsjooB_EeqHaoR0tqRP_w" ref="_lWr8x4B_EeqHaoR0tqRP_w"/>
+          <args xsi:type="robochart:Selection" xmi:id="_lWsjo4B_EeqHaoR0tqRP_w" member="_lWoSP4B_EeqHaoR0tqRP_w">
+            <receiver xsi:type="robochart:RefExp" xmi:id="_lWsjpIB_EeqHaoR0tqRP_w" ref="_lWr84YB_EeqHaoR0tqRP_w"/>
+          </args>
+        </right>
+      </right>
+    </postconditions>
+    <postconditions xsi:type="robochart:Equals" xmi:id="_lWsjpYB_EeqHaoR0tqRP_w">
+      <left xsi:type="robochart:Selection" xmi:id="_lWsjpoB_EeqHaoR0tqRP_w" member="_lWoSRoB_EeqHaoR0tqRP_w">
+        <receiver xsi:type="robochart:ResultExp" xmi:id="_lWsjp4B_EeqHaoR0tqRP_w"/>
+      </left>
+      <right xsi:type="robochart:Mult" xmi:id="_lWsjqIB_EeqHaoR0tqRP_w">
+        <left xsi:type="robochart:Selection" xmi:id="_lWsjqYB_EeqHaoR0tqRP_w" member="_lWoSO4B_EeqHaoR0tqRP_w">
+          <receiver xsi:type="robochart:RefExp" xmi:id="_lWsjqoB_EeqHaoR0tqRP_w" ref="_lWr84YB_EeqHaoR0tqRP_w"/>
+        </left>
+        <right xsi:type="robochart:CallExp" xmi:id="_lWsjq4B_EeqHaoR0tqRP_w">
+          <function xsi:type="robochart:RefExp" xmi:id="_lWsjrIB_EeqHaoR0tqRP_w" ref="_lWr8y4B_EeqHaoR0tqRP_w"/>
+          <args xsi:type="robochart:Selection" xmi:id="_lWsjrYB_EeqHaoR0tqRP_w" member="_lWoSPYB_EeqHaoR0tqRP_w">
+            <receiver xsi:type="robochart:RefExp" xmi:id="_lWsjroB_EeqHaoR0tqRP_w" ref="_lWr84YB_EeqHaoR0tqRP_w"/>
+          </args>
+        </right>
+      </right>
+    </postconditions>
+  </functions>
+  <functions xmi:id="_lWsjr4B_EeqHaoR0tqRP_w" name="sqrt">
+    <type xsi:type="robochart:TypeRef" xmi:id="_lWsjsIB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    <parameters xmi:id="_lWsjsYB_EeqHaoR0tqRP_w" name="x">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWsjsoB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </parameters>
+    <postconditions xsi:type="robochart:Equals" xmi:id="_lWsjs4B_EeqHaoR0tqRP_w">
+      <left xsi:type="robochart:Mult" xmi:id="_lWsjtIB_EeqHaoR0tqRP_w">
+        <left xsi:type="robochart:ResultExp" xmi:id="_lWsjtYB_EeqHaoR0tqRP_w"/>
+        <right xsi:type="robochart:ResultExp" xmi:id="_lWsjtoB_EeqHaoR0tqRP_w"/>
+      </left>
+      <right xsi:type="robochart:RefExp" xmi:id="_lWsjt4B_EeqHaoR0tqRP_w" ref="_lWsjsYB_EeqHaoR0tqRP_w"/>
+    </postconditions>
+  </functions>
+  <functions xmi:id="_lWsjuIB_EeqHaoR0tqRP_w" name="sq">
+    <type xsi:type="robochart:TypeRef" xmi:id="_lWsjuYB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    <parameters xmi:id="_lWsjuoB_EeqHaoR0tqRP_w" name="x">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWsju4B_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </parameters>
+    <postconditions xsi:type="robochart:Equals" xmi:id="_lWsjvIB_EeqHaoR0tqRP_w">
+      <left xsi:type="robochart:ResultExp" xmi:id="_lWsjvYB_EeqHaoR0tqRP_w"/>
+      <right xsi:type="robochart:Mult" xmi:id="_lWsjvoB_EeqHaoR0tqRP_w">
+        <left xsi:type="robochart:RefExp" xmi:id="_lWsjv4B_EeqHaoR0tqRP_w" ref="_lWsjuoB_EeqHaoR0tqRP_w"/>
+        <right xsi:type="robochart:RefExp" xmi:id="_lWsjwIB_EeqHaoR0tqRP_w" ref="_lWsjuoB_EeqHaoR0tqRP_w"/>
+      </right>
+    </postconditions>
+  </functions>
+  <functions xmi:id="_lWsjwYB_EeqHaoR0tqRP_w" name="cvec2svec">
+    <type xsi:type="robochart:TypeRef" xmi:id="_lWsjwoB_EeqHaoR0tqRP_w" ref="_lWoSOoB_EeqHaoR0tqRP_w"/>
+    <parameters xmi:id="_lWsjw4B_EeqHaoR0tqRP_w" name="c">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWsjxIB_EeqHaoR0tqRP_w" ref="_lWoSQYB_EeqHaoR0tqRP_w"/>
+    </parameters>
+    <postconditions xsi:type="robochart:Equals" xmi:id="_lWsjxYB_EeqHaoR0tqRP_w">
+      <left xsi:type="robochart:Selection" xmi:id="_lWsjxoB_EeqHaoR0tqRP_w" member="_lWoSO4B_EeqHaoR0tqRP_w">
+        <receiver xsi:type="robochart:ResultExp" xmi:id="_lWsjx4B_EeqHaoR0tqRP_w"/>
+      </left>
+      <right xsi:type="robochart:CallExp" xmi:id="_lWsjyIB_EeqHaoR0tqRP_w">
+        <function xsi:type="robochart:RefExp" xmi:id="_lWsjyYB_EeqHaoR0tqRP_w" ref="_lWsjr4B_EeqHaoR0tqRP_w"/>
+        <args xsi:type="robochart:Plus" xmi:id="_lWsjyoB_EeqHaoR0tqRP_w">
+          <left xsi:type="robochart:Plus" xmi:id="_lWsjy4B_EeqHaoR0tqRP_w">
+            <left xsi:type="robochart:CallExp" xmi:id="_lWsjzIB_EeqHaoR0tqRP_w">
+              <function xsi:type="robochart:RefExp" xmi:id="_lWsjzYB_EeqHaoR0tqRP_w" ref="_lWsjuIB_EeqHaoR0tqRP_w"/>
+              <args xsi:type="robochart:Selection" xmi:id="_lWsjzoB_EeqHaoR0tqRP_w" member="_lWoSQoB_EeqHaoR0tqRP_w">
+                <receiver xsi:type="robochart:RefExp" xmi:id="_lWsjz4B_EeqHaoR0tqRP_w" ref="_lWsjw4B_EeqHaoR0tqRP_w"/>
+              </args>
+            </left>
+            <right xsi:type="robochart:CallExp" xmi:id="_lWsj0IB_EeqHaoR0tqRP_w">
+              <function xsi:type="robochart:RefExp" xmi:id="_lWsj0YB_EeqHaoR0tqRP_w" ref="_lWsjuIB_EeqHaoR0tqRP_w"/>
+              <args xsi:type="robochart:Selection" xmi:id="_lWsj0oB_EeqHaoR0tqRP_w" member="_lWoSRIB_EeqHaoR0tqRP_w">
+                <receiver xsi:type="robochart:RefExp" xmi:id="_lWsj04B_EeqHaoR0tqRP_w" ref="_lWsjw4B_EeqHaoR0tqRP_w"/>
+              </args>
+            </right>
+          </left>
+          <right xsi:type="robochart:CallExp" xmi:id="_lWsj1IB_EeqHaoR0tqRP_w">
+            <function xsi:type="robochart:RefExp" xmi:id="_lWsj1YB_EeqHaoR0tqRP_w" ref="_lWsjuIB_EeqHaoR0tqRP_w"/>
+            <args xsi:type="robochart:Selection" xmi:id="_lWsj1oB_EeqHaoR0tqRP_w" member="_lWoSRoB_EeqHaoR0tqRP_w">
+              <receiver xsi:type="robochart:RefExp" xmi:id="_lWsj14B_EeqHaoR0tqRP_w" ref="_lWsjw4B_EeqHaoR0tqRP_w"/>
+            </args>
+          </right>
+        </args>
+      </right>
+    </postconditions>
+    <postconditions xsi:type="robochart:Equals" xmi:id="_lWsj2IB_EeqHaoR0tqRP_w">
+      <left xsi:type="robochart:Selection" xmi:id="_lWsj2YB_EeqHaoR0tqRP_w" member="_lWoSPYB_EeqHaoR0tqRP_w">
+        <receiver xsi:type="robochart:ResultExp" xmi:id="_lWsj2oB_EeqHaoR0tqRP_w"/>
+      </left>
+      <right xsi:type="robochart:CallExp" xmi:id="_lWsj24B_EeqHaoR0tqRP_w">
+        <function xsi:type="robochart:RefExp" xmi:id="_lWsj3IB_EeqHaoR0tqRP_w" ref="_lWr814B_EeqHaoR0tqRP_w"/>
+        <args xsi:type="robochart:Div" xmi:id="_lWsj3YB_EeqHaoR0tqRP_w">
+          <left xsi:type="robochart:Selection" xmi:id="_lWsj3oB_EeqHaoR0tqRP_w" member="_lWoSRoB_EeqHaoR0tqRP_w">
+            <receiver xsi:type="robochart:RefExp" xmi:id="_lWsj34B_EeqHaoR0tqRP_w" ref="_lWsjw4B_EeqHaoR0tqRP_w"/>
+          </left>
+          <right xsi:type="robochart:CallExp" xmi:id="_lWsj4IB_EeqHaoR0tqRP_w">
+            <function xsi:type="robochart:RefExp" xmi:id="_lWsj4YB_EeqHaoR0tqRP_w" ref="_lWsjr4B_EeqHaoR0tqRP_w"/>
+            <args xsi:type="robochart:Plus" xmi:id="_lWsj4oB_EeqHaoR0tqRP_w">
+              <left xsi:type="robochart:Plus" xmi:id="_lWsj44B_EeqHaoR0tqRP_w">
+                <left xsi:type="robochart:CallExp" xmi:id="_lWsj5IB_EeqHaoR0tqRP_w">
+                  <function xsi:type="robochart:RefExp" xmi:id="_lWsj5YB_EeqHaoR0tqRP_w" ref="_lWsjuIB_EeqHaoR0tqRP_w"/>
+                  <args xsi:type="robochart:Selection" xmi:id="_lWsj5oB_EeqHaoR0tqRP_w" member="_lWoSQoB_EeqHaoR0tqRP_w">
+                    <receiver xsi:type="robochart:RefExp" xmi:id="_lWsj54B_EeqHaoR0tqRP_w" ref="_lWsjw4B_EeqHaoR0tqRP_w"/>
+                  </args>
+                </left>
+                <right xsi:type="robochart:CallExp" xmi:id="_lWsj6IB_EeqHaoR0tqRP_w">
+                  <function xsi:type="robochart:RefExp" xmi:id="_lWsj6YB_EeqHaoR0tqRP_w" ref="_lWsjuIB_EeqHaoR0tqRP_w"/>
+                  <args xsi:type="robochart:Selection" xmi:id="_lWsj6oB_EeqHaoR0tqRP_w" member="_lWoSRIB_EeqHaoR0tqRP_w">
+                    <receiver xsi:type="robochart:RefExp" xmi:id="_lWsj64B_EeqHaoR0tqRP_w" ref="_lWsjw4B_EeqHaoR0tqRP_w"/>
+                  </args>
+                </right>
+              </left>
+              <right xsi:type="robochart:CallExp" xmi:id="_lWsj7IB_EeqHaoR0tqRP_w">
+                <function xsi:type="robochart:RefExp" xmi:id="_lWsj7YB_EeqHaoR0tqRP_w" ref="_lWsjuIB_EeqHaoR0tqRP_w"/>
+                <args xsi:type="robochart:Selection" xmi:id="_lWsj7oB_EeqHaoR0tqRP_w" member="_lWoSRoB_EeqHaoR0tqRP_w">
+                  <receiver xsi:type="robochart:RefExp" xmi:id="_lWsj74B_EeqHaoR0tqRP_w" ref="_lWsjw4B_EeqHaoR0tqRP_w"/>
+                </args>
+              </right>
+            </args>
+          </right>
+        </args>
+      </right>
+    </postconditions>
+    <postconditions xsi:type="robochart:Equals" xmi:id="_lWsj8IB_EeqHaoR0tqRP_w">
+      <left xsi:type="robochart:Selection" xmi:id="_lWsj8YB_EeqHaoR0tqRP_w" member="_lWoSP4B_EeqHaoR0tqRP_w">
+        <receiver xsi:type="robochart:ResultExp" xmi:id="_lWsj8oB_EeqHaoR0tqRP_w"/>
+      </left>
+      <right xsi:type="robochart:CallExp" xmi:id="_lWsj84B_EeqHaoR0tqRP_w">
+        <function xsi:type="robochart:RefExp" xmi:id="_lWsj9IB_EeqHaoR0tqRP_w" ref="_lWr824B_EeqHaoR0tqRP_w"/>
+        <args xsi:type="robochart:Div" xmi:id="_lWsj9YB_EeqHaoR0tqRP_w">
+          <left xsi:type="robochart:Selection" xmi:id="_lWsj9oB_EeqHaoR0tqRP_w" member="_lWoSRIB_EeqHaoR0tqRP_w">
+            <receiver xsi:type="robochart:RefExp" xmi:id="_lWsj94B_EeqHaoR0tqRP_w" ref="_lWsjw4B_EeqHaoR0tqRP_w"/>
+          </left>
+          <right xsi:type="robochart:Selection" xmi:id="_lWsj-IB_EeqHaoR0tqRP_w" member="_lWoSQoB_EeqHaoR0tqRP_w">
+            <receiver xsi:type="robochart:RefExp" xmi:id="_lWsj-YB_EeqHaoR0tqRP_w" ref="_lWsjw4B_EeqHaoR0tqRP_w"/>
+          </right>
+        </args>
+      </right>
+    </postconditions>
+  </functions>
+  <functions xmi:id="_lWsj-oB_EeqHaoR0tqRP_w" name="mk_SVec">
+    <type xsi:type="robochart:TypeRef" xmi:id="_lWsj-4B_EeqHaoR0tqRP_w" ref="_lWoSOoB_EeqHaoR0tqRP_w"/>
+    <parameters xmi:id="_lWsj_IB_EeqHaoR0tqRP_w" name="r">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWtKoIB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </parameters>
+    <parameters xmi:id="_lWtKoYB_EeqHaoR0tqRP_w" name="p">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWtKooB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </parameters>
+    <parameters xmi:id="_lWtKo4B_EeqHaoR0tqRP_w" name="a">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWtKpIB_EeqHaoR0tqRP_w" ref="_lWnrN4B_EeqHaoR0tqRP_w"/>
+    </parameters>
+    <postconditions xsi:type="robochart:Equals" xmi:id="_lWtKpYB_EeqHaoR0tqRP_w">
+      <left xsi:type="robochart:Selection" xmi:id="_lWtKpoB_EeqHaoR0tqRP_w" member="_lWoSO4B_EeqHaoR0tqRP_w">
+        <receiver xsi:type="robochart:ResultExp" xmi:id="_lWtKp4B_EeqHaoR0tqRP_w"/>
+      </left>
+      <right xsi:type="robochart:RefExp" xmi:id="_lWtKqIB_EeqHaoR0tqRP_w" ref="_lWsj_IB_EeqHaoR0tqRP_w"/>
+    </postconditions>
+    <postconditions xsi:type="robochart:Equals" xmi:id="_lWtKqYB_EeqHaoR0tqRP_w">
+      <left xsi:type="robochart:Selection" xmi:id="_lWtKqoB_EeqHaoR0tqRP_w" member="_lWoSPYB_EeqHaoR0tqRP_w">
+        <receiver xsi:type="robochart:ResultExp" xmi:id="_lWtKq4B_EeqHaoR0tqRP_w"/>
+      </left>
+      <right xsi:type="robochart:RefExp" xmi:id="_lWtKrIB_EeqHaoR0tqRP_w" ref="_lWtKoYB_EeqHaoR0tqRP_w"/>
+    </postconditions>
+    <postconditions xsi:type="robochart:Equals" xmi:id="_lWtKrYB_EeqHaoR0tqRP_w">
+      <left xsi:type="robochart:Selection" xmi:id="_lWtKroB_EeqHaoR0tqRP_w" member="_lWoSP4B_EeqHaoR0tqRP_w">
+        <receiver xsi:type="robochart:ResultExp" xmi:id="_lWtKr4B_EeqHaoR0tqRP_w"/>
+      </left>
+      <right xsi:type="robochart:RefExp" xmi:id="_lWtKsIB_EeqHaoR0tqRP_w" ref="_lWtKo4B_EeqHaoR0tqRP_w"/>
+    </postconditions>
+  </functions>
+  <functions xmi:id="_lWtKsYB_EeqHaoR0tqRP_w" name="cvec2yvec">
+    <type xsi:type="robochart:TypeRef" xmi:id="_lWtKsoB_EeqHaoR0tqRP_w" ref="_lWoSSIB_EeqHaoR0tqRP_w"/>
+    <parameters xmi:id="_lWtKs4B_EeqHaoR0tqRP_w" name="v">
+      <type xsi:type="robochart:TypeRef" xmi:id="_lWtKtIB_EeqHaoR0tqRP_w" ref="_lWoSQYB_EeqHaoR0tqRP_w"/>
+    </parameters>
+  </functions>
+</robochart:RCPackage>

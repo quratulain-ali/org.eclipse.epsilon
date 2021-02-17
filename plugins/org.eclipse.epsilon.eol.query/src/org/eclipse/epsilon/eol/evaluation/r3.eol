@@ -1,0 +1,28 @@
+model robochart alias lib driver EMF {
+nsuri = "http://www.robocalc.circus/RoboChart",
+optimise = "true"
+};
+var reqOCM = robochart!Event.all.select(e|e.name = "reqOCM").first();
+var endTask = robochart!Event.all.select(e|e.name = "endTask").first();
+var ocm = robochart!State.all.select(s|s.name = "OCM").first();
+var initial = robochart!Initial.all.select(s|s.name = "i0").first();
+var initial_transition :Collection<robochart!Transition> = robochart!Transition.all.select(t|t.source = initial);
+if(initial_transition.size() = 1) {
+	if(initial_transition.target.size() = 1 and initial_transition.target.first() = ocm)
+	{
+		var transitionsToOCM = robochart! Transition.all.select(t|t.source = initial and t.target = ocm and 
+		t.source <> ocm);
+		for(transition in transitionsToOCM) {
+		robochart!Transition.all.select(t|t.source = initial);
+			/*if(transition.trigger.event = reqOCM or transition.trigger.event = endTask) {
+			}
+			else {
+				return false;
+			}*/
+		}
+	}
+	else {
+		return false;
+	}
+}
+return true;
