@@ -22,4 +22,5 @@ Require-Bundle: org.eclipse.epsilon.common,
 Import-Package: org.eclipse.emf.ecore.xmi.impl,
  org.eclipse.epsilon.emc.emf,
  org.eclipse.epsilon.eol.dt.launching,
+ org.eclipse.epsilon.eol.query,
  org.eclipse.epsilon.eol.staticanalyser

@@ -74,6 +74,8 @@ public class ModuleElementRewriter {
 				}
 			}
 		}
+		else if(ast.getParent() instanceof ExecutableBlock<?>)
+			((ExecutableBlock<?>) ast.getParent()).setBody(rewritedQuery);
 		else if (ast.getParent() instanceof EqualsOperatorExpression) {
 			EqualsOperatorExpression parent = (EqualsOperatorExpression) ast.getParent();
 			if(ast == parent.getFirstOperand())
