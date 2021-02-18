@@ -33,7 +33,7 @@ public class RoboChart {
 			modelsRoot.resolve("robochart.ecore").toAbsolutePath().toUri().toString()
 		);
 		modelProperties.setProperty(EmfModel.PROPERTY_MODEL_URI,
-			modelsRoot.resolve("auv.model").toAbsolutePath().toUri().toString()
+			modelsRoot.resolve("robochart.model").toAbsolutePath().toUri().toString()
 		);
 		
 		EolRunConfiguration runConfig = EolRunConfiguration.Builder()
