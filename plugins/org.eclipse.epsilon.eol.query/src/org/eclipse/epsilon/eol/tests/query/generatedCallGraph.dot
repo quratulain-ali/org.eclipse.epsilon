@@ -1,9 +1,9 @@
 strict digraph G {
-  main;
-  bar__;
-  foo__;
-  test__;
-  hello__;
+  main [ label="main" ];
+  bar__ [ label="bar()" ];
+  foo__ [ label="foo()" ];
+  test__ [ label="test()" ];
+  hello__ [ label="hello()" ];
   main -> bar__ [ label="" ];
   main -> foo__ [ label="" ];
   main -> test__ [ label="loop" ];

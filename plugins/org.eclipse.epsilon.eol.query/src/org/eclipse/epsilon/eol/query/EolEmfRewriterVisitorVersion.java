@@ -816,7 +816,7 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 		module.getMain().accept(this);
 
 		for (Operation operation : module.getDeclaredOperations()) {
-			String name = replaceSymbolsForGraphviz(operation.toString());
+			String name = operation.toString();
 			if (cg.pathContainsLoop("main", name))
 				canbeExecutedMultipleTimes = true;
 			if (cg.pathExists("main", name))
@@ -862,17 +862,6 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 				count++;
 			}
 		}
-	}
-
-	private String replaceSymbolsForGraphviz(String str) {
-		str = str.replaceAll("[(]", "_");
-		str = str.replaceAll("[)]", "_");
-		str = str.replaceAll("\\-", "_");
-		str = str.replaceAll(":", "_");
-		str = str.replaceAll("\\s", "_");
-		str = str.replaceAll("!", "_");
-		str = str.replaceAll(",", "_");
-		return str;
 	}
 
 }

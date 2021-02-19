@@ -407,7 +407,6 @@ public class CallGraphGenerator implements IEolVisitor {
 		Operation exactMatch= staticAnalyser.getExactMatchedOperation(operationCallExpression);
 		if(exactMatch != null) {
 		String operationName = exactMatch.toString();
-		operationName = removeSymbols(operationName);
 		   if(!entry.equals("main")) 
 		 		callGraph.addVertex(entry);
 		   
@@ -573,7 +572,7 @@ public class CallGraphGenerator implements IEolVisitor {
 		}
 		
 		for(Operation operation : eolModule.getDeclaredOperations()) {
-			entry = removeSymbols(operation.toString());
+			entry = operation.toString();
 			if(callGraph.containsVertex(entry)) {
 				operation.accept(this);
 			}
@@ -614,7 +613,12 @@ public class CallGraphGenerator implements IEolVisitor {
 	}
 	
 	public void exportCallGraphToDot(String fileAndPath) {
-		DOTExporter<String, RelationshipEdge> exporter=new DOTExporter<>(v -> v.toString());
+		DOTExporter<String, RelationshipEdge> exporter=new DOTExporter<>(v -> replaceSymbolsForGraphviz(v.toString()));
+		exporter.setVertexAttributeProvider((v) -> {
+            Map<String, Attribute> map = new LinkedHashMap<>();
+            map.put("label", DefaultAttribute.createAttribute(v.toString()));
+            return map;
+		});
 		exporter.setEdgeAttributeProvider((e) -> {
             Map<String, Attribute> map = new LinkedHashMap<>();
             map.put("label", DefaultAttribute.createAttribute(e.getLabel()));
@@ -626,70 +630,8 @@ public class CallGraphGenerator implements IEolVisitor {
 	    }catch (IOException e){}
         exporter.exportGraph(callGraph, writer);
 	}
-	
-//	public Operation getExactMatchedOperation(OperationCallExpression oc) {
-//		List<Operation> operations = staticAnalyser.getMatchedOperations(oc);
-//		if (operations.size() > 1) {
-//			// Check contextType
-//
-//			for (Operation operation : operations) {
-//				EolType operationContextType = operation.getContextTypeExpression().getResolvedType();
-//				EolType opCallExpContextType = oc.getTargetExpression().getResolvedType();
-//
-//				if (isCompatible(operationContextType, opCallExpContextType)) {
-//					int loopCounter = 0;
-//					if (oc.getParameterExpressions().size() > 1) {
-//						for (Expression parameter : oc.getParameterExpressions()) {
-//							EolType paramContextType = operation.getFormalParameters().get(loopCounter)
-//									.getTypeExpression().getResolvedType();
-//							EolType paramTargetType = parameter.getResolvedType();
-//							if (isCompatible(paramContextType, paramTargetType))
-//								return operation;
-//							loopCounter++;
-//						}
-//					loopCounter = 0;
-//						for (Expression parameter : oc.getParameterExpressions()) {
-//							EolType paramContextType = operation.getFormalParameters().get(loopCounter)
-//									.getTypeExpression().getResolvedType();
-//							EolType paramTargetType = parameter.getResolvedType();
-//							if (canBeCompatible(paramContextType, paramTargetType))
-//								return operation;
-//							loopCounter++;
-//						}
-//						
-//					}
-//					return operation;
-//
-//				} else if(canBeCompatible(operationContextType, opCallExpContextType)) {
-//					int loopCounter = 0;
-//					if (oc.getParameterExpressions().size() > 1) {
-//						for (Expression parameter : oc.getParameterExpressions()) {
-//							EolType paramContextType = operation.getFormalParameters().get(loopCounter)
-//									.getTypeExpression().getResolvedType();
-//							EolType paramTargetType = parameter.getResolvedType();
-//							if (isCompatible(paramContextType, paramTargetType))
-//								return operation;
-//							loopCounter++;
-//						}
-//					loopCounter = 0;
-//						for (Expression parameter : oc.getParameterExpressions()) {
-//							EolType paramContextType = operation.getFormalParameters().get(loopCounter)
-//									.getTypeExpression().getResolvedType();
-//							EolType paramTargetType = parameter.getResolvedType();
-//							if (canBeCompatible(paramContextType, paramTargetType))
-//								return operation;
-//							loopCounter++;
-//						}
-//						
-//					}
-//					return operation;
-//				}
-//			}
-//			
-//		}
-//		return operations.get(0);
-//	}
-	private static String removeSymbols(String str) {
+
+	private static String replaceSymbolsForGraphviz(String str) {
 		str = str.replaceAll("[(]", "_");
 		str = str.replaceAll("[)]", "_");
 		str = str.replaceAll("\\-", "_");
