@@ -38,7 +38,6 @@ import org.eclipse.epsilon.eol.dom.FirstOrderOperationCallExpression;
 import org.eclipse.epsilon.eol.dom.ForStatement;
 import org.eclipse.epsilon.eol.dom.GreaterEqualOperatorExpression;
 import org.eclipse.epsilon.eol.dom.GreaterThanOperatorExpression;
-import org.eclipse.epsilon.eol.dom.IEolVisitor;
 import org.eclipse.epsilon.eol.dom.IfStatement;
 import org.eclipse.epsilon.eol.dom.ImpliesOperatorExpression;
 import org.eclipse.epsilon.eol.dom.Import;
@@ -66,7 +65,6 @@ import org.eclipse.epsilon.eol.dom.PropertyCallExpression;
 import org.eclipse.epsilon.eol.dom.RealLiteral;
 import org.eclipse.epsilon.eol.dom.ReturnStatement;
 import org.eclipse.epsilon.eol.dom.SimpleAnnotation;
-import org.eclipse.epsilon.eol.dom.Statement;
 import org.eclipse.epsilon.eol.dom.StatementBlock;
 import org.eclipse.epsilon.eol.dom.StringLiteral;
 import org.eclipse.epsilon.eol.dom.SwitchStatement;
@@ -80,14 +78,14 @@ import org.eclipse.epsilon.eol.dom.WhileStatement;
 import org.eclipse.epsilon.eol.dom.XorOperatorExpression;
 import org.eclipse.epsilon.eol.exceptions.models.EolModelElementTypeNotFoundException;
 import org.eclipse.epsilon.eol.models.IModel;
+import org.eclipse.epsilon.eol.query.EolEmfRewriterVisitorVersion;
 import org.eclipse.epsilon.eol.query.IndexValueGenerator;
 import org.eclipse.epsilon.eol.query.ModuleElementRewriter;
-import org.eclipse.epsilon.eol.staticanalyser.CallGraphGenerator;
 import org.eclipse.epsilon.eol.types.EolModelElementType;
 import org.eclipse.epsilon.evl.EvlModule;
 import org.eclipse.epsilon.evl.dom.Constraint;
 
-public class EvlEmfQueryRewriterVisitorVersion implements IEolVisitor {
+public class EvlEmfQueryRewriterVisitorVersion extends EolEmfRewriterVisitorVersion {
 	HashSet<String> optimisableOperations = new HashSet<String>(Arrays.asList("select", "exists"));
 	HashSet<String> allOperations = new HashSet<String>(Arrays.asList("all", "allInstances"));
 
@@ -97,8 +95,6 @@ public class EvlEmfQueryRewriterVisitorVersion implements IEolVisitor {
 
 	boolean cascaded = false;
 	boolean secondPass = false;
-	boolean indexExists = false;
-	boolean canbeExecutedMultipleTimes = true;
 	boolean optimisableByCurrentModel = false;
 	boolean logicalOperator = false;
 
@@ -231,19 +227,19 @@ public class EvlEmfQueryRewriterVisitorVersion implements IEolVisitor {
 
 			ModuleElement indexValueExpression = equalsOperatorExpression.getSecondOperand();
 			Expression indexValue = new IndexValueGenerator(indexValueExpression).generateIndexValue();
-			indexExists = false;
-
-			if (potentialIndices.get(modelElementName.getValue()).contains(indexField.getValue())) {
-				indexExists = true;
-			}
+//			indexExists = false;
+//
+//			if (potentialIndices.get(modelElementName.getValue()).contains(indexField.getValue())) {
+//				indexExists = true;
+//			}
 
 			rewritedQuery = new OperationCallExpression(targetExp, operationExp, modelElementName, indexField,
 					indexValue);
 
-			if (indexExists || canbeExecutedMultipleTimes) {
+//			if (indexExists || canbeExecutedMultipleTimes) {
 				potentialIndices.get(modelElementName.getValue()).add(indexField.getValue());
 
-			}
+//			}
 		} else {
 			if (equalsOperatorExpression.getFirstOperand() != null)
 				equalsOperatorExpression.getFirstOperand().accept(this);
@@ -302,7 +298,7 @@ public class EvlEmfQueryRewriterVisitorVersion implements IEolVisitor {
 					i.setText("0");
 					rewritedQuery = new GreaterThanOperatorExpression(new OperationCallExpression(rewritedQuery, new NameExpression("size")),i);
 				}
-				if ((optimisableByCurrentModel && (indexExists || canbeExecutedMultipleTimes)) || logicalOperator) {
+				if ((optimisableByCurrentModel|| logicalOperator)) {
 					new ModuleElementRewriter(firstOrderOperationCallExpression, rewritedQuery).rewrite();
 					optimisableByCurrentModel = false;
 				}
@@ -559,34 +555,35 @@ public class EvlEmfQueryRewriterVisitorVersion implements IEolVisitor {
 					ModuleElement indexValueExpression = ((EqualsOperatorExpression) operand).getSecondOperand();
 					Expression indexValue = new IndexValueGenerator(indexValueExpression).generateIndexValue();
 
-					indexExists = false;
-
-					if (potentialIndices.get(modelElementName.getValue()).contains(indexField.getValue())) {
-						indexExists = true;
-					}
-					if (!(indexExists || canbeExecutedMultipleTimes) && ((FeatureCallExpression) rewritedQuery).getName() == null) {
-						logicalOperator = false;
-						return;
-					}
+//					indexExists = false;
+//
+//					if (potentialIndices.get(modelElementName.getValue()).contains(indexField.getValue())) {
+//						indexExists = true;
+//					}
+//					if (!(indexExists || canbeExecutedMultipleTimes) && ((FeatureCallExpression) rewritedQuery).getName() == null) {
+//						logicalOperator = false;
+//						return;
+//					}
 					if (((FeatureCallExpression) rewritedQuery).getName() == null)
 						rewritedQuery = new OperationCallExpression(targetExp, operationExp, modelElementName,
 								indexField, indexValue);
-					else if (!indexExists && !canbeExecutedMultipleTimes) {
-						FirstOrderOperationCallExpression temp = new FirstOrderOperationCallExpression(
-								new PropertyCallExpression(param.getTypeExpression(), new NameExpression("all")),
-								new NameExpression("select"), param,
-								new EqualsOperatorExpression(new PropertyCallExpression(param.getNameExpression(),
-										new NameExpression(indexField.getValue())), indexValue));
-						rewritedQuery = new OperationCallExpression(rewritedQuery, new NameExpression("includingAll"),
-								temp);
-					} else {
+//					else if (!indexExists && !canbeExecutedMultipleTimes) {
+//						FirstOrderOperationCallExpression temp = new FirstOrderOperationCallExpression(
+//								new PropertyCallExpression(param.getTypeExpression(), new NameExpression("all")),
+//								new NameExpression("select"), param,
+//								new EqualsOperatorExpression(new PropertyCallExpression(param.getNameExpression(),
+//										new NameExpression(indexField.getValue())), indexValue));
+//						rewritedQuery = new OperationCallExpression(rewritedQuery, new NameExpression("includingAll"),
+//								temp);
+//					} 
+					else {
 						rewritedQuery = new OperationCallExpression(rewritedQuery, new NameExpression("includingAll"),
 								new OperationCallExpression(targetExp, operationExp, modelElementName, indexField,
 										indexValue));
 					}
-					if (indexExists || canbeExecutedMultipleTimes) {
+//					if (indexExists || canbeExecutedMultipleTimes) {
 						potentialIndices.get(modelElementName.getValue()).add(indexField.getValue());
-					}
+//					}
 				} else {
 					rewritedQuery = new FirstOrderOperationCallExpression(rewritedQuery, new NameExpression("select"),
 							param, (Expression) operand);
@@ -603,20 +600,20 @@ public class EvlEmfQueryRewriterVisitorVersion implements IEolVisitor {
 					ModuleElement indexValueExpression = ((EqualsOperatorExpression) operand).getSecondOperand();
 					Expression indexValue = new IndexValueGenerator(indexValueExpression).generateIndexValue();
 
-					indexExists = false;
-
-					if (potentialIndices.get(modelElementName.getValue()).contains(indexField.getValue())) {
-						indexExists = true;
-					}
-					if (!(indexExists || canbeExecutedMultipleTimes) && ((FeatureCallExpression) rewritedQuery).getName() == null) {
-						logicalOperator = false;
-						return;
-					}
+//					indexExists = false;
+//
+//					if (potentialIndices.get(modelElementName.getValue()).contains(indexField.getValue())) {
+//						indexExists = true;
+//					}
+//					if (!(indexExists || canbeExecutedMultipleTimes) && ((FeatureCallExpression) rewritedQuery).getName() == null) {
+//						logicalOperator = false;
+//						return;
+//					}
 					if (((FeatureCallExpression) rewritedQuery).getName() == null)
 						rewritedQuery = new OperationCallExpression(targetExp, operationExp, modelElementName,
 								indexField, indexValue);
-					else if ((indexExists && !canbeExecutedMultipleTimes) || !indexExists
-							|| canbeExecutedMultipleTimes) {
+					else {// if ((indexExists && !canbeExecutedMultipleTimes) || !indexExists
+						//	|| canbeExecutedMultipleTimes) {
 						if (!(((FeatureCallExpression) firstOperand).getTargetExpression() instanceof NameExpression)) {
 							rewritedQuery = new FirstOrderOperationCallExpression(rewritedQuery,
 									new NameExpression("select"), param,
@@ -631,7 +628,7 @@ public class EvlEmfQueryRewriterVisitorVersion implements IEolVisitor {
 											new NameExpression(indexField.getValue())), indexValue));
 						flag = true;
 					}
-					if ((indexExists || canbeExecutedMultipleTimes) && !flag) {
+					if (!flag) {
 						potentialIndices.get(modelElementName.getValue()).add(indexField.getValue());
 					}
 				} else {
