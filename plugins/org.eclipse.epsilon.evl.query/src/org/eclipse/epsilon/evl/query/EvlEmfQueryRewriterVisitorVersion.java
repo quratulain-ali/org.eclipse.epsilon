@@ -260,7 +260,7 @@ public class EvlEmfQueryRewriterVisitorVersion implements IEolVisitor {
 
 	@Override
 	public void visit(ExecutableBlock<?> executableBlock) {
-
+	
 	}
 
 	@Override
@@ -732,7 +732,7 @@ public class EvlEmfQueryRewriterVisitorVersion implements IEolVisitor {
 	public void visit(StatementBlock statementBlock) {
 
 		statementBlock.getStatements().forEach(s -> s.accept(this));
-
+	
 	}
 
 	@Override
@@ -809,6 +809,7 @@ public class EvlEmfQueryRewriterVisitorVersion implements IEolVisitor {
 
 	public void rewrite(IModel model, IEolModule module, IEolCompilationContext context) {
 		EvlModule evlModule = (EvlModule) module;
+		this.model = model;
 		this.module = evlModule;
 		StatementBlock statements;
 		optimisableOperations = new HashSet<String>(Arrays.asList("select","exists"));
@@ -819,7 +820,7 @@ public class EvlEmfQueryRewriterVisitorVersion implements IEolVisitor {
 			statements = (StatementBlock)constraint.getCheckBlock().getBody();
 			statements.accept(this);
 		}else {
-			constraint.getCheckBlock().accept(this);
+			((Expression)constraint.getCheckBlock().getBody()).accept(this);
 		}
 		}
 		for (Operation operation : module.getDeclaredOperations()) {

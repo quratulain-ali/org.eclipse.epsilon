@@ -6,6 +6,7 @@ import org.eclipse.epsilon.eol.dom.Expression;
 import org.eclipse.epsilon.eol.dom.IntegerLiteral;
 import org.eclipse.epsilon.eol.dom.NameExpression;
 import org.eclipse.epsilon.eol.dom.OperationCallExpression;
+import org.eclipse.epsilon.eol.dom.OperatorExpression;
 import org.eclipse.epsilon.eol.dom.PropertyCallExpression;
 import org.eclipse.epsilon.eol.dom.RealLiteral;
 import org.eclipse.epsilon.eol.dom.StringLiteral;
@@ -34,6 +35,8 @@ public class IndexValueGenerator {
 			indexValue = (OperationCallExpression) indexValueExpression;
 		} else if (indexValueExpression instanceof NameExpression) {
 			indexValue = (NameExpression) indexValueExpression;
+		} else if (indexValueExpression instanceof OperatorExpression) {
+			indexValue = (OperatorExpression) indexValueExpression;
 		}
 		return indexValue;
 	}

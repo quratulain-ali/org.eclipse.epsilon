@@ -35,6 +35,14 @@ public class EvlRewritingTests extends TestCase {
 	}
 	
 	@Test
+	public static void testWithoutStatementBlock() throws Exception {
+		
+		List<String> actualAndExpected = new ArrayList<>();
+		actualAndExpected = prepareTestCase("testWithoutStatementBlock.evl", "testWithoutStatementBlock.txt",1);
+		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
+	}
+	
+	@Test
 	public static void testMySqlExistSelect() throws Exception {
 		
 		List<String> actualAndExpected = new ArrayList<>();

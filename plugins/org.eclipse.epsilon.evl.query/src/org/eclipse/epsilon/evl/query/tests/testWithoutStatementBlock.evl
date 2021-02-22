@@ -6,9 +6,6 @@ pre {
 }
 context imdb!Movie {
  constraint testConstraint{
-  check {
-	imdb!Movie.all.select(a|a.year = "2010" and a.rating = "5.0");
-		return true;
-}
+  check : imdb!Movie.all.exists(a|a.year = "2010" and a.rating = "5.0")
  }
 }

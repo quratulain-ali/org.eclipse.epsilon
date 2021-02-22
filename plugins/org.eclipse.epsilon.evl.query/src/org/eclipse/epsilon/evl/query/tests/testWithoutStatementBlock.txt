@@ -5,10 +5,7 @@ pre {
 context imdb!Movie {
 		constraint testConstraint {
 		
-		check  {
-			imdb.findByIndex("Movie", "year", "2010").select(a : imdb!Movie|a.rating = "5.0");
-			return true;
-		}
+		check : imdb.findByIndex("Movie", "year", "2010").select(a : imdb!Movie|a.rating = "5.0").size() > 0
 
 	}
 

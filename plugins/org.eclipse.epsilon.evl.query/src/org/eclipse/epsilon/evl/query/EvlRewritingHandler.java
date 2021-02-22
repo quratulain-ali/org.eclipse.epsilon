@@ -17,7 +17,7 @@ public class EvlRewritingHandler {
 					new EvlMySqlRewriter().rewrite(model, module, context);
 
 				if (modelDeclaration.getDriverNameExpression().getName().equals("EMF"))
-					new EvlEmfRewriter().rewrite(model, module, context);
+					new EvlEmfQueryRewriterVisitorVersion().rewrite(model, module, context);
 			}
 		}
 
