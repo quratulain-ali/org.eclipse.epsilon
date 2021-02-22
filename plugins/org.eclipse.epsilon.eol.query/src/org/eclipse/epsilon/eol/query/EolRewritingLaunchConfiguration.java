@@ -5,8 +5,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.epsilon.common.dt.editor.ModelTypeExtensionFactory;
+import org.eclipse.epsilon.eol.EolModule;
 import org.eclipse.epsilon.eol.IEolModule;
 import org.eclipse.epsilon.eol.dt.launching.EpsilonLaunchConfigurationDelegateListener;
+import org.eclipse.epsilon.eol.parse.EolUnparser;
 import org.eclipse.epsilon.eol.staticanalyser.EolStaticAnalyser;
 
 public class EolRewritingLaunchConfiguration implements EpsilonLaunchConfigurationDelegateListener {
@@ -30,6 +32,9 @@ public class EolRewritingLaunchConfiguration implements EpsilonLaunchConfigurati
 		if (module.getMain() == null) return;
         
 		new EolRewritingHandler().invokeRewriters(module, staticAnlayser.getCallGraph());
+		
+		System.err.println(new EolUnparser().unparse((EolModule)module));
+		
 		
 	}
 

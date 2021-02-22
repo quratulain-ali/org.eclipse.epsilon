@@ -116,3 +116,6 @@ examples/org.eclipse.epsilon.examples.evl.xtext/xtend-gen/org/eclipse/epsilon/ex
 examples/org.eclipse.epsilon.examples.evl.xtext/xtend-gen/org/eclipse/epsilon/examples/evl/xtext/validation/.EvlDSLValidator.xtendbin
 examples/org.eclipse.epsilon.examples.evl.xtext/xtend-gen/org/eclipse/epsilon/examples/evl/xtext/.EvlDSLRuntimeModule.xtendbin
 examples/org.eclipse.epsilon.examples.evl.xtext/xtend-gen/org/eclipse/epsilon/examples/evl/xtext/.EvlDSLStandaloneSetup.xtendbin
+plugins/org.eclipse.epsilon.eol.query/src/org/eclipse/epsilon/eol/evaluation/set4.xmi
+plugins/org.eclipse.epsilon.eol.query/src/org/eclipse/epsilon/eol/evaluation/set3.xmi
+plugins/org.eclipse.epsilon.eol.query/src/org/eclipse/epsilon/eol/evaluation/set2.xmi
