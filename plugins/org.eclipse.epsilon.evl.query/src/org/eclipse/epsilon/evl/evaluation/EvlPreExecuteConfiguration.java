@@ -48,7 +48,7 @@ public class EvlPreExecuteConfiguration extends EolRunConfiguration {
 			if (modelDeclaration.getDriverNameExpression().getName().equals("EMF")) 
 				module.getCompilationContext().setModelFactory(new SubEmfModelFactory());
 		}
-		
+		module.getContext().setModule(module);
 		if(module instanceof EvlModule)  {
 			new EvlStaticAnalyser().validate(module);
         

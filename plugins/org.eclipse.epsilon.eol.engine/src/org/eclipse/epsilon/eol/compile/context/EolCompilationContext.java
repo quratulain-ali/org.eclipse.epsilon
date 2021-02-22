@@ -18,6 +18,8 @@ import org.eclipse.epsilon.common.module.ModuleMarker.Severity;
 import org.eclipse.epsilon.eol.compile.m3.MetaClass;
 import org.eclipse.epsilon.eol.compile.m3.Metamodel;
 import org.eclipse.epsilon.eol.dom.ModelDeclaration;
+import org.eclipse.epsilon.eol.exceptions.models.EolModelElementTypeNotFoundException;
+import org.eclipse.epsilon.eol.exceptions.models.EolModelNotFoundException;
 import org.eclipse.epsilon.eol.execute.context.FrameStack;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.models.IRelativePathResolver;
@@ -89,7 +91,16 @@ public class EolCompilationContext implements IEolCompilationContext {
 	
 	@Override
 	public EolModelElementType getModelElementType(String modelAndType) {
-		EolModelElementType modelElementType = new EolModelElementType(modelAndType);
+		EolModelElementType modelElementType = null;
+		try {
+			if(runtimeContext.getModule() != null)
+			modelElementType = new EolModelElementType(modelAndType, runtimeContext);
+			else
+				modelElementType = new EolModelElementType(modelAndType);
+		} catch (EolModelNotFoundException | EolModelElementTypeNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		for (ModelDeclaration modelDeclaration : modelDeclarations) {
 			if (modelElementType.getModelName().isEmpty() || modelDeclaration.getNameExpression().getName().equals(modelElementType.getModelName())) {

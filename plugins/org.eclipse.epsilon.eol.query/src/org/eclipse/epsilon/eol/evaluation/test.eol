@@ -1,6 +1,6 @@
 model imdb driver EMF {
 nsuri = "http://movies/1.0",
-optimise = "true"
+optimise = "false"
 };
-
+for(i in Sequence{1..10})
 var a = imdb!Movie.all.exists(a|a.title = "2 Bill Hour");

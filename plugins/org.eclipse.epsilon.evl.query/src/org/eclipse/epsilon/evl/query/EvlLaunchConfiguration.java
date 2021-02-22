@@ -36,7 +36,7 @@ public class EvlLaunchConfiguration implements EpsilonLaunchConfigurationDelegat
 			if (modelDeclaration.getDriverNameExpression().getName().equals("EMF")) 
 				module.getCompilationContext().setModelFactory(new SubEmfModelFactory());
 		}
-		
+		module.getContext().setModule(module);
 			new EvlStaticAnalyser().validate(module);
         
 		new EvlRewritingHandler().invokeRewriters((EvlModule)module);

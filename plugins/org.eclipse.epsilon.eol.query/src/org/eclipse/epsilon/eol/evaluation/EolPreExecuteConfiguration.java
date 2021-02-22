@@ -21,25 +21,8 @@ public class EolPreExecuteConfiguration extends EolRunConfiguration {
 	
 	@Override
 	protected void preExecute() throws Exception {
-		super.preExecute();//	Resource resource = resourceSet.createResource(URI.createFileURI(new File(model).getAbsolutePath()));
-//		String metamodel = "src/org/eclipse/epsilon/evl/query/psmToJavaTypeMapping.ecore";
-//		ResourceSet resourceSet = new ResourceSetImpl();
-//		ResourceSet ecoreResourceSet = new ResourceSetImpl();
-//		ecoreResourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*", new XMIResourceFactoryImpl());
-//		Resource ecoreResource = ecoreResourceSet.
-//				createResource(URI.createFileURI(new File(metamodel).getAbsolutePath()));
-//		try {
-//			ecoreResource.load(null);
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		for (EObject o : ecoreResource.getContents()) {
-//			EPackage ePackage = (EPackage) o;
-//			resourceSet.getPackageRegistry().put(ePackage.getNsURI(), ePackage);
-//			EPackage.Registry.INSTANCE.put(ePackage.getNsURI(), ePackage);
-//		}
-//		if(module == null) return;
+		super.preExecute();
+		
 		for (ModelDeclaration modelDeclaration : module.getDeclaredModelDeclarations()) {
 			if (modelDeclaration.getDriverNameExpression().getName().equals("MySQL")) 
 				module.getCompilationContext().setModelFactory(new SubJdbcModelFactory());
@@ -47,6 +30,8 @@ public class EolPreExecuteConfiguration extends EolRunConfiguration {
 			if (modelDeclaration.getDriverNameExpression().getName().equals("EMF")) 
 				module.getCompilationContext().setModelFactory(new SubEmfModelFactory());
 		}
+		
+		module.getContext().setModule(module);
 			EolStaticAnalyser staticAnlayser = new EolStaticAnalyser();
 			staticAnlayser.validate(module);
         
