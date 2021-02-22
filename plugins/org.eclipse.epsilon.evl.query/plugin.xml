@@ -3,7 +3,7 @@
 <plugin>
 <extension point="org.eclipse.ui.views">
         <view id="org.eclipse.epsilon.evl.query.QueryRewritingView"
-             name="Evl Query Rewriting"
+             name="Query Rewriting"
              category="org.eclipse.epsilon.dt"
              class="org.eclipse.epsilon.evl.query.EvlQueryRewritingView"
              icon="icons/TypeOneToOneMapping.gif"/>

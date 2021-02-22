@@ -4,7 +4,11 @@ import java.io.File;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.epsilon.common.dt.editor.ModelTypeExtensionFactory;
+import org.eclipse.epsilon.eol.EolModule;
 import org.eclipse.epsilon.eol.compile.context.IEolCompilationContext;
+import org.eclipse.epsilon.eol.parse.EolUnparser;
+import org.eclipse.epsilon.eol.query.EolRewritingHandler;
+import org.eclipse.epsilon.eol.staticanalyser.EolStaticAnalyser;
 import org.eclipse.epsilon.evl.EvlModule;
 import org.eclipse.epsilon.evl.dt.editor.EvlEditor;
 import org.eclipse.epsilon.evl.parse.EvlUnparser;
@@ -65,8 +69,10 @@ public class EvlQueryRewritingView extends ViewPart {
 		IToolBarManager toolbar = getViewSite().getActionBars().getToolBarManager();
 		toolbar.add(new RefreshAction(this));
 
+		if(getActiveEditorFilePath().split("\\.")[1].equals("eol"))
+			doRewriting(getActiveEditorFilePath(), "eol");
 		if(getActiveEditorFilePath().split("\\.")[1].equals("evl"))
-			doRewriting(getActiveEditorFilePath());
+			doRewriting(getActiveEditorFilePath(), "evl");
 	}
 
 	public class MyLabelProvider extends LabelProvider implements IColorProvider {
@@ -107,10 +113,13 @@ public class EvlQueryRewritingView extends ViewPart {
 
 	public void render(IEditorPart editor) {
 		if(getActiveEditorFilePath().split("\\.")[1].equals("eol"))
-		doRewriting(getActiveEditorFilePath());
+			doRewriting(getActiveEditorFilePath(), "eol");
+		if(getActiveEditorFilePath().split("\\.")[1].equals("evl"))
+			doRewriting(getActiveEditorFilePath(), "evl");
 	}
 
-	public void doRewriting(String activeFile) {
+	public void doRewriting(String activeFile, String extension) {
+		if(extension.equals("evl")) {
 		EvlModule module = new EvlModule();
 
 		try {
@@ -130,6 +139,28 @@ public class EvlQueryRewritingView extends ViewPart {
 		new EvlRewritingHandler().invokeRewriters(module);
 		
 		translatedCode.set(new EvlUnparser().unparse(module));
+		}
+		else {
+			EolModule module = new EolModule();
+
+			try {
+				module.parse(new File(activeFile));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			context = module.getCompilationContext();
+
+			context.setModelFactory(new ModelTypeExtensionFactory());
+
+			EolStaticAnalyser staticAnlayser = new EolStaticAnalyser();
+			staticAnlayser.validate(module);
+			
+
+			new EolRewritingHandler().invokeRewriters(module, staticAnlayser.getCallGraph());
+			
+			translatedCode.set(new EolUnparser().unparse(module));
+		}
 		viewer.setDocument(translatedCode);
 	}
 }
