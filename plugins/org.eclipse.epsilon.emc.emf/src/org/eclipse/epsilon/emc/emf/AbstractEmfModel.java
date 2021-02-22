@@ -39,7 +39,6 @@ import org.eclipse.epsilon.common.util.Multimap;
 import org.eclipse.epsilon.common.util.StringProperties;
 import org.eclipse.epsilon.emc.emf.CachedResourceSet.Cache;
 import org.eclipse.epsilon.emc.emf.transactions.EmfModelTransactionSupport;
-import org.eclipse.epsilon.eol.dom.PropertyCallExpression;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.exceptions.models.EolEnumerationValueNotFoundException;
 import org.eclipse.epsilon.eol.exceptions.models.EolModelElementTypeNotFoundException;

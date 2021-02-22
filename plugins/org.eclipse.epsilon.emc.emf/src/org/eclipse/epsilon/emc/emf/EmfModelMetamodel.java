@@ -26,7 +26,6 @@ import org.eclipse.epsilon.eol.models.IRelativePathResolver;
 import org.eclipse.epsilon.eol.types.EolAnyType;
 import org.eclipse.epsilon.eol.types.EolModelElementType;
 import org.eclipse.epsilon.eol.types.EolPrimitiveType;
-import org.eclipse.epsilon.eol.types.EolType;
 
 public class EmfModelMetamodel extends Metamodel {
 	
