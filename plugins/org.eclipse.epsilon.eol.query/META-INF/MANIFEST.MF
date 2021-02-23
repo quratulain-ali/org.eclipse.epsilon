@@ -17,5 +17,6 @@ Import-Package: org.eclipse.emf.ecore,
  org.eclipse.epsilon.eol.dt,
  org.eclipse.epsilon.eol.dt.editor,
  org.eclipse.epsilon.eol.dt.launching,
- org.eclipse.epsilon.eol.staticanalyser
+ org.eclipse.epsilon.eol.staticanalyser,
+ org.eclipse.epsilon.evl
 Export-Package: org.eclipse.epsilon.eol.query

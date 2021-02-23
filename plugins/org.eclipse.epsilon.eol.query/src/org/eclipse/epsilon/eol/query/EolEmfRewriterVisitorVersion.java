@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.eol.IEolModule;
@@ -104,7 +102,7 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 
 	Expression rewritedQuery;
 	NameExpression targetExp;
-	NameExpression operationExp;
+	NameExpression operationExp = new NameExpression("findByIndex");
 	StringLiteral modelElementName;
 	StringLiteral indexField;
 	Parameter param;
@@ -496,8 +494,8 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 					optimisableByCurrentModel = true;
 					modelName = modelElement.getModelName();
 					model.setName(modelName);
-					targetExp = new NameExpression(modelName);
-					operationExp = new NameExpression("findByIndex");
+//					targetExp = new NameExpression(modelName);
+//					operationExp = new NameExpression("findByIndex");
 					modelElementName = new StringLiteral(modelElement.getTypeName());
 
 					if (potentialIndices.get(modelElementName.getValue()) == null) {
@@ -826,7 +824,7 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 
 		secondPass = true;
 		module.getMain().accept(this);
-		injectCreateIndexStatements(module, modelName, potentialIndices);
+		new CreateIndexStatementsInjector().inject(module, modelName, potentialIndices);
 
 	}
 
@@ -843,25 +841,6 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 		}
 		return ast.getChildren();
 
-	}
-
-	public void injectCreateIndexStatements(IEolModule module, String modelName,
-			HashMap<String, HashSet<String>> potentialIndices) {
-		int count = 0;
-		Iterator<Entry<String, HashSet<String>>> it = potentialIndices.entrySet().iterator();
-		while (it.hasNext()) {
-			Map.Entry<String, HashSet<String>> pair = (Map.Entry<String, HashSet<String>>) it.next();
-			for (String field : pair.getValue()) {
-				// Injecting createIndex statements based on potential indices
-				ExpressionStatement statement = new ExpressionStatement();
-				statement.setExpression(
-						new OperationCallExpression(new NameExpression(modelName), new NameExpression("createIndex"),
-								new StringLiteral(pair.getKey() + ""), new StringLiteral(field)));
-
-				module.getMain().getStatements().add(count, statement);
-				count++;
-			}
-		}
 	}
 
 }
