@@ -82,19 +82,12 @@ import org.eclipse.epsilon.eol.types.EolModelElementType;
 
 public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 
-	HashSet<String> optimisableOperations = new HashSet<String>(Arrays.asList("select", "exists"));
-	HashSet<String> allOperations = new HashSet<String>(Arrays.asList("all", "allInstances"));
+	HashSet<String> optimisableOperations;
+	HashSet<String> allOperations;
 
-	HashMap<String, HashSet<String>> potentialIndices = new HashMap<>();
-
+	HashMap<String, HashSet<String>> potentialIndices;
 	List<ModuleElement> decomposedAsts;
-
-	boolean cascaded = false;
-	boolean secondPass = false;
-	boolean indexExists = false;
-	boolean canbeExecutedMultipleTimes = false;
-	boolean optimisableByCurrentModel = false;
-	boolean logicalOperator = false;
+	HashMap<String, Boolean> flags;
 
 	IEolModule module;
 	IModel model;
@@ -102,11 +95,26 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 
 	Expression rewritedQuery;
 	NameExpression targetExp;
-	NameExpression operationExp = new NameExpression("findByIndex");
+	NameExpression operationExp;
 	StringLiteral modelElementName;
 	StringLiteral indexField;
 	Parameter param;
 
+	public EolEmfRewriterVisitorVersion() {
+		optimisableOperations = new HashSet<String>(Arrays.asList("select", "exists"));
+		allOperations = new HashSet<String>(Arrays.asList("all", "allInstances"));
+		
+		potentialIndices = new HashMap<>();
+		operationExp = new NameExpression("findByIndex");
+		
+		flags = new HashMap<>();
+		flags.put("cascaded" ,false);
+		flags.put("secondPass" ,false);
+		flags.put("indexExists" ,false);
+		flags.put("canBeExecutedMultipleTimes" ,false);
+		flags.put("optimisableByCurrentModel" ,false);
+		flags.put("logicalOperator" ,false);
+	}
 	@Override
 	public void visit(AbortStatement abortStatement) {
 		// TODO Auto-generated method stub
@@ -115,17 +123,17 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 
 	@Override
 	public void visit(AndOperatorExpression andOperatorExpression) {
-		cascaded = false;
-		logicalOperator = true;
+		flags.put("cascaded" ,false);
+		flags.put("logicalOperator" ,true);
 		decomposedAsts = new ArrayList<ModuleElement>();
 		decomposedAsts = decomposeAST(andOperatorExpression);
-		if (cascaded && !secondPass)
+		if (flags.get("cascaded") && !flags.get("secondPass"))
 			decomposedAsts.add((andOperatorExpression.getSecondOperand()));
 		rewritedQuery = new OperationCallExpression();
 
 		for (ModuleElement operand : decomposedAsts) {
 			visit((OperatorExpression) operand, "and");
-			if (!logicalOperator)
+			if (!flags.get("logicalOperator"))
 				return;
 		}
 	}
@@ -218,23 +226,23 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 
 	@Override
 	public void visit(EqualsOperatorExpression equalsOperatorExpression) {
-		if (optimisableByCurrentModel) {
+		if (flags.get("optimisableByCurrentModel")) {
 			Expression firstOperand = equalsOperatorExpression.getFirstOperand();
 			if (firstOperand != null && firstOperand instanceof PropertyCallExpression)
 				visit((PropertyCallExpression) firstOperand, true);
 
 			ModuleElement indexValueExpression = equalsOperatorExpression.getSecondOperand();
 			Expression indexValue = new IndexValueGenerator(indexValueExpression).generateIndexValue();
-			indexExists = false;
+			flags.put("indexExists", false);
 
 			if (potentialIndices.get(modelElementName.getValue()).contains(indexField.getValue())) {
-				indexExists = true;
+				flags.put("indexExists", true);
 			}
 
 			rewritedQuery = new OperationCallExpression(targetExp, operationExp, modelElementName, indexField,
 					indexValue);
 
-			if (indexExists || canbeExecutedMultipleTimes) {
+			if (flags.get("indexExists") || flags.get("canBeExecutedMultipleTimes")) {
 				potentialIndices.get(modelElementName.getValue()).add(indexField.getValue());
 
 			}
@@ -271,7 +279,7 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 
 	@Override
 	public void visit(FirstOrderOperationCallExpression firstOrderOperationCallExpression) {
-		logicalOperator = false;
+		flags.put("logicalOperator" ,false);
 		rewritedQuery = new OperationCallExpression();
 		if (optimisableOperations.contains(firstOrderOperationCallExpression.getName())) {
 			if (firstOrderOperationCallExpression.getTargetExpression() instanceof PropertyCallExpression) {
@@ -279,7 +287,7 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 						.getTargetExpression();
 				visit(target, false);
 			}
-			if (optimisableByCurrentModel) {
+			if (flags.get("optimisableByCurrentModel")) {
 				Iterator<Parameter> pi = firstOrderOperationCallExpression.getParameters().iterator();
 				while (pi.hasNext()) {
 					pi.next().accept(this);
@@ -297,13 +305,12 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 					i.setText("0");
 					rewritedQuery = new GreaterThanOperatorExpression(new OperationCallExpression(rewritedQuery, new NameExpression("size")),i);
 				}
-				if ((optimisableByCurrentModel && (indexExists || canbeExecutedMultipleTimes)) || logicalOperator) {
+				if ((flags.get("optimisableByCurrentModel") && (flags.get("indexExists") || flags.get("canBeExecutedMultipleTimes"))) || flags.get("logicalOperator")) {
 					new ModuleElementRewriter(firstOrderOperationCallExpression, rewritedQuery).rewrite();
-					optimisableByCurrentModel = false;
 				}
-				optimisableByCurrentModel = false;
+				flags.put("optimisableByCurrentModel", false);
 			} else {
-				optimisableByCurrentModel = false;
+				flags.put("optimisableByCurrentModel", false);
 				firstOrderOperationCallExpression.getTargetExpression().accept(this);
 				Iterator<Parameter> pi = firstOrderOperationCallExpression.getParameters().iterator();
 				while (pi.hasNext()) {
@@ -327,9 +334,9 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 	public void visit(ForStatement forStatement) {
 		forStatement.getIteratorParameter().accept(this);
 		forStatement.getIteratedExpression().accept(this);
-		canbeExecutedMultipleTimes = true;
+		flags.put("canBeExecutedMultipleTimes", true);
 		forStatement.getBodyStatementBlock().accept(this);
-		canbeExecutedMultipleTimes = false;
+		flags.put("canBeExecutedMultipleTimes", false);
 
 	}
 
@@ -491,7 +498,7 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 
 			try {
 				if (modelElement.getModel(module.getCompilationContext()) == model) {
-					optimisableByCurrentModel = true;
+					flags.put("optimisableByCurrentModel", true);
 					modelName = modelElement.getModelName();
 					model.setName(modelName);
 //					targetExp = new NameExpression(modelName);
@@ -502,7 +509,7 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 						potentialIndices.put(modelElementName.getValue(), new HashSet<String>());
 					}
 				} else
-					optimisableByCurrentModel = false;
+					flags.put("optimisableByCurrentModel", false);
 
 			} catch (EolModelElementTypeNotFoundException e) {
 				e.printStackTrace();
@@ -520,20 +527,20 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 
 	@Override
 	public void visit(OrOperatorExpression orOperatorExpression) {
-		if (optimisableByCurrentModel) {
-			logicalOperator = true;
-			cascaded = false;
+		if (flags.get("optimisableByCurrentModel")) {
+			flags.put("logicalOperator" ,true);
+			flags.put("cascaded",  false);
 			decomposedAsts = new ArrayList<ModuleElement>();
 			decomposedAsts = decomposeAST(orOperatorExpression);
 
-			if (cascaded && !secondPass)
+			if (flags.get("cascaded") && !flags.get("secondPass"))
 				decomposedAsts.add((orOperatorExpression.getSecondOperand()));
 
 			rewritedQuery = new OperationCallExpression();
 
 			for (ModuleElement operand : decomposedAsts) {
 				visit((OperatorExpression) operand, "or");
-				if (!logicalOperator)
+				if (!flags.get("logicalOperator"))
 					return;
 			}
 		} else {
@@ -546,7 +553,7 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 	}
 
 	public void visit(OperatorExpression operand, String logicalOperatorName) {
-		if (optimisableByCurrentModel) {
+		if (flags.get("optimisableByCurrentModel")) {
 			if (logicalOperatorName.equals("or")) {
 				if (operand instanceof EqualsOperatorExpression) {
 					operand = (EqualsOperatorExpression) operand;
@@ -556,19 +563,19 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 					ModuleElement indexValueExpression = ((EqualsOperatorExpression) operand).getSecondOperand();
 					Expression indexValue = new IndexValueGenerator(indexValueExpression).generateIndexValue();
 
-					indexExists = false;
+					flags.put("indexExists", false);
 
 					if (potentialIndices.get(modelElementName.getValue()).contains(indexField.getValue())) {
-						indexExists = true;
+						flags.put("indexExists", true);
 					}
-					if (!(indexExists || canbeExecutedMultipleTimes) && ((FeatureCallExpression) rewritedQuery).getName() == null) {
-						logicalOperator = false;
+					if (!(flags.get("indexExists") || flags.get("canBeExecutedMultipleTimes")) && ((FeatureCallExpression) rewritedQuery).getName() == null) {
+						flags.put("logicalOperator" ,false);
 						return;
 					}
 					if (((FeatureCallExpression) rewritedQuery).getName() == null)
 						rewritedQuery = new OperationCallExpression(targetExp, operationExp, modelElementName,
 								indexField, indexValue);
-					else if (!indexExists && !canbeExecutedMultipleTimes) {
+					else if (!flags.get("indexExists")  && !flags.get("canBeExecutedMultipleTimes")) {
 						FirstOrderOperationCallExpression temp = new FirstOrderOperationCallExpression(
 								new PropertyCallExpression(param.getTypeExpression(), new NameExpression("all")),
 								new NameExpression("select"), param,
@@ -581,7 +588,7 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 								new OperationCallExpression(targetExp, operationExp, modelElementName, indexField,
 										indexValue));
 					}
-					if (indexExists || canbeExecutedMultipleTimes) {
+					if (flags.get("indexExists")  || flags.get("canBeExecutedMultipleTimes")) {
 						potentialIndices.get(modelElementName.getValue()).add(indexField.getValue());
 					}
 				} else {
@@ -600,20 +607,20 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 					ModuleElement indexValueExpression = ((EqualsOperatorExpression) operand).getSecondOperand();
 					Expression indexValue = new IndexValueGenerator(indexValueExpression).generateIndexValue();
 
-					indexExists = false;
+					flags.put("indexExists",false); 
 
 					if (potentialIndices.get(modelElementName.getValue()).contains(indexField.getValue())) {
-						indexExists = true;
+						flags.put("indexExists", true);
 					}
-					if (!(indexExists || canbeExecutedMultipleTimes) && ((FeatureCallExpression) rewritedQuery).getName() == null) {
-						logicalOperator = false;
+					if (!(flags.get("indexExists")  || flags.get("canBeExecutedMultipleTimes")) && ((FeatureCallExpression) rewritedQuery).getName() == null) {
+						flags.put("logicalOperator" ,false);
 						return;
 					}
 					if (((FeatureCallExpression) rewritedQuery).getName() == null)
 						rewritedQuery = new OperationCallExpression(targetExp, operationExp, modelElementName,
 								indexField, indexValue);
-					else if ((indexExists && !canbeExecutedMultipleTimes) || !indexExists
-							|| canbeExecutedMultipleTimes) {
+					else if ((flags.get("indexExists")  && !flags.get("canBeExecutedMultipleTimes")) || !flags.get("indexExists") 
+							|| flags.get("canBeExecutedMultipleTimes")) {
 						if (!(((FeatureCallExpression) firstOperand).getTargetExpression() instanceof NameExpression)) {
 							rewritedQuery = new FirstOrderOperationCallExpression(rewritedQuery,
 									new NameExpression("select"), param,
@@ -628,7 +635,7 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 											new NameExpression(indexField.getValue())), indexValue));
 						flag = true;
 					}
-					if ((indexExists || canbeExecutedMultipleTimes) && !flag) {
+					if ((flags.get("indexExists")  || flags.get("canBeExecutedMultipleTimes")) && !flag) {
 						potentialIndices.get(modelElementName.getValue()).add(indexField.getValue());
 					}
 				} else {
@@ -686,7 +693,7 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 
 				try {
 					if (modelElement.getModel(module.getCompilationContext()) == model) {
-						optimisableByCurrentModel = true;
+						flags.put("optimisableByCurrentModel", true);
 						modelName = modelElement.getModelName();
 						model.setName(modelName);
 						targetExp = new NameExpression(modelName);
@@ -697,7 +704,7 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 							potentialIndices.put(modelElementName.getValue(), new HashSet<String>());
 						}
 					} else
-						optimisableByCurrentModel = false;
+						flags.put("optimisableByCurrentModel", false);
 
 				} catch (EolModelElementTypeNotFoundException e) {
 					e.printStackTrace();
@@ -816,13 +823,13 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 		for (Operation operation : module.getDeclaredOperations()) {
 			String name = operation.toString();
 			if (cg.pathContainsLoop("main", name))
-				canbeExecutedMultipleTimes = true;
+				flags.put("canBeExecutedMultipleTimes", true);
 			if (cg.pathExists("main", name))
 				operation.accept(this);
-			canbeExecutedMultipleTimes = false;
+			flags.put("canBeExecutedMultipleTimes", false);
 		}
 
-		secondPass = true;
+		flags.put("secondPass", true);
 		module.getMain().accept(this);
 		new CreateIndexStatementsInjector().inject(module, modelName, potentialIndices);
 
@@ -832,11 +839,11 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 		Expression firstOperand = ((OperatorExpression) ast).getFirstOperand();
 
 		if (firstOperand instanceof OrOperatorExpression) {
-			cascaded = true;
+			flags.put("cascaded",  true);
 			return decomposeAST(firstOperand);
 		}
 		if (firstOperand instanceof AndOperatorExpression) {
-			cascaded = true;
+			flags.put("cascaded",  true);
 			return decomposeAST(firstOperand);
 		}
 		return ast.getChildren();

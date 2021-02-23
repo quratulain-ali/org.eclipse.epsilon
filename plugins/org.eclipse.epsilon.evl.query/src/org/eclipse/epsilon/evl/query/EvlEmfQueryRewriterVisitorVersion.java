@@ -33,21 +33,17 @@ import org.eclipse.epsilon.eol.query.EolEmfRewriterVisitorVersion;
 import org.eclipse.epsilon.eol.query.IndexValueGenerator;
 import org.eclipse.epsilon.eol.query.ModuleElementRewriter;
 import org.eclipse.epsilon.eol.types.EolModelElementType;
+import org.eclipse.epsilon.erl.dom.Pre;
 import org.eclipse.epsilon.evl.EvlModule;
 import org.eclipse.epsilon.evl.dom.Constraint;
 
 public class EvlEmfQueryRewriterVisitorVersion extends EolEmfRewriterVisitorVersion {
-	HashSet<String> optimisableOperations = new HashSet<String>(Arrays.asList("select", "exists"));
-	HashSet<String> allOperations = new HashSet<String>(Arrays.asList("all", "allInstances"));
+	HashSet<String> optimisableOperations;
+	HashSet<String> allOperations;
 
-	HashMap<String, HashSet<String>> potentialIndices = new HashMap<>();
-
+	HashMap<String, HashSet<String>> potentialIndices;
 	List<ModuleElement> decomposedAsts;
-
-	boolean cascaded = false;
-	boolean secondPass = false;
-	boolean optimisableByCurrentModel = false;
-	boolean logicalOperator = false;
+	HashMap<String, Boolean> flags;
 
 	IEolModule module;
 	IModel model;
@@ -59,28 +55,41 @@ public class EvlEmfQueryRewriterVisitorVersion extends EolEmfRewriterVisitorVers
 	StringLiteral modelElementName;
 	StringLiteral indexField;
 	Parameter param;
-
+	
+	public EvlEmfQueryRewriterVisitorVersion() {
+		optimisableOperations = new HashSet<String>(Arrays.asList("select", "exists"));
+		allOperations = new HashSet<String>(Arrays.asList("all", "allInstances"));
+		
+		potentialIndices = new HashMap<>();
+		operationExp = new NameExpression("findByIndex");
+		
+		flags = new HashMap<>();
+		flags.put("cascaded" ,false);
+		flags.put("secondPass" ,false);
+		flags.put("optimisableByCurrentModel" ,false);
+		flags.put("logicalOperator" ,false);
+	}
 
 	@Override
 	public void visit(AndOperatorExpression andOperatorExpression) {
-		cascaded = false;
-		logicalOperator = true;
+		flags.put("cascaded", false);
+		flags.put("logicalOperator",true);
 		decomposedAsts = new ArrayList<ModuleElement>();
 		decomposedAsts = decomposeAST(andOperatorExpression);
-		if (cascaded && !secondPass)
+		if (flags.get("cascaded") && !flags.get("secondPass"))
 			decomposedAsts.add((andOperatorExpression.getSecondOperand()));
 		rewritedQuery = new OperationCallExpression();
 
 		for (ModuleElement operand : decomposedAsts) {
 			visit((OperatorExpression) operand, "and");
-			if (!logicalOperator)
+			if (!flags.get("logicalOperator"))
 				return;
 		}
 	}
 
 	@Override
 	public void visit(EqualsOperatorExpression equalsOperatorExpression) {
-		if (optimisableByCurrentModel) {
+		if (flags.get("optimisableByCurrentModel")) {
 			Expression firstOperand = equalsOperatorExpression.getFirstOperand();
 			if (firstOperand != null && firstOperand instanceof PropertyCallExpression)
 				visit((PropertyCallExpression) firstOperand, true);
@@ -103,7 +112,7 @@ public class EvlEmfQueryRewriterVisitorVersion extends EolEmfRewriterVisitorVers
 
 	@Override
 	public void visit(FirstOrderOperationCallExpression firstOrderOperationCallExpression) {
-		logicalOperator = false;
+		flags.put("logicalOperator",false);
 		rewritedQuery = new OperationCallExpression();
 		if (optimisableOperations.contains(firstOrderOperationCallExpression.getName())) {
 			if (firstOrderOperationCallExpression.getTargetExpression() instanceof PropertyCallExpression) {
@@ -111,7 +120,7 @@ public class EvlEmfQueryRewriterVisitorVersion extends EolEmfRewriterVisitorVers
 						.getTargetExpression();
 				visit(target, false);
 			}
-			if (optimisableByCurrentModel) {
+			if (flags.get("optimisableByCurrentModel")) {
 				Iterator<Parameter> pi = firstOrderOperationCallExpression.getParameters().iterator();
 				while (pi.hasNext()) {
 					pi.next().accept(this);
@@ -129,13 +138,12 @@ public class EvlEmfQueryRewriterVisitorVersion extends EolEmfRewriterVisitorVers
 					i.setText("0");
 					rewritedQuery = new GreaterThanOperatorExpression(new OperationCallExpression(rewritedQuery, new NameExpression("size")),i);
 				}
-				if ((optimisableByCurrentModel|| logicalOperator)) {
+				if ((flags.get("optimisableByCurrentModel")|| flags.get("logicalOperator"))) {
 					new ModuleElementRewriter(firstOrderOperationCallExpression, rewritedQuery).rewrite();
-					optimisableByCurrentModel = false;
 				}
-				optimisableByCurrentModel = false;
+				flags.put("optimisableByCurrentModel",false);
 			} else {
-				optimisableByCurrentModel = false;
+				flags.put("optimisableByCurrentModel",false);
 				firstOrderOperationCallExpression.getTargetExpression().accept(this);
 				Iterator<Parameter> pi = firstOrderOperationCallExpression.getParameters().iterator();
 				while (pi.hasNext()) {
@@ -168,7 +176,7 @@ public class EvlEmfQueryRewriterVisitorVersion extends EolEmfRewriterVisitorVers
 
 			try {
 				if (modelElement.getModel(module.getCompilationContext()) == model) {
-					optimisableByCurrentModel = true;
+					flags.put("optimisableByCurrentModel" ,true);
 					modelName = modelElement.getModelName();
 					model.setName(modelName);
 					targetExp = new NameExpression(modelName);
@@ -179,7 +187,7 @@ public class EvlEmfQueryRewriterVisitorVersion extends EolEmfRewriterVisitorVers
 						potentialIndices.put(modelElementName.getValue(), new HashSet<String>());
 					}
 				} else
-					optimisableByCurrentModel = false;
+					flags.put("optimisableByCurrentModel" ,false);
 
 			} catch (EolModelElementTypeNotFoundException e) {
 				e.printStackTrace();
@@ -197,20 +205,20 @@ public class EvlEmfQueryRewriterVisitorVersion extends EolEmfRewriterVisitorVers
 
 	@Override
 	public void visit(OrOperatorExpression orOperatorExpression) {
-		if (optimisableByCurrentModel) {
-			logicalOperator = true;
-			cascaded = false;
+		if (flags.get("optimisableByCurrentModel")) {
+			flags.put("logicalOperator", true);
+			flags.put("cascaded", false);
 			decomposedAsts = new ArrayList<ModuleElement>();
 			decomposedAsts = decomposeAST(orOperatorExpression);
 
-			if (cascaded && !secondPass)
+			if (flags.get("cascaded") && !flags.get("secondPass"))
 				decomposedAsts.add((orOperatorExpression.getSecondOperand()));
 
 			rewritedQuery = new OperationCallExpression();
 
 			for (ModuleElement operand : decomposedAsts) {
 				visit((OperatorExpression) operand, "or");
-				if (!logicalOperator)
+				if (!flags.get("logicalOperator"))
 					return;
 			}
 		} else {
@@ -223,7 +231,7 @@ public class EvlEmfQueryRewriterVisitorVersion extends EolEmfRewriterVisitorVers
 	}
 
 	public void visit(OperatorExpression operand, String logicalOperatorName) {
-		if (optimisableByCurrentModel) {
+		if (flags.get("optimisableByCurrentModel")) {
 			if (logicalOperatorName.equals("or")) {
 				if (operand instanceof EqualsOperatorExpression) {
 					operand = (EqualsOperatorExpression) operand;
@@ -305,18 +313,17 @@ public class EvlEmfQueryRewriterVisitorVersion extends EolEmfRewriterVisitorVers
 
 				try {
 					if (modelElement.getModel(module.getCompilationContext()) == model) {
-						optimisableByCurrentModel = true;
+						flags.put("optimisableByCurrentModel", true);
 						modelName = modelElement.getModelName();
 						model.setName(modelName);
 						targetExp = new NameExpression(modelName);
-						operationExp = new NameExpression("findByIndex");
 						modelElementName = new StringLiteral(modelElement.getTypeName());
 
 						if (potentialIndices.get(modelElementName.getValue()) == null) {
 							potentialIndices.put(modelElementName.getValue(), new HashSet<String>());
 						}
 					} else
-						optimisableByCurrentModel = false;
+						flags.put("optimisableByCurrentModel", false);
 
 				} catch (EolModelElementTypeNotFoundException e) {
 					e.printStackTrace();
@@ -333,27 +340,36 @@ public class EvlEmfQueryRewriterVisitorVersion extends EolEmfRewriterVisitorVers
 		optimisableOperations = new HashSet<String>(Arrays.asList("select","exists"));
 		allOperations = new HashSet<String>(Arrays.asList("all", "allInstances"));
 		
-		for(Constraint constraint : evlModule.getConstraints()) {
-		if(	constraint.getCheckBlock().getBody() instanceof StatementBlock) {
-			statements = (StatementBlock)constraint.getCheckBlock().getBody();
-			statements.accept(this);
-		}else {
-			((Expression)constraint.getCheckBlock().getBody()).accept(this);
-		}
+		for (Constraint constraint : evlModule.getConstraints()) {
+			if (constraint.getAnnotation("noindex") == null) {
+				if (constraint.getCheckBlock().getBody() instanceof StatementBlock) {
+					statements = (StatementBlock) constraint.getCheckBlock().getBody();
+					statements.accept(this);
+				} else {
+					((Expression) constraint.getCheckBlock().getBody()).accept(this);
+				}
+			}
 		}
 		for (Operation operation : module.getDeclaredOperations()) {
 			operation.accept(this);
 		}
 		
-		secondPass = true;
+		flags.put("secondPass", true);
 		for(Constraint constraint : evlModule.getConstraints()) {
-			if(	constraint.getCheckBlock().getBody() instanceof StatementBlock) {
-				statements = (StatementBlock)constraint.getCheckBlock().getBody();
-				statements.accept(this);
-			}else {
-				constraint.getCheckBlock().accept(this);
+			if (constraint.getAnnotation("noindex") == null) {
+				if (constraint.getCheckBlock().getBody() instanceof StatementBlock) {
+					statements = (StatementBlock) constraint.getCheckBlock().getBody();
+					statements.accept(this);
+				} else {
+					((Expression) constraint.getCheckBlock().getBody()).accept(this);
+				}
 			}
-			}
+		}
+		if(evlModule.getDeclaredPre().size()==0) {
+			Pre p = new Pre();
+			p.setBody(new StatementBlock());
+			evlModule.getDeclaredPre().add(p);
+		}
 		new CreateIndexStatementsInjector().inject(evlModule, modelName, potentialIndices);
 
 	}
@@ -362,11 +378,11 @@ public class EvlEmfQueryRewriterVisitorVersion extends EolEmfRewriterVisitorVers
 		Expression firstOperand = ((OperatorExpression) ast).getFirstOperand();
 
 		if (firstOperand instanceof OrOperatorExpression) {
-			cascaded = true;
+			flags.put("cascaded", true);
 			return decomposeAST(firstOperand);
 		}
 		if (firstOperand instanceof AndOperatorExpression) {
-			cascaded = true;
+			flags.put("cascaded", true);
 			return decomposeAST(firstOperand);
 		}
 		return ast.getChildren();
