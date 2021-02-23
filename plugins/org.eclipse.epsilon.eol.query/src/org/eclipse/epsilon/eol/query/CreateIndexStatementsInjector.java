@@ -29,7 +29,7 @@ public class CreateIndexStatementsInjector {
 						new OperationCallExpression(new NameExpression(modelName), new NameExpression("createIndex"),
 								new StringLiteral(pair.getKey() + ""), new StringLiteral(field)));
 				if(module instanceof EvlModule) 
-					((EvlModule)module).getPre().get(0).getBody().getStatements().add(count, statement);
+					((EvlModule)module).getDeclaredPre().get(0).getBody().getStatements().add(count, statement);
 				else
 					((EolModule)module).getMain().getStatements().add(count, statement);
 				count++;
