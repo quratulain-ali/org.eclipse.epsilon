@@ -215,13 +215,7 @@ public abstract class AbstractEmfModel extends CachedModel<EObject> {
 	}
 	
 	public Object findByIndex(String kind, String field, Object value) throws EolModelElementTypeNotFoundException {
-		
-		if(indices.get(kind+","+field)!=null){
 			return find(indices.get(kind+","+field), value);
-		}
-		else {
-			return find(createIndex(kind, field), value);
-		}
 	}
 	
 	public Multimap<Object ,String> createIndex(String type, String field) throws EolModelElementTypeNotFoundException {
