@@ -4,7 +4,6 @@ import java.io.File;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.epsilon.eol.EolModule;
 import org.eclipse.epsilon.picto.ViewTree;
 import org.eclipse.ui.IEditorPart;
 
