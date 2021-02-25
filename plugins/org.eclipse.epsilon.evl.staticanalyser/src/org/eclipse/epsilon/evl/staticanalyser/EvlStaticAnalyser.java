@@ -36,7 +36,7 @@ public class EvlStaticAnalyser extends EolStaticAnalyser implements IEvlVisitor{
 			((NamedStatementBlockRule)p).accept(this);
 			}
 		
-		super.validate(imodule);
+		super.validate(module);
 		
 		for (ConstraintContext cc : evlModule.getConstraintContexts()) {
 			cc.accept(this);

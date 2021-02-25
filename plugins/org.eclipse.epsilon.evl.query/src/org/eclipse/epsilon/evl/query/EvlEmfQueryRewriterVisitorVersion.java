@@ -81,9 +81,11 @@ public class EvlEmfQueryRewriterVisitorVersion extends EolEmfRewriterVisitorVers
 		rewritedQuery = new OperationCallExpression();
 
 		for (ModuleElement operand : decomposedAsts) {
-			visit((OperatorExpression) operand, "and");
+			if(operand instanceof OperatorExpression) {
+			visit((OperatorExpression) operand, "and"); 
 			if (!flags.get("logicalOperator"))
 				return;
+			}
 		}
 	}
 

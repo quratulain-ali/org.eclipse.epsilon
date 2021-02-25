@@ -1304,7 +1304,7 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 			String path = module.getSourceFile().getPath().split("\\.")[0]+".dot";
 			exportCallGraph(path);
 		}
-		if (!(module instanceof BuiltinEolModule))
+		if (!(module instanceof BuiltinEolModule) && !(module instanceof EvlModule) )
 			module.getOperations().removeAll(builtinModule.getDeclaredOperations());
 		
 		return errors;
