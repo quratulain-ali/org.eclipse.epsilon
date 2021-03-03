@@ -25,7 +25,7 @@ public class EolRewritingLaunchConfiguration implements EpsilonLaunchConfigurati
 			IProgressMonitor progressMonitor, IEolModule module) throws Exception {
 		
 		module.getCompilationContext().setModelFactory(new ModelTypeExtensionFactory());
-		
+		module.getContext().setModule(module);
 		EolStaticAnalyser staticAnlayser = new EolStaticAnalyser();
 		staticAnlayser.validate(module);
 		
