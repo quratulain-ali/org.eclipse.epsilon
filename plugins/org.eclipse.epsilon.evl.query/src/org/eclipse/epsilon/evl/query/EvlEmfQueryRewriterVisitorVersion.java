@@ -265,7 +265,7 @@ public class EvlEmfQueryRewriterVisitorVersion extends EolEmfRewriterVisitorVers
 				if (operand instanceof EqualsOperatorExpression) {
 					operand = (EqualsOperatorExpression) operand;
 					Expression firstOperand = ((EqualsOperatorExpression) operand).getFirstOperand();
-					if (firstOperand != null && firstOperand instanceof PropertyCallExpression)
+					if (firstOperand != null && (firstOperand instanceof FeatureCallExpression)) {
 						visit((PropertyCallExpression) firstOperand, true);
 					ModuleElement indexValueExpression = ((EqualsOperatorExpression) operand).getSecondOperand();
 					Expression indexValue = new IndexValueGenerator(indexValueExpression).generateIndexValue();
@@ -295,6 +295,7 @@ public class EvlEmfQueryRewriterVisitorVersion extends EolEmfRewriterVisitorVers
 					rewritedQuery = new FirstOrderOperationCallExpression(rewritedQuery, new NameExpression("select"),
 							param, (Expression) operand);
 
+				}
 				}
 			}
 		}
