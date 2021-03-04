@@ -119,3 +119,5 @@ examples/org.eclipse.epsilon.examples.evl.xtext/xtend-gen/org/eclipse/epsilon/ex
 plugins/org.eclipse.epsilon.eol.query/src/org/eclipse/epsilon/eol/evaluation/set4.xmi
 plugins/org.eclipse.epsilon.eol.query/src/org/eclipse/epsilon/eol/evaluation/set3.xmi
 plugins/org.eclipse.epsilon.eol.query/src/org/eclipse/epsilon/eol/evaluation/set2.xmi
+plugins/org.eclipse.epsilon.evl.query/src/org/eclipse/epsilon/evl/evaluation/eclipseModel-all.xmi
+plugins/org.eclipse.epsilon.evl.query/src/org/eclipse/epsilon/evl/evaluation/eclipseModel-*.xmi
