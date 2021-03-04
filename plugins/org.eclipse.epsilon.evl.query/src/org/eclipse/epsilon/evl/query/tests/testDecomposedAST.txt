@@ -1,0 +1,16 @@
+model imdb driver EMF {nsuri = "http://movies/1.0", optimise = "true"}
+model imdb2 driver EMF {nsuri = "http://movies/1.0", optimise = "true"}
+pre {
+	imdb.createIndex("Movie", "rating");
+}
+context imdb2!Movie {
+		constraint testConstraint {
+		
+		check  {
+			return imdb.findByIndex("Movie", "rating", 7.5).select(a : imdb!Movie|a.year = 7.6).includingAll(imdb.findByIndex("Movie", "rating", 7.6)).select(a : imdb!Movie|a.title = "AVC").size() > 0;
+		}
+
+	}
+
+}
+

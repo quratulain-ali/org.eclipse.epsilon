@@ -102,19 +102,19 @@ public class EvlRewritingTests extends TestCase {
 		assertEquals("Failed",removeWhitespace(actualAndExpected.get(1)), removeWhitespace(actualAndExpected.get(0)));
 	}
 	
-//	@Test
-//	public static void testAndOrInLoop() throws Exception {
-//		List<String> actualAndExpected = new ArrayList<>();
-//		actualAndExpected = prepareTestCase("testAndOrInLoop.eol", "testAndOrInLoop.txt",1);
-//		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
-//	}
+	@Test
+	public static void testNoIndexAnnot() throws Exception {
+		List<String> actualAndExpected = new ArrayList<>();
+		actualAndExpected = prepareTestCase("testNoIndexAnnot.evl", "testNoIndexAnnot.txt",1);
+		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
+	}
 	
-//	@Test
-//	public static void testAndOrIndexAfter() throws Exception {
-//		List<String> actualAndExpected = new ArrayList<>();
-//		actualAndExpected = prepareTestCase("testAndOrIndexAfter.eol", "testAndOrIndexAfter.txt",1);
-//		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
-//	}
+	@Test
+	public static void testDecomposedAST() throws Exception {
+		List<String> actualAndExpected = new ArrayList<>();
+		actualAndExpected = prepareTestCase("testDecomposedAST.evl", "testDecomposedAST.txt",1);
+		assertEquals("Failed", actualAndExpected.get(1), actualAndExpected.get(0));
+	}
 	
 	public static List<String> prepareTestCase(String eolFileName, String rewritedFileName, Integer option) {
 		EvlModule module = new EvlModule();

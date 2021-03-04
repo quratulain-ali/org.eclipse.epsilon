@@ -1,0 +1,16 @@
+model imdb driver EMF {
+nsuri = "http://movies/1.0",
+optimise = "true"
+};
+model imdb2 driver EMF {
+nsuri = "http://movies/1.0",
+optimise = "true"
+};
+
+context imdb2!Movie {
+ constraint testConstraint{
+  check {
+	return imdb!Movie.all.exists(a|a.rating = 7.5 and a.year = 7.6 or a.rating = 7.6 and a.`title` = "AVC");
+	}
+ }
+}
