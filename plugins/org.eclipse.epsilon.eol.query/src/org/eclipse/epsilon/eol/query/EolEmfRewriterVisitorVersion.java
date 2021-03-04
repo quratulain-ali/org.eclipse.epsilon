@@ -2,6 +2,7 @@ package org.eclipse.epsilon.eol.query;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -86,7 +87,7 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 	HashSet<String> allOperations;
 
 	HashMap<String, HashSet<String>> potentialIndices;
-	List<ModuleElement> decomposedAsts;
+	List<DecomposedAst> decomposedAsts;
 	HashMap<String, Boolean> flags;
 
 	IEolModule module;
@@ -108,8 +109,6 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 		operationExp = new NameExpression("findByIndex");
 		
 		flags = new HashMap<>();
-		flags.put("cascaded" ,false);
-		flags.put("secondPass" ,false);
 		flags.put("indexExists" ,false);
 		flags.put("canBeExecutedMultipleTimes" ,false);
 		flags.put("optimisableByCurrentModel" ,false);
@@ -123,18 +122,18 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 
 	@Override
 	public void visit(AndOperatorExpression andOperatorExpression) {
-		flags.put("cascaded" ,false);
 		flags.put("logicalOperator" ,true);
-		decomposedAsts = new ArrayList<ModuleElement>();
-		decomposedAsts = decomposeAST(andOperatorExpression);
-		if (flags.get("cascaded") && !flags.get("secondPass"))
-			decomposedAsts.add((andOperatorExpression.getSecondOperand()));
+		decomposedAsts = new ArrayList<DecomposedAst>();
+		decomposedAsts = decomposedAST(andOperatorExpression);
 		rewritedQuery = new OperationCallExpression();
 
-		for (ModuleElement operand : decomposedAsts) {
-			visit((OperatorExpression) operand, "and");
+		for (DecomposedAst decomposedAst : decomposedAsts) {
+			ModuleElement operand = decomposedAst.getModuleElement();
+			if(operand instanceof OperatorExpression) {
+			visit((OperatorExpression) operand, decomposedAst.getOperator()); 
 			if (!flags.get("logicalOperator"))
 				return;
+			}
 		}
 	}
 
@@ -529,19 +528,18 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 	public void visit(OrOperatorExpression orOperatorExpression) {
 		if (flags.get("optimisableByCurrentModel")) {
 			flags.put("logicalOperator" ,true);
-			flags.put("cascaded",  false);
-			decomposedAsts = new ArrayList<ModuleElement>();
-			decomposedAsts = decomposeAST(orOperatorExpression);
-
-			if (flags.get("cascaded") && !flags.get("secondPass"))
-				decomposedAsts.add((orOperatorExpression.getSecondOperand()));
+			decomposedAsts = new ArrayList<DecomposedAst>();
+			decomposedAsts = decomposedAST(orOperatorExpression);
 
 			rewritedQuery = new OperationCallExpression();
 
-			for (ModuleElement operand : decomposedAsts) {
-				visit((OperatorExpression) operand, "or");
+			for (DecomposedAst decomposedAst : decomposedAsts) {
+				ModuleElement operand = decomposedAst.getModuleElement();
+				if(operand instanceof OperatorExpression) {
+				visit((OperatorExpression) operand, decomposedAst.getOperator()); 
 				if (!flags.get("logicalOperator"))
 					return;
+				}
 			}
 		} else {
 			if (orOperatorExpression.getFirstOperand() != null)
@@ -828,25 +826,31 @@ public class EolEmfRewriterVisitorVersion implements IEolVisitor {
 				operation.accept(this);
 			flags.put("canBeExecutedMultipleTimes", false);
 		}
-
-		flags.put("secondPass", true);
 		module.getMain().accept(this);
 		new CreateIndexStatementsInjector().inject(module, modelName, potentialIndices);
 
 	}
 
-	public List<ModuleElement> decomposeAST(Expression ast) {
+	public List<DecomposedAst> decomposedAST(Expression ast) {
+		List<DecomposedAst> decomposed = new ArrayList<>();
 		Expression firstOperand = ((OperatorExpression) ast).getFirstOperand();
 
 		if (firstOperand instanceof OrOperatorExpression) {
-			flags.put("cascaded",  true);
-			return decomposeAST(firstOperand);
+			decomposedAsts.add(new DecomposedAst(((OperatorExpression) ast).getSecondOperand(), ((OperatorExpression)ast).getOperator()));
+			return decomposedAST(firstOperand);
 		}
 		if (firstOperand instanceof AndOperatorExpression) {
-			flags.put("cascaded",  true);
-			return decomposeAST(firstOperand);
+			decomposedAsts.add(new DecomposedAst(((OperatorExpression) ast).getSecondOperand(), ((OperatorExpression)ast).getOperator()));
+			return decomposedAST(firstOperand);
 		}
-		return ast.getChildren();
+		else {
+			for(ModuleElement me : ast.getChildren())
+				decomposed.add(new DecomposedAst(me, ((OperatorExpression)ast).getOperator()));
+			Collections.reverse(decomposed);
+			decomposedAsts.addAll(decomposed);
+		}
+		Collections.reverse(decomposedAsts);
+		return decomposedAsts;
 
 	}
 
