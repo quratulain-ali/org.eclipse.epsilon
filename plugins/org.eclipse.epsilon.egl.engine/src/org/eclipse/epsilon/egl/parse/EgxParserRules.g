@@ -46,6 +46,8 @@ tokens {
 	DOMAIN;
 	OVERWRITE;
 	MERGE;
+	PATCH;
+	APPEND;
 }
 
 egxModuleContent
@@ -88,10 +90,19 @@ overwrite
 	;
 
 merge
-	:	(g='merge'|'protectRegions')^ expressionOrStatementBlock
+	:	g='merge'^ expressionOrStatementBlock
 	{$g.setType(MERGE);}
 	;
 
+patch
+	:	g='patch'^ expressionOrStatementBlock
+	{$g.setType(PATCH);}
+	;
+
+append
+	:	g='append'^ expressionOrStatementBlock
+	{$g.setType(APPEND);}
+	;	
 generationRuleConstructs
-	:	(guard | pre | overwrite | merge | template | parameters | target | post)*
+	:	(guard | pre | overwrite | merge | patch | append | template | parameters | target | post)*
 	;
