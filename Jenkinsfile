@@ -13,7 +13,7 @@ def getSlackMessage() {
     return message
 }
 
-def plainTriggers = '(plugins\\/.*)|(pom[-]plain[.]xml)'
+def plainTriggers = '(plugins\\/.*)|(pom[-]plain[.]xml)|(Jenkinsfile)'
 def baseTriggers = "${plainTriggers}|(pom\\.xml)|(Jenkinsfile)"
 def updateTriggers = "${baseTriggers}|(standalone\\/.*)|(features\\/.*)|(releng\\/.*(target|updatesite)\\/.*)"
 
@@ -130,6 +130,7 @@ pipeline {
               }
             }
             steps {
+              sh 'bash plugins/org.eclipse.epsilon.eunit.cmp.emf/download-emf-compare.sh'
               sh 'mvn -B -T 1C -f pom-plain.xml compile'
             }
           }

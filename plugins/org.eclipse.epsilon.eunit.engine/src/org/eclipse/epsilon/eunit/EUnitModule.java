@@ -34,6 +34,7 @@ import org.eclipse.epsilon.eol.models.ModelRepository;
 import org.eclipse.epsilon.eol.types.EolAnyType;
 import org.eclipse.epsilon.eol.types.EolSequence;
 import org.eclipse.epsilon.eunit.ModelBindings.ExclusiveMode;
+import org.eclipse.epsilon.eunit.extensions.IModelComparator;
 import org.eclipse.epsilon.eunit.operations.ExtraEUnitOperationContributor;
 import org.eclipse.epsilon.internal.eunit.io.ByteBufferTeePrintStream;
 import org.eclipse.epsilon.internal.eunit.util.Pair;
@@ -52,6 +53,9 @@ public class EUnitModule extends EolModule implements IEUnitModule {
 	private List<EUnitTestListener> testListeners = new ArrayList<>();
 	private EUnitTest suiteRoot;
 
+	// List of custom model comparators that should take precedence over any OSGi-registered ones
+	private List<IModelComparator> customComparators = new ArrayList<>();
+
 	// Destination directory for the JUnit XML report, or null if the report is to be suppressed
 	private File reportDirectory = new File(".");
 
@@ -68,33 +72,38 @@ public class EUnitModule extends EolModule implements IEUnitModule {
 	}
 
 	@Override
-	public ArrayList<Operation> getTests() {
+	public List<Operation> getTests() {
 		return collectOperationsAnnotatedWith("Test", getOperationsAnnotatedWith("test"));
 	}
 
 	@Override
-	public ArrayList<Operation> getInlineModelOperations() {
+	public List<Operation> getInlineModelOperations() {
 		return collectOperationsAnnotatedWith("Model", getOperationsAnnotatedWith("model"));
 	}
 
 	@Override
-	public ArrayList<Operation> getSetups() {
+	public List<Operation> getSetups() {
 		return collectOperationsAnnotatedWith("Before", getOperationsAnnotatedWith("setup"));
 	}
 	
 	@Override
-	public ArrayList<Operation> getTeardowns() {
+	public List<Operation> getTeardowns() {
 		return collectOperationsAnnotatedWith("After", getOperationsAnnotatedWith("teardown"));
 	}
 
 	@Override
-	public ArrayList<Operation> getSuiteSetups() {
+	public List<Operation> getSuiteSetups() {
 		return collectOperationsAnnotatedWith("BeforeClass", getOperationsAnnotatedWith("suitesetup"));
 	}
 
 	@Override
-	public ArrayList<Operation> getSuiteTeardowns() {
+	public List<Operation> getSuiteTeardowns() {
 		return collectOperationsAnnotatedWith("AfterClass", getOperationsAnnotatedWith("suiteteardown"));
+	}
+
+	@Override
+	public List<IModelComparator> getCustomComparators() {
+		return customComparators;
 	}
 
 	@Override

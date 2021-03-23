@@ -10,12 +10,12 @@
 package org.eclipse.epsilon.eunit;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.epsilon.eol.IEolModule;
 import org.eclipse.epsilon.eol.dom.Operation;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
+import org.eclipse.epsilon.eunit.extensions.IModelComparator;
 import org.eclipse.epsilon.internal.eunit.util.Pair;
 
 public interface IEUnitModule extends IEolModule {
@@ -28,17 +28,19 @@ public interface IEUnitModule extends IEolModule {
 
 	List<Pair<Operation, String>> getDataVariableNames();
 
-	ArrayList<Operation> getSuiteTeardowns();
+	List<Operation> getSuiteTeardowns();
 
-	ArrayList<Operation> getSuiteSetups();
+	List<Operation> getSuiteSetups();
 
-	ArrayList<Operation> getTeardowns();
+	List<Operation> getTeardowns();
 
-	ArrayList<Operation> getSetups();
+	List<Operation> getSetups();
 
-	ArrayList<Operation> getInlineModelOperations();
+	List<Operation> getInlineModelOperations();
 
-	ArrayList<Operation> getTests();
+	List<Operation> getTests();
+
+	List<IModelComparator> getCustomComparators();
 
 	String getQualifiedName();
 
