@@ -1,0 +1,8 @@
+model imdb driver EMF {
+nsuri = "http://movies/1.0",
+optimise = "false"
+};
+var a =0;
+//for(i in Sequence{1800..2020})
+a=imdb!Movie.all.select(a|a.year>=1800 and a.year<=2020).size();
+a.println();
