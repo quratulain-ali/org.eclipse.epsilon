@@ -23,31 +23,31 @@ import org.eclipse.epsilon.evl.launch.EvlRunConfiguration;
  * @author Sina Madani
  * @author Dimitrios Kolovos
  */
-public class JavaFindBugs {
+public class JavaFindBugsNew {
 
 	public static void main(String... args) throws Exception {
-		Path root = Paths.get(JavaFindBugs.class.getResource("").toURI()),
+		Path root = Paths.get(JavaFindBugsNew.class.getResource("").toURI()),
 			modelsRoot = root.getParent().resolve("evaluation");
 		
 		StringProperties javaModel = StringProperties.Builder()
 			.withProperty(EmfModel.PROPERTY_NAME, "Java")
 			.withProperty(EmfModel.PROPERTY_FILE_BASED_METAMODEL_URI,
-				modelsRoot.resolve("java-og.ecore").toAbsolutePath().toUri()
+				modelsRoot.resolve("javaTry2.ecore").toAbsolutePath().toUri()
 			)
 			.withProperty(EmfModel.PROPERTY_MODEL_URI,
-				modelsRoot.resolve("eclipseModel-0.1.xmi").toAbsolutePath().toUri()
+				modelsRoot.resolve("eclipseModel-t0.2.xmi").toAbsolutePath().toUri()
 			)
 			.withProperty(EmfModel.PROPERTY_CACHED, true)
 			.withProperty(EmfModel.PROPERTY_CONCURRENT, true)
 			.build();
 		
 		EvlRunConfiguration runConfig = EvlRunConfiguration.Builder()
-			.withScript(root.resolve("java_findbug.evl"))
+			.withScript(root.resolve("java_findbug-new.evl"))
 			.withModel(new EmfModel(), javaModel)
 	//		.withParameter("greeting", "Hello from ")
 			.withProfiling()
 		//	.withResults()
-//			.withParallelism()
+			.withParallelism()
 			.build();
 		
 		EvlPreExecuteConfiguration sm = new EvlPreExecuteConfiguration(runConfig);

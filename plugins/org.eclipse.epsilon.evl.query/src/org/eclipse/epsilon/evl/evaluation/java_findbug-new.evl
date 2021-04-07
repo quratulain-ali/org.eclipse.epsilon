@@ -3,10 +3,9 @@
 // WARNING: Very demanding!
 model Java driver EMF {
 nsuri = "http://www.eclipse.org/MoDisco/Java/0.2.incubation/java",
-optimise = "true"
+optimise = "false"
 };
 pre{
-"HelloWorld".println();
 }
 //see http://findbugs.sourceforge.net/bugDescriptions.html
 
@@ -16,7 +15,7 @@ context Java!ImportDeclaration {
 	constraint allImportsAreUsed {
 		check: Java!NamedElement.all.exists(ne |
 		ne.originalCompilationUnit = self.originalCompilationUnit and
-		ne == self.importedElement
+		ne == Java!NamedElement.all.select(n|n.usagesInImports = self)
 		)
 	}
 }
@@ -109,9 +108,9 @@ context Assignment {
 	}
 }
 
-context VariableDeclaration {
+context Java!VariableDeclaration {
 	constraint variableIsUsed {
-		check: self.usageInVariableAccess.notEmpty()
+		check: Java!SingleVariableAccess.all.select(sva|sva.variable=self).notEmpty()
 	}
 }
 
@@ -131,7 +130,7 @@ context VariableDeclarationExpression {
 
 context CatchClause {
 	constraint exceptionIsUsed {
-		check: self.exception.usageInVariableAccess.notEmpty()
+		check: Java!SingleVariableAccess.all.select(sva|sva.variable=self.exception).notEmpty()
 	}
 	constraint doesNotCatchDubiousExceptions {
 		check: self.exception.type.type.name <> "IllegalMonitorStateException"
@@ -221,7 +220,7 @@ context ClassDeclaration {
 		guard: self.implements("Cloneable")
 		check: self.getMethods().exists(md | md.isClone())
 	}
-
+	
 	constraint serialUIDInSerializableClass {
 		guard: self.implements("Serializable")
 		check: self.bodyDeclarations.exists(bd |
@@ -232,7 +231,7 @@ context ClassDeclaration {
 			bd.type.type.isTypeOf(PrimitiveTypeLong)
 		)
 	}
-	
+
 	@parallel
 	constraint noRedundantInterfaceImpl {
 		guard: self.superInterfaces.isDefined() and
@@ -265,6 +264,7 @@ context ClassDeclaration {
 					);
 		}
 	}
+	
 }
 
 context InfixExpression {
@@ -308,7 +308,7 @@ operation Modifier isLocal() : Boolean {
 }
 
 operation AbstractTypeDeclaration implements(type : String) {
-	return self.superInterfaces.exists(si | si.type.name == type);
+	return self.superInterfaces.exists(si | si.type.name==type);
 }
 
 @cached

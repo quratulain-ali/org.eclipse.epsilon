@@ -524,9 +524,11 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Type" abstract="true" eSuperTypes="#//NamedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="usagesInTypeAccess" ordered="false"
-        upperBound="-1" eType="#//TypeAccess"/>
+        upperBound="-1" eType="#//TypeAccess" eOpposite="#//TypeAccess/type"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TypeAccess" eSuperTypes="#//Expression #//NamespaceAccess">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="type" ordered="false" lowerBound="1"
+        eType="#//Type" eOpposite="#//Type/usagesInTypeAccess"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="qualifier" ordered="false"
         eType="#//NamespaceAccess" containment="true"/>
   </eClassifiers>
@@ -602,39 +604,39 @@
         eType="#//Statement" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="AssignmentKind">
-    <eLiterals name="ASSIGN" value="1" literal="="/>
-    <eLiterals name="PLUS_ASSIGN" value="2" literal="+="/>
-    <eLiterals name="MINUS_ASSIGN" value="3" literal="-="/>
-    <eLiterals name="TIMES_ASSIGN" value="4" literal="*="/>
-    <eLiterals name="DIVIDE_ASSIGN" value="5" literal="/="/>
-    <eLiterals name="BIT_AND_ASSIGN" value="6" literal="&amp;="/>
-    <eLiterals name="BIT_OR_ASSIGN" value="7" literal="|="/>
-    <eLiterals name="BIT_XOR_ASSIGN" value="8" literal="^="/>
-    <eLiterals name="REMAINDER_ASSIGN" value="9" literal="%="/>
-    <eLiterals name="LEFT_SHIFT_ASSIGN" value="10" literal="&lt;&lt;="/>
-    <eLiterals name="RIGHT_SHIFT_SIGNED_ASSIGN" value="11" literal=">>="/>
-    <eLiterals name="RIGHT_SHIFT_UNSIGNED_ASSIGN" value="12" literal=">>>="/>
+    <eLiterals name="ASSIGN" value="1"/>
+    <eLiterals name="PLUS_ASSIGN" value="2"/>
+    <eLiterals name="MINUS_ASSIGN" value="3"/>
+    <eLiterals name="TIMES_ASSIGN" value="4"/>
+    <eLiterals name="DIVIDE_ASSIGN" value="5"/>
+    <eLiterals name="BIT_AND_ASSIGN" value="6"/>
+    <eLiterals name="BIT_OR_ASSIGN" value="7"/>
+    <eLiterals name="BIT_XOR_ASSIGN" value="8"/>
+    <eLiterals name="REMAINDER_ASSIGN" value="9"/>
+    <eLiterals name="LEFT_SHIFT_ASSIGN" value="10"/>
+    <eLiterals name="RIGHT_SHIFT_SIGNED_ASSIGN" value="11"/>
+    <eLiterals name="RIGHT_SHIFT_UNSIGNED_ASSIGN" value="12"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="InfixExpressionKind">
-    <eLiterals name="TIMES" value="1" literal="*"/>
-    <eLiterals name="DIVIDE" value="2" literal="/"/>
-    <eLiterals name="REMAINDER" value="3" literal="%"/>
-    <eLiterals name="PLUS" value="4" literal="+"/>
-    <eLiterals name="MINUS" value="5" literal="-"/>
-    <eLiterals name="LEFT_SHIFT" value="6" literal="&lt;&lt;"/>
-    <eLiterals name="RIGHT_SHIFT_SIGNED" value="7" literal=">>"/>
-    <eLiterals name="RIGHT_SHIFT_UNSIGNED" value="8" literal=">>>"/>
-    <eLiterals name="LESS" value="9" literal="&lt;"/>
-    <eLiterals name="GREATER" value="10" literal=">"/>
-    <eLiterals name="LESS_EQUALS" value="11" literal="&lt;="/>
-    <eLiterals name="GREATER_EQUALS" value="12" literal=">="/>
-    <eLiterals name="EQUALS" value="13" literal="=="/>
-    <eLiterals name="NOT_EQUALS" value="14" literal="!="/>
-    <eLiterals name="XOR" value="15" literal="^"/>
-    <eLiterals name="AND" value="16" literal="&amp;"/>
-    <eLiterals name="OR" value="17" literal="|"/>
-    <eLiterals name="CONDITIONAL_AND" value="18" literal="&amp;&amp;"/>
-    <eLiterals name="CONDITIONAL_OR" value="19" literal="||"/>
+    <eLiterals name="TIMES" value="1"/>
+    <eLiterals name="DIVIDE" value="2"/>
+    <eLiterals name="REMAINDER" value="3"/>
+    <eLiterals name="PLUS" value="4"/>
+    <eLiterals name="MINUS" value="5"/>
+    <eLiterals name="LEFT_SHIFT" value="6"/>
+    <eLiterals name="RIGHT_SHIFT_SIGNED" value="7"/>
+    <eLiterals name="RIGHT_SHIFT_UNSIGNED" value="8"/>
+    <eLiterals name="LESS" value="9"/>
+    <eLiterals name="GREATER" value="10"/>
+    <eLiterals name="LESS_EQUALS" value="11"/>
+    <eLiterals name="GREATER_EQUALS" value="12"/>
+    <eLiterals name="EQUALS" value="13"/>
+    <eLiterals name="NOT_EQUALS" value="14"/>
+    <eLiterals name="XOR" value="15"/>
+    <eLiterals name="AND" value="16"/>
+    <eLiterals name="OR" value="17"/>
+    <eLiterals name="CONDITIONAL_AND" value="18"/>
+    <eLiterals name="CONDITIONAL_OR" value="19"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="InheritanceKind">
     <eLiterals name="none" value="1"/>
@@ -642,16 +644,16 @@
     <eLiterals name="final" value="3"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="PostfixExpressionKind">
-    <eLiterals name="INCREMENT" value="1" literal="++"/>
-    <eLiterals name="DECREMENT" value="2" literal="--"/>
+    <eLiterals name="INCREMENT" value="1"/>
+    <eLiterals name="DECREMENT" value="2"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="PrefixExpressionKind">
-    <eLiterals name="INCREMENT" value="1" literal="++"/>
-    <eLiterals name="DECREMENT" value="2" literal="--"/>
-    <eLiterals name="PLUS" value="3" literal="+"/>
-    <eLiterals name="MINUS" value="4" literal="-"/>
-    <eLiterals name="COMPLEMENT" value="5" literal="~"/>
-    <eLiterals name="NOT" value="6" literal="!"/>
+    <eLiterals name="INCREMENT" value="1"/>
+    <eLiterals name="DECREMENT" value="2"/>
+    <eLiterals name="PLUS" value="3"/>
+    <eLiterals name="MINUS" value="4"/>
+    <eLiterals name="COMPLEMENT" value="5"/>
+    <eLiterals name="NOT" value="6"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="VisibilityKind">
     <eLiterals name="none" value="1"/>
