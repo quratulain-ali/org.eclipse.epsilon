@@ -1303,7 +1303,7 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 	public List<ModuleMarker> validate(IModule imodule) {
 		
 		
-		if (!(imodule instanceof EolModule) || imodule instanceof EvlModule)
+		if (!(imodule.getClass() == EolModule.class)) //|| imodule instanceof EvlModule)
 			return Collections.emptyList();
 		
 		//errors = new ArrayList<>();
