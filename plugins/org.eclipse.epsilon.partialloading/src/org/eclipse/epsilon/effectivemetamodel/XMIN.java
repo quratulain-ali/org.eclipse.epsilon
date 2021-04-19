@@ -25,31 +25,35 @@ import org.eclipse.epsilon.eol.dom.NameExpression;
 import org.eclipse.epsilon.eol.dom.OperationCallExpression;
 import org.eclipse.epsilon.eol.exceptions.models.EolModelLoadingException;
 
-public class SmartEMF extends EmfModel{
+public class XMIN extends EmfModel{
 
 	protected String name;
 	protected String nsuri;
 	protected String path;
+	protected boolean CalculatedEffectiveMetamodel = false; // To understand that effective metamodel is calculated or not 
 	protected ArrayList<EffectiveType> allOfType = new ArrayList<EffectiveType>();
 	protected ArrayList<EffectiveType> allOfKind = new ArrayList<EffectiveType>();
 	
 	protected ArrayList<EffectiveType> types = new ArrayList<EffectiveType>();
 	
 	
-	public SmartEMF()
+	public XMIN()
 	{
 	}
 	
 	@Override
 	public String toString() {
-		return "SmartEmfModel [name=" + getName() + "]";
+		return "XMIN Model [name=" + getName() + "]";
+	}
+	public void setCalculatedEffectiveMetamodel(boolean set) {
+		this.CalculatedEffectiveMetamodel = set;
 	}
 	public void setName(String name)
 	{
 		this.name = name;
 	}
 	
-	public SmartEMF(String name, String nsuri)
+	public XMIN(String name, String nsuri)
 	{
 		this.name = name;
 		this.nsuri = nsuri;
@@ -96,8 +100,7 @@ public class SmartEMF extends EmfModel{
 	
 	public EffectiveType addToAllOfKind(String modelElement)
 	{
-		for(EffectiveType et: allOfKind)
-		{
+		for(EffectiveType et: allOfKind){
 			if (et.getName().equals(modelElement)) {
 				return et;
 			}
@@ -109,8 +112,7 @@ public class SmartEMF extends EmfModel{
 	}
 	public EffectiveType addToAllOfKind(EffectiveType et)
 	{
-		for(EffectiveType t: allOfKind)
-		{
+		for(EffectiveType t: allOfKind){
 			if (t.getName().equals(et.getName())) {
 				return t;
 			}
@@ -122,8 +124,7 @@ public class SmartEMF extends EmfModel{
 	public EffectiveType addToAllOfType(String modelElement)
 	
 	{
-		for(EffectiveType et: allOfType)
-		{
+		for(EffectiveType et: allOfType){
 			if (et.getName().equals(modelElement)) {
 				et.increaseUsage();
 				return et;
@@ -168,6 +169,9 @@ public class SmartEMF extends EmfModel{
 		}
 		if (effectiveType != null) {
 			EffectiveFeature effectiveFeature = new EffectiveFeature(attribute);
+			for (EffectiveFeature ef : effectiveType.getAttributes())
+				if (ef.getName().equals(attribute))
+					return effectiveFeature;
 			effectiveType.getAttributes().add(effectiveFeature);
 			return effectiveFeature;
 		}
@@ -184,6 +188,9 @@ public class SmartEMF extends EmfModel{
 		}
 		if (effectiveType != null) {
 			EffectiveFeature effectiveFeature = new EffectiveFeature(reference);
+			for (EffectiveFeature ef : effectiveType.getReferences())
+				if (ef.getName().equals(reference))
+					return effectiveFeature;
 			effectiveType.getReferences().add(effectiveFeature);
 			return effectiveFeature;
 		}
@@ -319,8 +326,7 @@ public class SmartEMF extends EmfModel{
 	/*Check if an element is exists in types*/
 	public boolean typesContains(String modelElement)
 	{
-		for(EffectiveType ef: types)
-		{
+		for(EffectiveType ef: types){
 			if (ef.getName().equals(modelElement)) {
 				return true;
 			}
@@ -331,7 +337,8 @@ public class SmartEMF extends EmfModel{
 	@Override
 	public void load(){
 		
-		//String model = "/Users/sorourjahanbin/git/Epsilon_Nov2020/plugins/org.eclipse.epsilon.partialloading/src/org/eclipse/epsilon/TestUnit/Parser/flowchart2.xmi";
+		if (CalculatedEffectiveMetamodel == false)
+			return;
 		
 		ResourceSet resourceSet = new ResourceSetImpl();
 		EPackage ePackage = EPackage.Registry.INSTANCE.getEPackage(metamodelUris.get(0).toString());
@@ -345,21 +352,23 @@ public class SmartEMF extends EmfModel{
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("xmi", new SmartSAXResourceFactory());
 		Resource resource = resourceSet.createResource(modelUri);
 		this.setResource(resource);
-		
+		System.gc();
+		long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 		EffectiveMetamodelReconciler effectiveMetamodelReconciler = new EffectiveMetamodelReconciler();
 		effectiveMetamodelReconciler.addPackages(resourceSet.getPackageRegistry().values());
 		effectiveMetamodelReconciler.addEffectiveMetamodel(this);
-		
-		effectiveMetamodelReconciler.reconcile();
-
+		long st = System.nanoTime();
+		 effectiveMetamodelReconciler.reconcile();
+		 long en = System.nanoTime();
+		 System.out.println("Reconcile  : "+ (long)((en-st)/ 1000000));
 		Map<String, Object> loadOptions = new HashMap<String, Object>();
 		loadOptions.put(SmartSAXXMIResource.OPTION_EFFECTIVE_METAMODEL_RECONCILER, effectiveMetamodelReconciler);
 		loadOptions.put(SmartSAXXMIResource.OPTION_LOAD_ALL_ATTRIBUTES, false);
 		loadOptions.put(SmartSAXXMIResource.OPTION_RECONCILE_EFFECTIVE_METAMODELS, true);
 
-		long startTime = System.nanoTime();
+		long startTime =0;
 		try {
-			
+			 startTime = System.nanoTime();
 			resource.load(loadOptions);
 			
 		} catch (IOException e) {
@@ -370,7 +379,13 @@ public class SmartEMF extends EmfModel{
 		long endTime = System.nanoTime();
 		long duration = (endTime - startTime); // divide by 1000000 to get milliseconds.
 		System.out.println("**** Time ****");
-		System.out.println(duration/1000000+ " milliseconds");
+		System.out.println(duration / 1000000 + " milliseconds");
+		
+		long endMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+		//System.out.println("End : "+ endMemory);
+		long memory = (long) ((endMemory - startMemory) / 1000000);
+		System.out.println("**** Memory ****");
+		System.out.println((memory) + " MB");
 		System.out.println("**** Loaded Objects ****");
 		System.out.println(resource.getContents().size());
 	}

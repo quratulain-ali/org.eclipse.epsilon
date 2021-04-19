@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 
 import org.eclipse.emf.common.EMFPlugin;
 import org.eclipse.epsilon.common.util.StringProperties;
-import org.eclipse.epsilon.effectivemetamodel.SmartEMF;
+import org.eclipse.epsilon.effectivemetamodel.XMIN;
 import org.eclipse.epsilon.eol.launch.EolRunConfiguration;
 import org.eclipse.epsilon.evl.launch.EvlRunConfiguration;
 import org.eclipse.epsilon.emc.emf.EmfModel;
@@ -28,31 +28,31 @@ import org.eclipse.epsilon.emc.emf.EmfModel;
 public class EvlStandaloneExample_SmartEMF {
 	
 	public static void main(String... args) throws Exception {
-		Path root = Paths.get(EvlStandaloneExample_SmartEMF.class.getResource("").toURI()),
+		Path root = Paths.get(EvlStandaloneExample.class.getResource("").toURI()),
 			modelsRoot = root.getParent().resolve("standalone");
 		
 		StringProperties modelProperties = new StringProperties();
-		modelProperties.setProperty(SmartEMF.PROPERTY_NAME, "javaMM");
-		modelProperties.setProperty(SmartEMF.PROPERTY_FILE_BASED_METAMODEL_URI,
+		modelProperties.setProperty(XMIN.PROPERTY_NAME, "javaMM");
+		modelProperties.setProperty(XMIN.PROPERTY_FILE_BASED_METAMODEL_URI,
 			modelsRoot.resolve("java.ecore").toAbsolutePath().toUri().toString()
 			
 		);
-		modelProperties.setProperty(SmartEMF.PROPERTY_METAMODEL_URI,"http://www.eclipse.org/MoDisco/Java/0.2.incubation/java");
-		modelProperties.setProperty("type", "SmartEMF");
-		modelProperties.setProperty(SmartEMF.PROPERTY_MODEL_URI,
+		modelProperties.setProperty(XMIN.PROPERTY_METAMODEL_URI,"http://www.eclipse.org/MoDisco/Java/0.2.incubation/java");
+		modelProperties.setProperty("type", "XMIN");
+		modelProperties.setProperty(XMIN.PROPERTY_MODEL_URI,
 			modelsRoot.resolve("test.xmi").toAbsolutePath().toUri().toString()
 		);
 		
 		EvlRunConfiguration runConfig = EvlRunConfiguration.Builder()
 			.withScript(root.resolve("test.evl"))
-			.withModel(new SmartEMF(), modelProperties)
+			.withModel(new XMIN(), modelProperties)
 			.withParameter("greeting", "Hello from ")
 			.withProfiling()
 			.withResults()
 			.build();
 		SmartEMFRunConfiguration sm = new SmartEMFRunConfiguration(runConfig);
 		sm.run();
-		runConfig.postExecute();
+		//runConfig.postExecute();
 		//System.out.println(sm.getResult());
 	}
 }

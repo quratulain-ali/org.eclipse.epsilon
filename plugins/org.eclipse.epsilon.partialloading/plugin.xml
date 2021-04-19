@@ -9,12 +9,12 @@
    <extension
          point="org.eclipse.epsilon.common.dt.modelType">
       <modelType
-            class="org.eclipse.epsilon.effectivemetamodel.SmartEMF"
+            class="org.eclipse.epsilon.effectivemetamodel.XMIN"
             dialog="org.eclipse.epsilon.loading.SmartEmfModelConfigurationDialog"
             icon="icons/SmartEMF.png"
-            label="SmartEMF Model"
+            label="XMIN Model"
             stable="true"
-            type="SmartEMF">
+            type="XMIN">
       </modelType>
    </extension>
 

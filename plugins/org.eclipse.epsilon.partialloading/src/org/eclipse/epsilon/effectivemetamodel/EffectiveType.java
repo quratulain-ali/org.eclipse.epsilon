@@ -8,7 +8,7 @@ import org.eclipse.epsilon.eol.execute.Return;
 public class EffectiveType {
 
 	protected String name;
-	protected SmartEMF effectiveMetamodel;
+	protected XMIN effectiveMetamodel;
 	protected ArrayList<EffectiveFeature> attributes = new ArrayList<EffectiveFeature>();
 	protected ArrayList<EffectiveFeature> references = new ArrayList<EffectiveFeature>();
 	protected int usage = 1;
@@ -60,11 +60,11 @@ public class EffectiveType {
 		return name;
 	}
 	
-	public SmartEMF getEffectiveMetamodel() {
+	public XMIN getEffectiveMetamodel() {
 		return effectiveMetamodel;
 	}
 	
-	public void setEffectiveMetamodel(SmartEMF effectiveMetamodel) {
+	public void setEffectiveMetamodel(XMIN effectiveMetamodel) {
 		this.effectiveMetamodel = effectiveMetamodel;
 	}
 	

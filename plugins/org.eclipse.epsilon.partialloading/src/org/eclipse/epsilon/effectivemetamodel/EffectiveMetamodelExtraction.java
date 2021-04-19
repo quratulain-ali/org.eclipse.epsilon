@@ -29,6 +29,7 @@ import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.eol.staticanalyser.EolStaticAnalyser;
 import org.eclipse.epsilon.eol.types.EolCollectionType;
 import org.eclipse.epsilon.eol.types.EolModelElementType;
+import org.eclipse.epsilon.evl.dom.ConstraintContext;
 
 public class EffectiveMetamodelExtraction {
 	
@@ -43,53 +44,20 @@ public class EffectiveMetamodelExtraction {
 	}
 	public EffectiveMetamodelExtraction() {}
 	
-public SmartEMF getEffectiveMetamodel (EolModule module) {
+public XMIN getEffectiveMetamodel (EolModule module) {
 	
 		//when we have more than one metamodel in one file
 		//ArrayList<EffectiveMetamodel> effectiveMetamodels = new ArrayList<EffectiveMetamodel>();
-		SmartEMF effectiveMetamodel = null;
+		XMIN effectiveMetamodel = null;
 		ArrayList<ModuleElement> children = new ArrayList<ModuleElement>();
 		ArrayList<StructuralFeature> features = new ArrayList<StructuralFeature>();
 		EffectiveType effectiveType;
 		EolModelElementType target;
 		EolModelElementType property;
-		
-//		EolModule module = new EolModule();
-//		ResourceSet resourceSet = new ResourceSetImpl();
-//		
-//		ResourceSet ecoreResourceSet = new ResourceSetImpl();
-//		ecoreResourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*", new XMIResourceFactoryImpl());
-//		Resource ecoreResource = ecoreResourceSet.
-//				createResource(URI.createFileURI(new File(path).getAbsolutePath()));
-//		try {
-//			ecoreResource.load(null);
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		for (EObject o : ecoreResource.getContents()) {
-//			EPackage ePackage = (EPackage) o;
-//			resourceSet.getPackageRegistry().put(ePackage.getNsURI(), ePackage);
-//			EPackage.Registry.INSTANCE.put(ePackage.getNsURI(), ePackage);
-//		}
-//		System.out.println(EPackage.Registry.INSTANCE.getEPackage(((EPackage)ecoreResource.getContents().get(0)).getNsURI()));
-//		
-//		try {
-//			
-//			module.parse(new File(file));
-//			
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		module.getCompilationContext().setModelFactory(new SubModelFactory());
-	//	module.compile();
-//		new EolStaticAnalyser().validate(module);
-	//	public ArrayList<EffectiveMetamodel> EffectiveMetamodelExtraction( EolModule module) {
 	
-			for (ModelDeclaration MD : module.getDeclaredModelDeclarations()) {
+		for (ModelDeclaration MD : module.getDeclaredModelDeclarations()) {
 				//How can I add the nsuri?
-				SmartEMF m = new SmartEMF();
+				XMIN m = new XMIN();
 				m.setName(MD.getNameExpression().getName());
 				m.setPath(path);
 				//effectiveMetamodels.add(m);
@@ -98,6 +66,7 @@ public SmartEMF getEffectiveMetamodel (EolModule module) {
 
 			children.addAll(module.getChildren());
 
+			
 			while (!(children.isEmpty())) {
 
 				ModuleElement MD = children.get(0);
@@ -105,6 +74,10 @@ public SmartEMF getEffectiveMetamodel (EolModule module) {
 				// Improve : Use Optimized EolModule
 				if ((!(MD.getChildren().isEmpty())) && !(MD instanceof Operation))
 					children.addAll(MD.getChildren());
+
+				if (MD instanceof ConstraintContext && ((ConstraintContext)MD).getTypeExpression()!=null) {
+					effectiveMetamodel.addToAllOfKind(((ConstraintContext)MD).getTypeExpression().getName());
+				}
 
 				if (MD instanceof OperationCallExpression) {
 

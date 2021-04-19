@@ -17,7 +17,7 @@ import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.XMLResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
-import org.eclipse.epsilon.effectivemetamodel.SmartEMF;
+import org.eclipse.epsilon.effectivemetamodel.XMIN;
 import org.eclipse.epsilon.effectivemetamodel.EffectiveMetamodelExtraction;
 import org.eclipse.epsilon.effectivemetamodel.EffectiveMetamodelExtractionforEVL;
 import org.eclipse.epsilon.eol.EolModule;
@@ -25,7 +25,7 @@ import org.eclipse.epsilon.eol.EolModule;
 public class Demonstration2 {
 	
 	//public static ArrayList<EffectiveMetamodel> effectiveMetamodels = new ArrayList<EffectiveMetamodel>();
-	public static SmartEMF effectiveMetamodel;
+	public static XMIN effectiveMetamodel;
 	protected static String model = null;
 	//"src/org/eclipse/epsilon/TestUnit/Parser/flowchart2.xmi";
 	public  Demonstration2(String model) {this.model = model;}

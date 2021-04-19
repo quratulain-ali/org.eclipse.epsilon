@@ -16,11 +16,11 @@ public class SmartEmfModelConfigurationDialog extends EmfModelConfigurationDialo
 
 	@Override
 	protected String getModelName() {
-		return "SmartEMF model";
+		return "XMIN model";
 	}
 	
 	@Override
 	protected String getModelType() {
-		return "SmartEMF";
+		return "XMIN";
 	}
 }
