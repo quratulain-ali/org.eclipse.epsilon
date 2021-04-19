@@ -3,13 +3,16 @@ package org.eclipse.epsilon.SmartSaxParser;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.xmi.XMLLoad;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMLHelperImpl;
-import org.eclipse.epsilon.effectivemetamodel.SmartEMF;
+import org.eclipse.epsilon.effectivemetamodel.XMIN;
 
 public class SmartSAXXMIResource extends XMIResourceImpl{
 	
@@ -46,7 +49,7 @@ public class SmartSAXXMIResource extends XMIResourceImpl{
 		//loadAllAttributes = (Boolean) options.get(OPTION_LOAD_ALL_ATTRIBUTES);
 		
 		
-		ArrayList<SmartEMF> effectiveMetamodels = (ArrayList<SmartEMF>) options.get(OPTION_EFFECTIVE_METAMODELS);
+		ArrayList<XMIN> effectiveMetamodels = (ArrayList<XMIN>) options.get(OPTION_EFFECTIVE_METAMODELS);
 		if (effectiveMetamodels != null) {
 			EffectiveMetamodelReconciler effectiveMetamodelReconciler = new EffectiveMetamodelReconciler();
 			effectiveMetamodelReconciler.addEffectiveMetamodels(effectiveMetamodels);
@@ -67,10 +70,64 @@ public class SmartSAXXMIResource extends XMIResourceImpl{
 				actualObjectsToLoad = effectiveMetamodelReconciler.getActualObjectsToLoad();
 				objectsAndRefNamesToVisit = effectiveMetamodelReconciler.getObjectsAndRefNamesToVisit();
 				typesToLoad = effectiveMetamodelReconciler.getTypesToLoad();
+				//actualObjectsToLoad.get("javaMM").putAll(typesToLoad.get("javaMM"));
+				//typesToLoad.clear();
 			}
 		}
 		
+	//	HashMap<String,ArrayList<String>> types = typesToLoad.get("javaMM");
+		 //(HashMap<String, ArrayList<String>>) typesToLoad.get("javaMM").values();
+	//	 HashMap<String, ArrayList<String>> objects =actualObjectsToLoad.get("javaMM");
+		 
+		 
+//		 for (String k : actualObjectsToLoad.get("javaMM").keySet()) {
+//			 if (typesToLoad.get("javaMM").containsKey(k)) {
+//				 System.out.println(actualObjectsToLoad.get("javaMM").get(k));
+//			 	 System.out.println(typesToLoad.get("javaMM").get(k));
+//				 for (String s : actualObjectsToLoad.get("javaMM").get(k))
+//					 if (typesToLoad.get("javaMM").get(k).contains(s)) {
+//						 typesToLoad.get("javaMM").get(k).remove(s);
+//					 }
+//				 		actualObjectsToLoad.get("javaMM").get(k).addAll(typesToLoad.get("javaMM").get(k));
+//				 		typesToLoad.get("javaMM").remove(k);			 
+//			 }
+//		 }
+		 
+/*
+	 HashMap<String,ArrayList<String>> size = typesToLoad.get("javaMM");
+	 //(HashMap<String, ArrayList<String>>) typesToLoad.get("javaMM").values();
+	 HashMap<String, ArrayList<String>> types =actualObjectsToLoad.get("javaMM");
+	 
+	 for (String k : types.keySet())
+		 if (size.containsKey(k)) {
+			// if (size.get(k).equals(types.get(k)))
+				 size.remove(k);
+		//	 else
+				// for (String e : size.get(k)) {
+					// if (types.get(k).contains(e)) {
+					//	 types.get(k).remove(e);
+						// if (types.get(k).isEmpty()) {
+							// types.remove(k);
+						//	 break;
+						// }
+					// }
+				// }
+					 
+		 }
+	 int num = size.size() + types.size();
+	 System.out.println("Size :" + num);
+	 // size.putAll(actualObjectsToLoad);
+		// size.values();
+//	 for (String k : size) {
+//		 size.forEach(
+//				 		(key, value) -> types.merge( key, value, (v1, v2) -> 
+//				 		v1.equals(v2) ? v1 : v1.addAll(v2)));}
+	
+//		 System.out.println("SET : " + size.values().size());
+//		num =actualObjectsToLoad.get("javaMM").size() + typesToLoad.get("javaMM").size();
+//		System.out.println("Number of EffectiveMM elements : " + num);*/
 		super.load(options);
+	
 	}
 	
 	
