@@ -183,7 +183,7 @@ public class EmfModel extends AbstractEmfModel implements IReflectiveModel,IRewr
 		setMetamodelFileUris(toURIList(properties.getProperty(PROPERTY_FILE_BASED_METAMODEL_URI)));
 		setReuseUnmodifiedFileBasedMetamodels(properties.getBooleanProperty(PROPERTY_REUSE_UNMODIFIED_FILE_BASED_METAMODELS, reuseUnmodifiedFileBasedMetamodels));
 		
-		if (!properties.getProperty("type").equals("SmartEMF"))
+	//	if (!properties.getProperty("type").equals("XMIN"))
 			
 			load();
 		}
@@ -394,7 +394,7 @@ public class EmfModel extends AbstractEmfModel implements IReflectiveModel,IRewr
 		}
 		resourceSet.getPackageRegistry().put(EcorePackage.eNS_URI, EcorePackage.eINSTANCE);
 		long startTime = System.nanoTime();
-		
+		long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 		Resource model = resourceSet.createResource(modelUri);
 		if (this.readOnLoad) {
 			try {
@@ -410,8 +410,11 @@ public class EmfModel extends AbstractEmfModel implements IReflectiveModel,IRewr
 		if (isCachingEnabled()) {
 			modelImpl.eAdapters().add(new CachedContentsAdapter());
 		}
-		System.out.println((System.nanoTime()-startTime)/1000000 + " milliseconds");
-
+		System.out.println((long)(System.nanoTime()-startTime)/1000000 + " milliseconds");
+		long endMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+		long memory = (long) ((endMemory - startMemory) / 1000000);
+		System.out.println("**** Memory ****");
+		System.out.println((memory) + " MB");
 		System.out.println("**** Loaded Objects ****");
 		System.out.println(model.getContents().size());
 	}
