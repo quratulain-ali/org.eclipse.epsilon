@@ -12,9 +12,8 @@ context MethodInvocation {
 		) 
 	}
 }
-
-context MethodDeclaration {
-	constraint shouldStartWithLowerCase {
-		check: self.name.firstToLowerCase() == self.name
+context SingleVariableDeclaration {
+	constraint shouldStartWithUpperCase {
+		check: self.name.firstToUpperCase() == self.name
 	}
 }

@@ -1,13 +1,11 @@
-model javaMM driver EMF {
+@@ -0,0 +1,395 @@
+model javaMM driver XMIN {
 nsuri = "http://www.eclipse.org/MoDisco/Java/0.2.incubation/java" 
 };
-
-pre{}
 
 operation InfixExpression operatorIsEquality() : Boolean {
 	return self.operator == InfixExpressionKind#EQUALS or self.operator == InfixExpressionKind#NOT_EQUALS;
 }
-
 operation Modifier isLocal() : Boolean {
 	return self.visibility == VisibilityKind#private or self.visibility == VisibilityKind#none;
 }
@@ -143,7 +141,7 @@ context MethodDeclaration {
 		check: self.name.firstToLowerCase() == self.name
 	}
 }
-	
+
 context AbstractMethodDeclaration {
 	constraint canBeLocal {
 		guard: self.modifier.isDefined() and not self.modifier.isLocal()
@@ -363,5 +361,34 @@ context InfixExpression {
 context SynchronizedStatement {
 	constraint hasStatements {
 		check: self.body.statements.notEmpty()
+	}
+}
+context ASTNode {
+	constraint tryfullcov {
+		check: self.comments.content<>null and
+		self.originalCompilationUnit.isDefined() and
+		self.originalCompilationUnit.name <> null
+	}
+}
+context Model {
+	constraint elements {
+		check: //self.ownedElements.isEmpty() and
+		self.orphanTypes.name <> null
+	}
+}
+context Type {
+	constraint elements {
+		check:
+		self.name <> null
+	}
+}
+context ImportDeclaration {
+
+	constraint allImportsAreUsed {
+		check: NamedElement.allInstances().exists(ne |
+			ne == self.importedElement and
+			ne.originalCompilationUnit == self.originalCompilationUnit
+			
+		)
 	}
 }

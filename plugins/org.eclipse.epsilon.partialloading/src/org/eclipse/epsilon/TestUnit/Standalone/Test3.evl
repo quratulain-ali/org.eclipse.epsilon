@@ -1,0 +1,10 @@
+model javaMM driver XMIN {
+nsuri = "http://www.eclipse.org/MoDisco/Java/0.2.incubation/java" 
+};
+
+context SuperConstructorInvocation {
+	constraint noRedundantSuperCall {
+		check: self.arguments.notEmpty()
+	}
+}
+

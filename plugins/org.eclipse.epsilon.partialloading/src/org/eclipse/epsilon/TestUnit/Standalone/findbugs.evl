@@ -1,9 +1,10 @@
-model javaMM driver EMF {
+@@ -0,0 +1,367 @@
+model javaMM driver SmartEMF {
 nsuri = "http://www.eclipse.org/MoDisco/Java/0.2.incubation/java" 
 };
 
 pre{}
-
+/*
 operation InfixExpression operatorIsEquality() : Boolean {
 	return self.operator == InfixExpressionKind#EQUALS or self.operator == InfixExpressionKind#NOT_EQUALS;
 }
@@ -11,7 +12,7 @@ operation InfixExpression operatorIsEquality() : Boolean {
 operation Modifier isLocal() : Boolean {
 	return self.visibility == VisibilityKind#private or self.visibility == VisibilityKind#none;
 }
-
+/*
 operation AbstractTypeDeclaration implements(type : String) {
 	return self.superInterfaces.exists(si:TypeAccess | si.type.name == type);
 }
@@ -92,7 +93,7 @@ operation MethodDeclaration isCompareTo() : Boolean {
 		self.modifier.isDefined() and
 		self.modifier.visibility == VisibilityKind#public;
 }
-
+*/
 
 context NamedElement {
 	constraint notReservedWord {
@@ -143,7 +144,7 @@ context MethodDeclaration {
 		check: self.name.firstToLowerCase() == self.name
 	}
 }
-	
+/*
 context AbstractMethodDeclaration {
 	constraint canBeLocal {
 		guard: self.modifier.isDefined() and not self.modifier.isLocal()
@@ -364,4 +365,5 @@ context SynchronizedStatement {
 	constraint hasStatements {
 		check: self.body.statements.notEmpty()
 	}
-}
+}*/
+
