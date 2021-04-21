@@ -24,9 +24,9 @@ public class EvlEffectiveMetamodelExtractor {
 
 	public EvlEffectiveMetamodelExtractor() {}
 	
-	public SmartEMF geteffectiveMetamodel(IEolModule eolmodule) {
+	public XMIN geteffectiveMetamodel(IEolModule eolmodule) {
 		
-		SmartEMF smartEMFModel = null;
+		XMIN smartEMFModel = null;
 		ArrayList<ModuleElement> children = new ArrayList<ModuleElement>();
 		ArrayList<StructuralFeature> features = new ArrayList<StructuralFeature>();
 		EffectiveType effectiveType;
@@ -34,7 +34,7 @@ public class EvlEffectiveMetamodelExtractor {
 		EvlModule module = (EvlModule)eolmodule;
 		
 		try {
-			smartEMFModel = (SmartEMF) module.getContext().getModelRepository().getModelByName
+			smartEMFModel = (XMIN) module.getContext().getModelRepository().getModelByName
 					(module.getCompilationContext().getModelDeclarations().get(0).getNameExpression()
 							.getName());
 		} catch (EolModelNotFoundException e) {
@@ -100,12 +100,12 @@ public class EvlEffectiveMetamodelExtractor {
 				else {
 					// not already under the EM's allOfKind or allOfType references
 						smartEMFModel.addToAllOfKind(target.getTypeName());
-						ExpressionStatement statement = new ExpressionStatement();
-						statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addToAllOfKind"),new StringLiteral(target.getTypeName())));
-						//module.getMain().getStatements().add(i, statement);
-						((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement);
-						
-						i++;
+//						ExpressionStatement statement = new ExpressionStatement();
+//						statement.setExpression(new OperationCallExpression(new NameExpression(smartEMFModel.getName()), new NameExpression("addToAllOfKind"),new StringLiteral(target.getTypeName())));
+//						//module.getMain().getStatements().add(i, statement);
+//						((NamedStatementBlockRule)module.getDeclaredPre().get(0)).getBody().getStatements().add(i, statement);
+//						
+//						i++;
 				}
 			}
 			

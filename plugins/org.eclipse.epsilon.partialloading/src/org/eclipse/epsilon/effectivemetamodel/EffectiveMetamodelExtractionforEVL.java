@@ -45,10 +45,10 @@ public class EffectiveMetamodelExtractionforEVL {
 	
 	public EffectiveMetamodelExtractionforEVL() {}
 	
-public SmartEMF getEffectiveMetamodel () {
+public XMIN getEffectiveMetamodel () {
 	
-		ArrayList<SmartEMF> effectiveMetamodels = new ArrayList<SmartEMF>();
-		SmartEMF effectiveMetamodel = null;
+		ArrayList<XMIN> effectiveMetamodels = new ArrayList<XMIN>();
+		XMIN effectiveMetamodel = null;
 		ArrayList<ModuleElement> children = new ArrayList<ModuleElement>();
 		ArrayList<StructuralFeature> features = new ArrayList<StructuralFeature>();
 		EffectiveType effectiveType;
@@ -90,7 +90,7 @@ public SmartEMF getEffectiveMetamodel () {
 		
 			for (ModelDeclaration MD : module.getCompilationContext().getModelDeclarations()) {
 				//How can I add the nsuri?
-				SmartEMF m = new SmartEMF();
+				XMIN m = new XMIN();
 				m.setName(MD.getNameExpression().getName());
 				effectiveMetamodels.add(m);
 				
