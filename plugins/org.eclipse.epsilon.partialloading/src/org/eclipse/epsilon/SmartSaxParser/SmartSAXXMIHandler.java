@@ -38,7 +38,7 @@ public class SmartSAXXMIHandler extends SAXXMIHandler{
  	protected ArrayList<Integer> extentIndexToDelete = new ArrayList<Integer>(); 
 	
 	protected EClass traversal_currentClass;
-	protected ArrayList<String> traversal_currentFeatures;
+	protected ArrayList<String> traversal_currentFeatures = new ArrayList<String>();
 	
 	protected boolean shouldHalt = false;
 	protected String currentName = "";
@@ -50,14 +50,15 @@ public class SmartSAXXMIHandler extends SAXXMIHandler{
 	
 	@Override
 	public void endDocument() {
+		
+		traversal_currentFeatures.clear();
+		traversal_currentFeatures = null;
 		traversalPlans.clear();
 		traversalPlans = null;
 		actualObjectsAndFeaturesToLoad.clear();
 		actualObjectsAndFeaturesToLoad = null;
 		cache.clear();
 		cache = null;
-	//	traversal_currentFeatures.clear();
-		traversal_currentFeatures = null;
 		objects.clear();
 		objects = null;
 		elements.clear();
@@ -112,11 +113,6 @@ public class SmartSAXXMIHandler extends SAXXMIHandler{
 	@Deprecated
 	protected EObject createObjectFromFactory(EFactory factory, String typeName) {
 		EClass eClass = (EClass) factory.getEPackage().getEClassifier(typeName);
-
-//		if (eClass.getName().equals("Transition"))
-//				handlingFeature = true;
-		
-		
 		
 		//if the an instance of the class should be created
 		if (shouldCreateAllObjectForClass(eClass)) {
@@ -138,16 +134,13 @@ public class SmartSAXXMIHandler extends SAXXMIHandler{
 		    	}
 		    }
 		    
-		    //if (!handlingFeature) {
 		    	extent.add(newObject);	
-			//}
 		    
 		    return newObject;
 		    
 		}
 		
-		//I Delete a condition here! -> && handlingFeature
-		else if (shouldCreateObjectForReference(eClass)) {
+		else if (handlingFeature && shouldCreateObjectForReference(eClass)) {
 			
 			//prepare newObject
 		    EObject newObject = null;
@@ -269,11 +262,8 @@ public class SmartSAXXMIHandler extends SAXXMIHandler{
 	  	        setValueFromId(object, (EReference)feature, value);
 			}
 	    	  else {
-	    		  /*By Sorour*/
-	    		// handlingFeature =  false;
-					if (shouldHandleFeatureForType(object, feature.getName()) && handlingFeature) {
-							 setValueFromId(object, (EReference)feature, value);
-//							 setFeatureValue(object, feature, value, -2);
+					if (handlingFeature && shouldHandleFeatureForType(object, feature.getName())) {
+							 setFeatureValue(object, feature, value, -2);
 					}
 				}
 	      }
@@ -395,6 +385,7 @@ public class SmartSAXXMIHandler extends SAXXMIHandler{
 	public boolean shouldCreateObjectForReference(EClass eClass)
 	{
 		String epackage = eClass.getEPackage().getName();
+		
 		HashMap<String, ArrayList<String>> subMap = typesToLoad.get(epackage);
 		if (subMap == null) {
 			return false;
@@ -411,9 +402,11 @@ public class SmartSAXXMIHandler extends SAXXMIHandler{
 	{
 		//if current class is not null and current class is equal to the class in question
 		if (traversal_currentClass != null && traversal_currentClass.getName().equals(eClass.getName())) {
+			
 			if (traversal_currentFeatures.contains(name)) {
 				return true;
 			}
+			
 			if (traversal_currentFeatures.size() == 0) {
 				return true;
 			}
@@ -455,7 +448,7 @@ public class SmartSAXXMIHandler extends SAXXMIHandler{
 	protected void handleFeature(String prefix, String name) {
 		
 	    EObject peekObject = objects.peekEObject();
-
+	    
 	    // This happens when processing an element with simple content that has elements content even though it shouldn't.
 	    //
 	    if (peekObject == null)
@@ -482,7 +475,7 @@ public class SmartSAXXMIHandler extends SAXXMIHandler{
 	    	else {
 				handlingFeature = false;
 			}
-
+	    	
 	      int kind = helper.getFeatureKind(feature);
 	      if (kind == XMLHelper.DATATYPE_SINGLE || kind == XMLHelper.DATATYPE_IS_MANY)
 	      {
