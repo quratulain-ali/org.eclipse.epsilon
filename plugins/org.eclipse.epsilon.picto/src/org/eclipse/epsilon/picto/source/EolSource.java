@@ -23,7 +23,7 @@ public class EolSource extends SimpleSource{
 	
 	@Override
 	public ViewTree getViewTree(IEditorPart editor) throws Exception {
-		IFile iFile = waitForFile(editor);
+		IFile iFile = getFile(editor);
 		if (iFile == null) return createEmptyViewTree();
 		IPath pathAndFileName = iFile.getLocation();
 		String path = pathAndFileName.removeFileExtension().toOSString();
