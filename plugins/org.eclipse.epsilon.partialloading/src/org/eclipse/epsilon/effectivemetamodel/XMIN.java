@@ -105,6 +105,17 @@ public class XMIN extends EmfModel{
 				return et;
 			}
 		}
+		if (allOfTypeContains(modelElement)) {
+			EffectiveType et = addToAllOfKind(getFromAllOfType(modelElement));
+			removeFromTypes(modelElement);
+			return et;
+		}
+		else if(typesContains(modelElement)) {
+			EffectiveType et = addToAllOfKind(getFromTypes(modelElement));
+			removeFromTypes(modelElement);
+			return et;
+		}
+		
 		EffectiveType et = new EffectiveType(modelElement);
 		et.setEffectiveMetamodel(this);
 		allOfKind.add(et);

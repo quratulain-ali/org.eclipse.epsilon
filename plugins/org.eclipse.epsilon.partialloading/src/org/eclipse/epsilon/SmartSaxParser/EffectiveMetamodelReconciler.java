@@ -108,79 +108,80 @@ public class EffectiveMetamodelReconciler {
 		
 		start = System.nanoTime();
 		
-		for(EPackage ePackage: packages)
-		{
-			for(EClassifier eClassifier: ePackage.getEClassifiers())
-			{
-				if (eClassifier instanceof EClass) {
-					EClass leClass = (EClass) eClassifier;
-					
-					if (actualObjectToLoad(ePackage, (EClass) eClassifier)) {
-						
-						for(EReference eReference: leClass.getEAllReferences())
-						{
-							if(actualObjectsAndFeaturesToLoad.get(ePackage.getName()).get(eClassifier.getName())!=null &&
-							   actualObjectsAndFeaturesToLoad.get(ePackage.getName()).get(eClassifier.getName()).contains(eReference.getName()))
-							{
-								EClass eType = (EClass) eReference.getEType();
-								
-								if (!eReference.isContainment()) {
-									addActualObjectToLoad(eType);
-									
+//		for(EPackage ePackage: packages)
+//		{
+//			for(EClassifier eClassifier: ePackage.getEClassifiers())
+//			{
+//				if (eClassifier instanceof EClass) {
+//					EClass leClass = (EClass) eClassifier;
+//					
+//					if (actualObjectToLoad(ePackage, (EClass) eClassifier)) {
+//						
+//						for(EReference eReference: leClass.getEAllReferences())
+//						{
+//							if( actualObjectsAndFeaturesToLoad.get(ePackage.getName()).get(eClassifier.getName()).contains(eReference.getName()))
+//							{
+//								EClass eType = (EClass) eReference.getEType();
+//							
+//								if (eReference.isContainment()) {
+//									addTypesToLoad(eType);
 //									for(EClassifier eclass: ePackage.getEClassifiers())
 //									{
 //										if (eclass instanceof EClass) {
 //											EClass subclass = (EClass) eclass;
 //											if (subclass.getEAllSuperTypes().contains(eType))
-//												addActualObjectToLoad(subclass);
-//												//typesToLoad.remove(subclass.getName());
+//												addTypesToLoad(subclass);
 //										}
 //									}
-								}
-					
-								else {
-									
-//									if (actualObjectsAndFeaturesToLoad.get(ePackage.getName()).containsKey(eType.getName()))
-//										actualObjectsAndFeaturesToLoad.get(ePackage.getName()).get(eClassifier.getName()).remove(eReference.getName());
-//										//break;
-//									else {	
-											addTypesToLoad(eType);
-//											for(EClassifier eclass: ePackage.getEClassifiers())
-//												{
-//													if (eclass instanceof EClass) {
-//														EClass subclass = (EClass) eclass;
-//														if (subclass.getEAllSuperTypes().contains(eType))
-//															addTypesToLoad(subclass);
-//													}
-//												}
-								//	}
-								
-								}
-							//	actualObjectsAndFeaturesToLoad.get(ePackage.getName()).get(leClass.getName()).remove(eReference.getName());
-								
-								//By Sorour
-							/*	for(EClassifier eclass: ePackage.getEClassifiers())
-								{
-									if (eclass instanceof EClass) {
-										EClass subclass = (EClass) eclass;
-										if (subclass.getEAllSuperTypes().contains(eType))
-											addTypesToLoad(subclass);
-									}
-								}*/
-							}
-						}
-					}
-					
-					if (typesToLoad(ePackage, leClass)) {
-						for(EReference eReference: leClass.getEAllReferences())
-						{
-							EClass eType = (EClass) eReference.getEType();
-							if (typesToLoad!=null &&typesToLoad.get(ePackage.getName())!= null &&typesToLoad.get(ePackage.getName()).get(eClassifier.getName())!=null)
-								if(typesToLoad.get(ePackage.getName()).get(eClassifier.getName()).contains(eReference.getName()))
-								{
-								
-									if (!eReference.isContainment() && !actualObjectsAndFeaturesToLoad.containsKey(eType.getName())) {
-										addActualObjectToLoad(eType);
+//								}
+//								else
+//								{
+//									addActualObjectToLoad(eType);
+//									
+//									for(EClassifier eclass: ePackage.getEClassifiers())
+//										{
+//											if (eclass instanceof EClass) {
+//												EClass subclass = (EClass) eclass;
+//												if (subclass.getEAllSuperTypes().contains(eType))
+//													addActualObjectToLoad(subclass);
+//											}
+//										}
+//								}
+//							//	By Sorour
+////								for(EClassifier eclass: ePackage.getEClassifiers())
+////								{
+////									if (eclass instanceof EClass) {
+////										EClass subclass = (EClass) eclass;
+////										if (subclass.getEAllSuperTypes().contains(eType))
+////											addTypesToLoad(subclass);
+////									}
+////								}
+//							}
+//						}
+//					}
+//					
+//					if (typesToLoad(ePackage, leClass)) {
+//						for(EReference eReference: leClass.getEAllReferences())
+//						{
+//							EClass eType = (EClass) eReference.getEType();
+//							if (typesToLoad!=null &&typesToLoad.get(ePackage.getName())!= null &&typesToLoad.get(ePackage.getName()).get(eClassifier.getName())!=null)
+//								if(typesToLoad.get(ePackage.getName()).get(eClassifier.getName()).contains(eReference.getName()))
+//								{
+//						
+//									if (eReference.isContainment()) {
+//										addTypesToLoad(eType);
+//										for(EClassifier eclass: ePackage.getEClassifiers())
+//										{
+//											if (eclass instanceof EClass) {
+//												EClass subclass = (EClass) eclass;
+//												if (subclass.getEAllSuperTypes().contains(eType))
+//													addTypesToLoad(subclass);
+//											}
+//										}
+//									}
+//									else
+//									{
+//										addActualObjectToLoad(eType);
 //										for(EClassifier eclass: ePackage.getEClassifiers())
 //										{
 //											if (eclass instanceof EClass) {
@@ -189,48 +190,29 @@ public class EffectiveMetamodelReconciler {
 //													addActualObjectToLoad(subclass);
 //											}
 //										}
-									}
-									
-									else { 
-									/*	if (actualObjectsAndFeaturesToLoad.get(ePackage.getName()).containsKey(eType.getName()))
-											typesToLoad.get(ePackage.getName()).get(eClassifier.getName()).remove(eReference.getName());
-											//break;
-										else {*/
-											addTypesToLoad(eType);
-//											for(EClassifier eclass: ePackage.getEClassifiers())
-//												{
-//													if (eclass instanceof EClass) {
-//														EClass subclass = (EClass) eclass;
-//														if (subclass.getEAllSuperTypes().contains(eType))
-//															addTypesToLoad(subclass);
-//													}
-//												}
-									//	}
-										}
-								//	typesToLoad.get(ePackage.getName()).get(leClass.getName()).remove(eReference.getName());
-									
-								}
-								
-								//By Sorour
-//								for(EClassifier eclass: ePackage.getEClassifiers())
-//								{
-//									if (eclass instanceof EClass) {
-//										EClass subclass = (EClass) eclass;
-//										if (subclass.getEAllSuperTypes().contains(eType))
-//											addTypesToLoad(subclass);
 //									}
+//										
+//								
+//						
+//								//By Sorour
+////								for(EClassifier eclass: ePackage.getEClassifiers())
+////								{
+////									if (eclass instanceof EClass) {
+////										EClass subclass = (EClass) eclass;
+////										if (subclass.getEAllSuperTypes().contains(eType))
+////											addTypesToLoad(subclass);
+////									}
+////								}
 //								}
-							
-						}
-						
-					}
-				}
-			}
-		}
+//						}
+//						}
+//				}
+//			}
+//	}
 		end = System.nanoTime();
 		System.out.println("Loop Two = " + (long)(end-start)/1000000);
 		
-		/*for(XMIN em: effectiveMetamodels)
+		for(XMIN em: effectiveMetamodels)
 		{
 			
 			for(EffectiveType et: em.getAllOfKind())
@@ -285,7 +267,7 @@ public class EffectiveMetamodelReconciler {
 				}
 				}
 			}
-		}*/
+		}
 	}
 
 	
@@ -312,10 +294,10 @@ public class EffectiveMetamodelReconciler {
 					EClass kind = (EClass) ePackage.getEClassifier(elementName);
 					
 					//if the eclass's super types contains the type also return true
-				/*	if(eClass.getESuperTypes().contains(kind))
-					{
-						return true;
-					}*/
+//					if(eClass.getESuperTypes().contains(kind))
+//					{
+//						return true;
+//					}
 					/*By Sorour*/
 				    if (eClass.getEAllSuperTypes().contains(kind))
 						return true;
@@ -359,14 +341,14 @@ public class EffectiveMetamodelReconciler {
 					EClass kind = (EClass) ePackage.getEClassifier(elementName);
 					
 					//if the eclass's super types contains the type also return true
-					if(eClass.getESuperTypes().contains(kind))
-					{
-						return true;
-					}
+//					if(eClass.getESuperTypes().contains(kind))
+//					{
+//						return true;
+//					}
 					// The subclasses of effective types should be loaded as well
 					
 					/*By Sorour*/
-					else if (eClass.getEAllSuperTypes().contains(kind))
+					 if (eClass.getEAllSuperTypes().contains(kind))
 						return true;
 					/**/
 				}
@@ -383,20 +365,7 @@ public class EffectiveMetamodelReconciler {
 		//get the submap with the epackage name
 		HashMap<String, ArrayList<String>> subMap = actualObjectsAndFeaturesToLoad.get(epackage);
 		HashMap<String, ArrayList<String>> types = typesToLoad.get(epackage);
-		ArrayList<String> refs = getFeaturesForClassToLoad(eClass);
-		
-		//If this eclass exists as ActualObjectToLoad then merge features in ActualObjtToLoad
-		if (types != null && types.containsKey(eClass.getName())) {
-					for (String feature : types.get(eClass.getName()))
-						if (refs.contains(feature))
-							refs.remove(feature);
-				
-						refs.addAll(types.get(eClass.getName()));
-						subMap.put(eClass.getName(), refs);
-						types.remove(eClass.getName());
-					//	actualObjectsAndFeaturesToLoad.put(epackage, subMap);
-					//	return;
-		}
+		ArrayList<String> refs = new ArrayList<String>();
 				
 		//if sub map is null
 		if (subMap == null) {
@@ -422,15 +391,22 @@ public class EffectiveMetamodelReconciler {
 			if (refs == null) {
 				//get refs from allOfKind or allOfType
 				refs = getFeaturesForClassToLoad(eClass);
-//				
-//				if (refs.isEmpty()) {
-//					//get refs from types
-//					refs=getFeaturesForTypeToLoad(eClass);
-//				}
+//	
 				subMap.put(eClass.getName(), refs);
 			}
-			
 		}
+			
+			//If this eclass exists as ActualObjectToLoad then merge features in ActualObjtToLoad
+			if (types != null && types.containsKey(eClass.getName())) {
+						for (String feature : types.get(eClass.getName()))
+							if (refs.contains(feature))
+								refs.remove(feature);
+					
+							refs.addAll(types.get(eClass.getName()));
+							subMap.put(eClass.getName(), refs);
+							types.remove(eClass.getName());
+			}
+			
 	}
 	
 	public void addTypesToLoad(EClass eClass)
@@ -443,24 +419,9 @@ public class EffectiveMetamodelReconciler {
 		HashMap<String, ArrayList<String>> Actual = actualObjectsAndFeaturesToLoad.get(epackage);
 		ArrayList<String> refs = getFeaturesForTypeToLoad(eClass);
 		
-		//If this eclass exists as ActualObjectToLoad then merge features in ActualObjtToLoad
-		if (Actual != null && Actual.containsKey(eClass.getName())) {
-			for (String feature : Actual.get(eClass.getName()))
-				if (refs.contains(feature))
-					refs.remove(feature);
-		
-		//	if (!refs.isEmpty())
-		//	{
-				refs.addAll(Actual.get(eClass.getName()));
-				Actual.put(eClass.getName(), refs);
-			//	actualObjectsAndFeaturesToLoad.put(epackage, subMap);
-			//	return;
-		//	}
-		}
-		
 		//if sub map is null and eClass doesn't exist in ActualObjToLoad
 		
-		else if (subMap == null) {
+		if (subMap == null) {
 				//create new sub map
 				subMap = new HashMap<String, ArrayList<String>>();
 				
@@ -470,7 +431,6 @@ public class EffectiveMetamodelReconciler {
 					//add the sub map to objectsAndRefNamesToVisit
 					typesToLoad.put(epackage, subMap);
 				}
-		
 		else
 		{	
 			//if sub map is not null, get the refs by class name
@@ -484,6 +444,16 @@ public class EffectiveMetamodelReconciler {
 			}
 			
 		}
+		//If this eclass exists as ActualObjectToLoad then merge features in ActualObjtToLoad
+		if (Actual != null && Actual.containsKey(eClass.getName())) {
+				for (String feature : Actual.get(eClass.getName()))
+						if (refs.contains(feature))
+							refs.remove(feature);
+			
+						refs.addAll(Actual.get(eClass.getName()));
+						Actual.put(eClass.getName(), refs);
+						subMap.remove(eClass.getName());
+				}
 }
 
 	public ArrayList<String> getFeaturesForTypeToLoad(EClass eClass)

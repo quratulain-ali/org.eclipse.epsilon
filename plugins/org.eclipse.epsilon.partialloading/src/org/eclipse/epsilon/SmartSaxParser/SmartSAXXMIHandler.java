@@ -263,7 +263,8 @@ public class SmartSAXXMIHandler extends SAXXMIHandler{
 			}
 	    	  else {
 					if (handlingFeature && shouldHandleFeatureForType(object, feature.getName())) {
-							 setFeatureValue(object, feature, value, -2);
+						// setFeatureValue(object, feature, value, -2);
+						 setValueFromId(object, (EReference)feature, value);
 					}
 				}
 	      }
