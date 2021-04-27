@@ -1,27 +1,11 @@
-model javaMM driver EMF {
+//Number of Loaded object is correct but execution is more!
+//186 times exe, 165 loaded objects!
+model javaMM driver XMIN {
 nsuri = "http://www.eclipse.org/MoDisco/Java/0.2.incubation/java" 
 };
 
-context NamedElement {
-//2701
-	constraint notReservedWord {
-		check:  self.name <> "var" and
-				self.name <> "_" and
-				self.name <> "strictfp" and
-				self.name <> "assert" and
-				self.name <> "enum"
-	}
-}
-
-context MethodInvocation {
-	guard: self.method.isDefined()
-	//808 #times execution for EMF
-	constraint doesNotCallFinalize {
-		check: not (
-		// if I comment the second operator of "and"-> result is as same as EMF
-		// But number of objects is equal in two conditions! comment or not!
-			self.method.name == "finalize" and
-			self.method.parameters.isEmpty()
-		) 
+context InfixExpression {
+	constraint noRedundantComparison {
+		check: self.leftOperand <> self.rightOperand
 	}
 }
