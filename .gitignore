@@ -104,20 +104,7 @@ target-plain
 
 # Backup files from Emacs
 *~
-examples/org.eclipse.epsilon.eugenia.examples.executablestatemachine.textual/xtend-gen/org/eclipse/epsilon/eugenia/examples/executablestatemachine/textual/generator/.ActionsGenerator.java._trace
-examples/org.eclipse.epsilon.eugenia.examples.executablestatemachine.textual/xtend-gen/org/eclipse/epsilon/eugenia/examples/executablestatemachine/textual/generator/.ActionsGenerator.xtendbin
-examples/org.eclipse.epsilon.eugenia.examples.executablestatemachine.textual/xtend-gen/org/eclipse/epsilon/eugenia/examples/executablestatemachine/textual/generator/ActionsGenerator.java
-examples/org.eclipse.epsilon.examples.evl.xtext/xtend-gen/org/eclipse/epsilon/examples/evl/xtext/generator/.EvlDSLGenerator.xtendbin
-examples/org.eclipse.epsilon.eugenia.examples.executablestatemachine.textual/xtend-gen/org/eclipse/epsilon/eugenia/examples/executablestatemachine/textual/generator/.ActionsGenerator.java._trace
-examples/org.eclipse.epsilon.eugenia.examples.executablestatemachine.textual/xtend-gen/org/eclipse/epsilon/eugenia/examples/executablestatemachine/textual/generator/.ActionsGenerator.xtendbin
-examples/org.eclipse.epsilon.eugenia.examples.executablestatemachine.textual/xtend-gen/org/eclipse/epsilon/eugenia/examples/executablestatemachine/textual/generator/ActionsGenerator.java
-examples/org.eclipse.epsilon.examples.evl.xtext/xtend-gen/org/eclipse/epsilon/examples/evl/xtext/generator/.EvlDSLGenerator.xtendbin
-examples/org.eclipse.epsilon.examples.evl.xtext/xtend-gen/org/eclipse/epsilon/examples/evl/xtext/scoping/.EvlDSLScopeProvider.xtendbin
-examples/org.eclipse.epsilon.examples.evl.xtext/xtend-gen/org/eclipse/epsilon/examples/evl/xtext/validation/.EvlDSLValidator.xtendbin
-examples/org.eclipse.epsilon.examples.evl.xtext/xtend-gen/org/eclipse/epsilon/examples/evl/xtext/.EvlDSLRuntimeModule.xtendbin
-examples/org.eclipse.epsilon.examples.evl.xtext/xtend-gen/org/eclipse/epsilon/examples/evl/xtext/.EvlDSLStandaloneSetup.xtendbin
-plugins/org.eclipse.epsilon.eol.query/src/org/eclipse/epsilon/eol/evaluation/set4.xmi
-plugins/org.eclipse.epsilon.eol.query/src/org/eclipse/epsilon/eol/evaluation/set3.xmi
-plugins/org.eclipse.epsilon.eol.query/src/org/eclipse/epsilon/eol/evaluation/set2.xmi
-plugins/org.eclipse.epsilon.evl.query/src/org/eclipse/epsilon/evl/evaluation/eclipseModel-all.xmi
-plugins/org.eclipse.epsilon.evl.query/src/org/eclipse/epsilon/evl/evaluation/eclipseModel-*.xmi
+
+# EUnit test files in examples
+/examples/**/TEST-*.xml
+

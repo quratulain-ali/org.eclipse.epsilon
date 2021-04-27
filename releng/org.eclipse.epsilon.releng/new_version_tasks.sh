@@ -6,8 +6,8 @@ UpdatesName=updates
 JavadocsName=javadoc
 InterimVersion=interim
 InterimJavadocs=$InterimVersion-$JavadocsName
-NewVersion=2.3
-OldVersion=2.2
+NewVersion=2.4
+OldVersion=2.3
 
 echo "Moving $OldVersion..." &&
 mkdir -p $Archives/$OldVersion &&
@@ -27,6 +27,7 @@ mkdir -p $NewVersion/$JavadocsName &&
 cp -r $InterimJavadocs/* $NewVersion/$JavadocsName &&
 rm -rf $NewVersion/$JavadocsName/$InterimJavadocs &&
 echo "Adding $NewVersion to composite..." &&
+cd $Downloads/$UpdatesName &&
 ant -f /shared/modeling/tools/promotion/manage-composite.xml add -Dchild.repository=$NewVersion
 
 #cd /home/data/httpd/download.eclipse.org/epsilon/temp
