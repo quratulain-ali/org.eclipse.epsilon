@@ -72,12 +72,14 @@ public class SmartEMFRunConfiguration extends EvlRunConfiguration{
 			//ArrayList<SmartEMF> effectiveMetamodels = new ArrayList<SmartEMF>();
 			XMIN smartEMFModel = null;
 			if (module instanceof EvlModule)
-				smartEMFModel = new EvlEffectiveMetamodelExtractor().geteffectiveMetamodel(module);
+				smartEMFModel = new EffectiveMetamodelExtractor().geteffectiveMetamodel(module);
 			else {
 				if (module.getMain() == null) return;
 			smartEMFModel = new EffectiveMetamodelExtractor().geteffectiveMetamodel(module);
 			}
-		//	System.out.println(smartEMFModel);
+//			smartEMFModel.setCalculatedEffectiveMetamodel(true);
+//			smartEMFModel.load();
+			System.out.println(smartEMFModel);
 		//	System.out.println(new EolUnparser().unparse((EolModule)module));
 		}
 	}
