@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 
 import org.eclipse.emf.common.EMFPlugin;
 import org.eclipse.epsilon.common.util.StringProperties;
-import org.eclipse.epsilon.effectivemetamodel.SmartEMF;
+import org.eclipse.epsilon.effectivemetamodel.XMIN;
 import org.eclipse.epsilon.eol.launch.EolRunConfiguration;
 import org.eclipse.epsilon.emc.emf.EmfModel;
 
@@ -39,13 +39,13 @@ public class EolStandaloneExample {
 	//	modelProperties.setProperty(EmfModel.PROPERTY_METAMODEL_URI,"http://www.eclipse.org/MoDisco/Java/0.2.incubation/java");
 		modelProperties.setProperty("type", "EMF");
 		modelProperties.setProperty(EmfModel.PROPERTY_MODEL_URI,
-			modelsRoot.resolve("eclipseModel-0.2.xmi").toAbsolutePath().toUri().toString()
+			modelsRoot.resolve("eclipseModel-1.0.xmi").toAbsolutePath().toUri().toString()
 		);
 		
 		EolRunConfiguration runConfig = EolRunConfiguration.Builder()
 			.withScript(root.resolve("java_findbugs_emf.eol"))
 			.withModel(new EmfModel(), modelProperties)
-			.withParameter("Thread", Thread.class)
+		//	.withParameter("Thread", Thread.class)
 			.withProfiling()
 			.build();
 	

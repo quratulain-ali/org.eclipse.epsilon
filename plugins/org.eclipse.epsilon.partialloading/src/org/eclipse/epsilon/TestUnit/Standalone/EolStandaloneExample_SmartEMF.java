@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 
 import org.eclipse.emf.common.EMFPlugin;
 import org.eclipse.epsilon.common.util.StringProperties;
-import org.eclipse.epsilon.effectivemetamodel.SmartEMF;
+import org.eclipse.epsilon.effectivemetamodel.XMIN;
 import org.eclipse.epsilon.eol.launch.EolRunConfiguration;
 import org.eclipse.epsilon.emc.emf.EmfModel;
 
@@ -31,25 +31,25 @@ public class EolStandaloneExample_SmartEMF {
 			modelsRoot = root.getParent().resolve("standalone");
 		
 		StringProperties modelProperties = new StringProperties();
-		modelProperties.setProperty(SmartEMF.PROPERTY_NAME, "javaMM");
-		modelProperties.setProperty(SmartEMF.PROPERTY_FILE_BASED_METAMODEL_URI,
+		modelProperties.setProperty(XMIN.PROPERTY_NAME, "javaMM");
+		modelProperties.setProperty(XMIN.PROPERTY_FILE_BASED_METAMODEL_URI,
 			modelsRoot.resolve("java.ecore").toAbsolutePath().toUri().toString()
 			
 		);
-		modelProperties.setProperty(EmfModel.PROPERTY_METAMODEL_URI,"http://www.eclipse.org/MoDisco/Java/0.2.incubation/java");
+		modelProperties.setProperty(XMIN.PROPERTY_METAMODEL_URI,"http://www.eclipse.org/MoDisco/Java/0.2.incubation/java");
 		modelProperties.setProperty("type", "SmartEMF");
-		modelProperties.setProperty(SmartEMF.PROPERTY_MODEL_URI,
-			modelsRoot.resolve("test.xmi").toAbsolutePath().toUri().toString()
+		modelProperties.setProperty(XMIN.PROPERTY_MODEL_URI,
+			modelsRoot.resolve("eclipsemodel-1.0.xmi").toAbsolutePath().toUri().toString()
 		);
 		
 		EolRunConfiguration runConfig = EolRunConfiguration.Builder()
-			.withScript(root.resolve("test.eol"))
-			.withModel(new SmartEMF(), modelProperties)
+			.withScript(root.resolve("java_findbugs.eol"))
+			.withModel(new XMIN(), modelProperties)
 			.withParameter("Thread", Thread.class)
 			.withProfiling()
 			.build();
-		SmartEMFRunConfiguration sm = new SmartEMFRunConfiguration(runConfig);
-		sm.run();
-		System.out.println(sm.getResult());
+		//SmartEMFRunConfiguration sm = new SmartEMFRunConfiguration(runConfig);
+		//sm.run();
+		//System.out.println(sm.getResult());
 	}
 }
