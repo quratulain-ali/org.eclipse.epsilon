@@ -3,7 +3,6 @@
  */
 package org.eclipse.epsilon.examples.evl.xtext.ui;
 
-import org.eclipse.epsilon.examples.evl.xtext.ui.AbstractEvlDSLUiModule;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor;
 

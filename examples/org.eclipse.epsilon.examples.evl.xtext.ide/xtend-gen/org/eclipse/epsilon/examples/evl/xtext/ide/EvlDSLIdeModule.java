@@ -3,8 +3,6 @@
  */
 package org.eclipse.epsilon.examples.evl.xtext.ide;
 
-import org.eclipse.epsilon.examples.evl.xtext.ide.AbstractEvlDSLIdeModule;
-
 /**
  * Use this class to register ide components.
  */

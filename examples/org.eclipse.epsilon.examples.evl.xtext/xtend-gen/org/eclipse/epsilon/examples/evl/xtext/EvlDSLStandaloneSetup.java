@@ -3,8 +3,6 @@
  */
 package org.eclipse.epsilon.examples.evl.xtext;
 
-import org.eclipse.epsilon.examples.evl.xtext.EvlDSLStandaloneSetupGenerated;
-
 /**
  * Initialization support for running Xtext languages without Equinox extension registry.
  */

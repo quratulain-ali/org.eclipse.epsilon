@@ -3,8 +3,6 @@
  */
 package org.eclipse.epsilon.examples.evl.xtext.ui.contentassist;
 
-import org.eclipse.epsilon.examples.evl.xtext.ui.contentassist.AbstractEvlDSLProposalProvider;
-
 /**
  * See https://www.eclipse.org/Xtext/documentation/304_ide_concepts.html#content-assist
  * on how to customize the content assistant.

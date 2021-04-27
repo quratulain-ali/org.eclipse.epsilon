@@ -3,8 +3,6 @@
  */
 package org.eclipse.epsilon.examples.evl.xtext.scoping;
 
-import org.eclipse.epsilon.examples.evl.xtext.scoping.AbstractEvlDSLScopeProvider;
-
 /**
  * This class contains custom scoping description.
  * 

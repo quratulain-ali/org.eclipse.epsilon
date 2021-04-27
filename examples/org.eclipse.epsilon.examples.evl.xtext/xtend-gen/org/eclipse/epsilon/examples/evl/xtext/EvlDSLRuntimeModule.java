@@ -3,8 +3,6 @@
  */
 package org.eclipse.epsilon.examples.evl.xtext;
 
-import org.eclipse.epsilon.examples.evl.xtext.AbstractEvlDSLRuntimeModule;
-
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
  */

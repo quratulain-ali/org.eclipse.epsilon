@@ -3,8 +3,6 @@
  */
 package org.eclipse.epsilon.examples.evl.xtext.validation;
 
-import org.eclipse.epsilon.examples.evl.xtext.validation.AbstractEvlDSLValidator;
-
 /**
  * This class contains custom validation rules.
  * 

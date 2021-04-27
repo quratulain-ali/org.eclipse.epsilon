@@ -7,7 +7,6 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.eclipse.epsilon.examples.evl.xtext.EvlDSLRuntimeModule;
 import org.eclipse.epsilon.examples.evl.xtext.EvlDSLStandaloneSetup;
-import org.eclipse.epsilon.examples.evl.xtext.ide.EvlDSLIdeModule;
 import org.eclipse.xtext.util.Modules2;
 
 /**
