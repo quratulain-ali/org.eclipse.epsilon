@@ -172,6 +172,14 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 			else
 				createTypeCompatibilityError(targetExpression, valueExpression);
 		}
+		else
+		{
+		if (targetExpression instanceof VariableDeclaration) {
+				((VariableDeclaration)targetExpression).getPossibleType().add(valueType);
+				Variable v =context.getFrameStack().get((((VariableDeclaration)targetExpression).getName()));
+				v.possibleType.add(valueType);
+		}
+		}
 	}
 
 	@Override
@@ -547,6 +555,8 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 		Variable variable = context.getFrameStack().get(nameExpression.getName());
 		if (variable != null) {
 			nameExpression.setResolvedType(variable.getType());
+			if (!variable.possibleType.isEmpty())
+				nameExpression.setPossibleType(variable.possibleType);
 		} else {
 			modelElementType = context.getModelElementType(nameExpression.getName());
 			if (modelElementType != null) {
@@ -605,8 +615,9 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 			contextTypeExpression.accept(this);
 			contextType = contextTypeExpression.getResolvedType();
 		}
-
-		context.getFrameStack().enterLocal(FrameType.PROTECTED, operation, new Variable("self", contextType));
+		//Variable class changed
+		context.getFrameStack().enterLocal(FrameType.PROTECTED, operation, new Variable("self", contextType , contextTypeExpression.getPossibleType()));
+		
 		for (Parameter parameter : operation.getFormalParameters()) {
 			parameter.accept(this);
 		}
@@ -709,6 +720,7 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 
 				contextType = targetExpression.getResolvedType();
 				op.getContextTypeExpression().accept(this);
+				op.getContextTypeExpression().setPossibleType(contextType);
 
 				EolType reqContextType = op.getContextTypeExpression().getResolvedType();
 
@@ -1482,21 +1494,6 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 			}
 			operatorExpression.setResolvedType(EolPrimitiveType.Boolean);
 		}
-
-//		if (StringUtil.isOneOf(operator, "<", ">", ">=", "<=", "*", "/", "-")) {
-//			for (Expression operand : getOperands()) {
-//				if (operand.hasResolvedType() && 
-//						operand.getResolvedType() != EolPrimitiveType.Integer 
-//						&& operand.getResolvedType() != EolPrimitiveType.Real) {
-//					
-//					context.addErrorMarker(operand, "Number expected instead of " + operand.getResolvedType());
-//				}
-//			}
-//		}
-//		
-//		if (StringUtil.isOneOf(operator, "==", "=", "<>", "<", ">", ">=", "<=")) {
-//			resolvedType = EolPrimitiveType.Boolean;
-//		}
 
 		if (StringUtil.isOneOf(operator, "<", ">", ">=", "<=", "*", "/", "-")) {
 			for (Expression operand : operands) {

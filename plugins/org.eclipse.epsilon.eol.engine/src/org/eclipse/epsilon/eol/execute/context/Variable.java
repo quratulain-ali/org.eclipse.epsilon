@@ -9,6 +9,8 @@
  ******************************************************************************/
 package org.eclipse.epsilon.eol.execute.context;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Map.Entry;
 import java.util.Objects;
 import org.eclipse.epsilon.eol.exceptions.EolIllegalVariableAssignmentException;
@@ -24,6 +26,7 @@ public class Variable {
 	protected EolType type;
 	protected boolean readOnly = false;
 	protected String deprecationInfo;
+	public ArrayList<EolType> possibleType = new ArrayList<EolType>();
 	
 	public static Variable createReadOnlyVariable(String name, Object value) {
 		return new Variable(name, value, EolAnyType.Instance, true);
@@ -73,6 +76,12 @@ public class Variable {
 		this.name = name;
 		this.type = type;
 		this.value = value;
+	}
+	
+	public Variable(String name, EolType type, ArrayList<EolType> possibletype) {
+		this.name = name;
+		this.type = type;
+		this.possibleType.addAll(possibletype);
 	}
 	
 	/**

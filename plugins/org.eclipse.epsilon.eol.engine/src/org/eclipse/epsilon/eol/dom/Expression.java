@@ -9,12 +9,30 @@
 **********************************************************************/
 package org.eclipse.epsilon.eol.dom;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+
 import org.eclipse.epsilon.eol.types.EolAnyType;
 import org.eclipse.epsilon.eol.types.EolType;
 
 public abstract class Expression extends AbstractExecutableModuleElement {
 	
 	protected EolType resolvedType = EolAnyType.Instance;
+protected ArrayList<EolType> possibleTypes = new ArrayList<EolType>();
+	
+	public ArrayList<EolType> getPossibleType() {
+		return possibleTypes;
+	}
+	
+	public void setPossibleType(EolType type) {
+		if (!possibleTypes.contains(type))
+			possibleTypes.add(type);
+	}
+	public void setPossibleType(ArrayList<EolType> type) {
+		for (EolType t : type)
+		if (!possibleTypes.contains(t))
+			possibleTypes.add(t);
+	}
 	
 	public EolType getResolvedType() {
 		return resolvedType;
@@ -27,6 +45,7 @@ public abstract class Expression extends AbstractExecutableModuleElement {
 	public boolean hasResolvedType() {
 		return resolvedType != null && resolvedType != EolAnyType.Instance;
 	}
+	
 	
 	public abstract void accept(IEolVisitor visitor);
 	
