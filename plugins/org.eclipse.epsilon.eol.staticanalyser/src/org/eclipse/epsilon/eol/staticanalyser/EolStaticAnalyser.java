@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Spliterators.AbstractDoubleSpliterator;
 
 import org.eclipse.epsilon.common.dt.editor.AbstractModuleEditor;
 import org.eclipse.epsilon.common.dt.editor.ModelTypeExtensionFactory;
@@ -155,8 +156,9 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 		Expression targetExpression = assignmentStatement.getTargetExpression();
 		Expression valueExpression = assignmentStatement.getValueExpression();
 
-		targetExpression.accept(this);
 		valueExpression.accept(this);
+		targetExpression.accept(this);
+		
 
 		EolType targetType = targetExpression.getResolvedType();
 		EolType valueType = valueExpression.getResolvedType();
@@ -175,9 +177,10 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 		else
 		{
 		if (targetExpression instanceof VariableDeclaration) {
-				((VariableDeclaration)targetExpression).getPossibleType().add(valueType);
-				Variable v =context.getFrameStack().get((((VariableDeclaration)targetExpression).getName()));
-				v.possibleType.add(valueType);
+				//((VariableDeclaration)targetExpression).getPossibleType().add(valueType);
+				Variable v =context.getFrameStack().get((((VariableDeclaration)targetExpression).getNameExpression().getName()));
+				v.setPossibleTypes(valueType);
+				((VariableDeclaration)targetExpression).getNameExpression().accept(this);
 		}
 		}
 	}
@@ -555,8 +558,8 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 		Variable variable = context.getFrameStack().get(nameExpression.getName());
 		if (variable != null) {
 			nameExpression.setResolvedType(variable.getType());
-			if (!variable.possibleType.isEmpty())
-				nameExpression.setPossibleType(variable.possibleType);
+			if (!variable.getPossibleTypes().isEmpty())
+				nameExpression.setPossibleType(variable.getPossibleTypes());
 		} else {
 			modelElementType = context.getModelElementType(nameExpression.getName());
 			if (modelElementType != null) {
@@ -699,10 +702,16 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 
 				if (op.getReturnTypeExpression().getResolvedType().toString().equals("EolSelfContentType")) {
 					contentType = ((EolCollectionType) targetExpression.getResolvedType()).getContentType();
-
-					while (!(contentType instanceof EolPrimitiveType))
+						//Change the condition here! It would be ModelElementType
+					while ((contentType instanceof EolCollectionType))
 						contentType = ((EolCollectionType) contentType).getContentType();
 					op.getReturnTypeExpression().setResolvedType(contentType);
+					//If we have col<Any> as target and returnType is Any as well >> we can set possibleType
+					if (op.getReturnTypeExpression().getResolvedType() instanceof EolAnyType)
+					{
+						for (EolType t :  targetExpression.getPossibleType())
+							op.getReturnTypeExpression().setPossibleType(((EolCollectionType)t).getContentType());
+					}
 				}
 
 				if (op.getReturnTypeExpression().getResolvedType().toString().equals("EolSelfCollectionType")) {
@@ -720,8 +729,28 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 
 				contextType = targetExpression.getResolvedType();
 				op.getContextTypeExpression().accept(this);
-				op.getContextTypeExpression().setPossibleType(contextType);
-
+				
+				if (op.getContextTypeExpression().getResolvedType() instanceof EolAnyType) {
+					if (contextType instanceof EolAnyType)
+						op.getContextTypeExpression().setPossibleType(targetExpression.getPossibleType());
+					else
+						op.getContextTypeExpression().setPossibleType(contextType);
+				}
+				
+				else if (op.getContextTypeExpression().getResolvedType() instanceof EolCollectionType
+				&& ((EolCollectionType)op.getContextTypeExpression().getResolvedType()).getContentType().toString().equals("EolSelf"))
+				{
+					for (Expression e : operationCallExpression.getParameterExpressions()) {
+						if(e.getPossibleType() != null) // if parameter is Any?! set resolved type >> It is set to Any before
+							for (EolType t : e.getPossibleType()) {
+								Variable v = context.getFrameStack().get(((NameExpression)targetExpression).getName());
+								v.setPossibleTypes(new EolCollectionType("Collection",t));
+								targetExpression.accept(this); // should I set it as a NameExpr as well?!
+							}
+					}
+				}
+					
+				
 				EolType reqContextType = op.getContextTypeExpression().getResolvedType();
 
 				if (reqContextType instanceof EolModelElementType
@@ -863,6 +892,7 @@ public class EolStaticAnalyser implements IModuleValidator, IEolVisitor {
 							operationCallExpression.setResolvedType(EolNoType.Instance);
 						else {
 							operationCallExpression.setResolvedType(op.getReturnTypeExpression().getResolvedType());
+							operationCallExpression.setPossibleType(op.getReturnTypeExpression().getPossibleType());
 							getMatchedReturnType(operationCallExpression)
 									.add(operationCallExpression.getResolvedType());
 						}
