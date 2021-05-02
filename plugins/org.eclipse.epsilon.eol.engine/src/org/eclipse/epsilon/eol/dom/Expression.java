@@ -25,13 +25,32 @@ protected ArrayList<EolType> possibleTypes = new ArrayList<EolType>();
 	}
 	
 	public void setPossibleType(EolType type) {
-		if (!possibleTypes.contains(type))
-			possibleTypes.add(type);
+			
+		for (EolType t : possibleTypes)
+			if(t.toString().equals(type.toString())) {
+				return;
+			}
+		possibleTypes.add(type);
 	}
 	public void setPossibleType(ArrayList<EolType> type) {
-		for (EolType t : type)
-		if (!possibleTypes.contains(t))
-			possibleTypes.add(t);
+		
+
+		if (possibleTypes.isEmpty()) {
+			possibleTypes.addAll(type);
+			return;
+		}
+		int count = 0;
+		for (EolType t : type) {
+			for (EolType p : possibleTypes) {
+				if (t.toString().equals(p.toString()))
+					count++;
+				else
+					if (count == possibleTypes.size()) {
+						possibleTypes.add(t);
+						break;
+					}
+			}
+			}
 	}
 	
 	public EolType getResolvedType() {

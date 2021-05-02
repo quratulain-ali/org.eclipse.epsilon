@@ -26,7 +26,8 @@ public class Variable {
 	protected EolType type;
 	protected boolean readOnly = false;
 	protected String deprecationInfo;
-	public ArrayList<EolType> possibleType = new ArrayList<EolType>();
+	// add hash set instead!
+	protected ArrayList<EolType> possibleTypes = new ArrayList<EolType>();
 	
 	public static Variable createReadOnlyVariable(String name, Object value) {
 		return new Variable(name, value, EolAnyType.Instance, true);
@@ -81,7 +82,7 @@ public class Variable {
 	public Variable(String name, EolType type, ArrayList<EolType> possibletype) {
 		this.name = name;
 		this.type = type;
-		this.possibleType.addAll(possibletype);
+		this.setPossibleTypes(possibletype);
 	}
 	
 	/**
@@ -142,6 +143,36 @@ public class Variable {
 
 	public void setDeprecationInfo(String deprecationInfo) {
 		this.deprecationInfo = deprecationInfo;
+	}
+public ArrayList<EolType> getPossibleTypes() {
+		return possibleTypes;
+	}
+	
+	public void setPossibleTypes(EolType type) {
+		for (EolType t : possibleTypes)
+				if(t.toString().equals(type.toString())) {
+					return;
+				}
+			possibleTypes.add(type);
+	}
+	public void setPossibleTypes(ArrayList<EolType> type) {
+		
+		if (possibleTypes.isEmpty()) {
+			possibleTypes.addAll(type);
+			return;
+		}
+		int count = 0;
+		for (EolType t : type) {
+			for (EolType p : possibleTypes) {
+				if (t.toString().equals(p.toString()))
+					count++;
+				else
+					if (count == possibleTypes.size()) {
+						possibleTypes.add(t);
+						break;
+					}
+			}
+			}
 	}
 	
 	@Override

@@ -183,8 +183,6 @@ public class EmfModel extends AbstractEmfModel implements IReflectiveModel,IRewr
 		setMetamodelFileUris(toURIList(properties.getProperty(PROPERTY_FILE_BASED_METAMODEL_URI)));
 		setReuseUnmodifiedFileBasedMetamodels(properties.getBooleanProperty(PROPERTY_REUSE_UNMODIFIED_FILE_BASED_METAMODELS, reuseUnmodifiedFileBasedMetamodels));
 		
-	//	if (!properties.getProperty("type").equals("XMIN"))
-			
 			load();
 		}
 
