@@ -13,9 +13,11 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
+import org.eclipse.emf.ecore.xmi.impl.XMLContentHandlerImpl.XMI;
 import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.common.util.StringProperties;
 import org.eclipse.epsilon.effectivemetamodel.XMIN;
+import org.eclipse.epsilon.effectivemetamodel.EffectiveMetamodelComputationVisitor;
 import org.eclipse.epsilon.effectivemetamodel.EffectiveMetamodelExtraction;
 import org.eclipse.epsilon.effectivemetamodel.EffectiveMetamodelExtractor;
 import org.eclipse.epsilon.effectivemetamodel.EffectiveType;
@@ -74,20 +76,18 @@ public class EffectiveMetamodelInjector implements EpsilonLaunchConfigurationDel
 	if (!module.getCompilationContext().getModelDeclarations().isEmpty() 
 		&& module.getCompilationContext().getModelDeclarations().get(0).getDriverNameExpression().getName().equals("XMIN"))
 		{
-			
-			
-		
 		//ArrayList<SmartEMF> effectiveMetamodels = new ArrayList<SmartEMF>();
-		XMIN smartEMFModel = null;
+		XMIN smartEMFModel;
 		if (module instanceof EvlModule) {
-			smartEMFModel = new EffectiveMetamodelExtractor().geteffectiveMetamodel(module);
+		//	smartEMFModel = new EffectiveMetamodelExtractor().geteffectiveMetamodel(module);
+			smartEMFModel = new EffectiveMetamodelComputationVisitor().preValidate(module);
 			module = (IEolModule) module;
 		}
 		else
 		smartEMFModel = new EffectiveMetamodelExtractor().geteffectiveMetamodel(module);
 		
-
-		//smartEMFModel.load();
+		smartEMFModel.load();
+	//	smartEMFModel.load();
 		
 		System.out.println(smartEMFModel);
 	//	System.out.println(new EolUnparser().unparse((EolModule)module));
