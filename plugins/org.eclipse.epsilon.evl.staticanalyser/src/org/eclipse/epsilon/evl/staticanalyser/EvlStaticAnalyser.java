@@ -36,9 +36,7 @@ public class EvlStaticAnalyser extends EolStaticAnalyser implements IEvlVisitor{
 		
 		if (!(imodule instanceof EvlModule))
 			return Collections.emptyList();
-		
-	//	errors = new ArrayList<>();
-
+	
 		EvlModule evlModule = (EvlModule) imodule;
 		//module = evlModule;
 		context = evlModule.getCompilationContext();
@@ -49,15 +47,15 @@ public class EvlStaticAnalyser extends EolStaticAnalyser implements IEvlVisitor{
 		
 		super.preValidate(evlModule);
 		super.mainValidate(evlModule);
-//		errors.addAll();
-//		errors.addAll();
 		
 		for (ConstraintContext cc : evlModule.getConstraintContexts()) {
 			cc.accept(this);
 		}
+		for (Post p : evlModule.getPost()) {
+			((NamedStatementBlockRule)p).accept(this);
+		}
 		super.postValidate(evlModule);
-	//	errors.addAll();
-		//errors.addAll(super.errors);
+		//
 		return (super.errors);
 	}
 	@Override
