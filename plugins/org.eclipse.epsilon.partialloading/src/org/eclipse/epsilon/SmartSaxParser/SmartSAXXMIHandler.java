@@ -45,12 +45,13 @@ public class SmartSAXXMIHandler extends SAXXMIHandler{
 	protected int currentElementsSize = -1;
 	
 	public boolean loadAllAttributes = true;
-	
+	public long time = 0;
 	public boolean handleFeature;
 	
 	@Override
 	public void endDocument() {
 		
+		System.out.println("Time new loop : " + time);
 		traversal_currentFeatures.clear();
 		traversal_currentFeatures = null;
 		traversalPlans.clear();
@@ -133,9 +134,12 @@ public class SmartSAXXMIHandler extends SAXXMIHandler{
 		    		handleObjectAttribs(newObject);
 		    	}
 		    }
-		    
+		//    if (!extent.contains(newObject))
+//		    if (newObject.getClass().getName().equals("InfixExpression") && objects.peekEObject().getClass().getName().equals("IfStatement") )
+//	    		System.out.println();
+		    if (!handlingFeature || !extent.contains(objects.peekEObject()))
 		    	extent.add(newObject);	
-		    
+		    	
 		    return newObject;
 		    
 		}
@@ -161,7 +165,14 @@ public class SmartSAXXMIHandler extends SAXXMIHandler{
 		    }
 		    
 		    //if (!handlingFeature) {
-		    	extent.add(newObject);	
+		//    if (!extent.contains(newObject))
+	
+//		    if (newObject.getClass().getName().equals("InfixExpression") && objects.peekEObject().getClass().getName().equals("IfStatement") )
+//	    		System.out.println();
+		    if (!handlingFeature || !extent.contains(objects.peekEObject())) {
+		    
+		    	extent.add(newObject);
+		    }
 			//}
 		    
 		    return newObject;
@@ -259,12 +270,15 @@ public class SmartSAXXMIHandler extends SAXXMIHandler{
 	      else
 	      {
 	    	  if (shouldHandleFeature(object, feature.getName())) {
-	  	        setValueFromId(object, (EReference)feature, value);
+	  	        	setValueFromId(object, (EReference)feature, value);
 			}
 	    	  else {
 					if (handlingFeature && shouldHandleFeatureForType(object, feature.getName())) {
-						// setFeatureValue(object, feature, value, -2);
-						 setValueFromId(object, (EReference)feature, value);
+						
+						if (((EReference)feature).isContainment())
+							setFeatureValue(object, feature, value, -2);
+						else
+							setValueFromId(object, (EReference)feature, value);
 					}
 				}
 	      }
@@ -284,8 +298,8 @@ public class SmartSAXXMIHandler extends SAXXMIHandler{
 			}
 			else {
 				EObject peekObject = objects.peekEObject();
-				
 				EClass leClass = peekObject.eClass();
+				//leClass the class that should proceed and name is the feature
 				if (shouldProceed(leClass, name)) {
 						super.startElement(uri, localName, name);
 				}
@@ -449,7 +463,8 @@ public class SmartSAXXMIHandler extends SAXXMIHandler{
 	protected void handleFeature(String prefix, String name) {
 		
 	    EObject peekObject = objects.peekEObject();
-	    
+//	    if (peekObject.getClass().getName().equals("IfStatement"))
+//	    	System.out.println();
 	    // This happens when processing an element with simple content that has elements content even though it shouldn't.
 	    //
 	    if (peekObject == null)
@@ -467,7 +482,7 @@ public class SmartSAXXMIHandler extends SAXXMIHandler{
 	    
 	    
 	    EStructuralFeature feature = getFeature(peekObject, prefix, name, true);
-
+	    
 	    if (feature != null)
 	    {
 	    	if (shouldHandleFeature(peekObject, name) || shouldHandleFeatureForType(peekObject, name)) {
@@ -528,7 +543,26 @@ public class SmartSAXXMIHandler extends SAXXMIHandler{
 	      }
 	      else
 	      {
-	        createObject(peekObject, feature);
+	    		  createObject(peekObject, feature);
+	       
+//	        long st = System.nanoTime();
+//	        // managing duplication
+//	        if (!peekObject.eContents().isEmpty())
+//	        	for (EObject o : peekObject.eContents()) {
+//	        		if (extent.contains(o))	{
+//	        			if (xmlResource.getIDToEObjectMap().containsValue(o)){
+//	        				//when a object is deleted from extent, it will be deleted from xmlresource as well!
+//	        				// So we add it again by referring to a same object which is in content of another object
+//	        				String id = xmlResource.getEObjectToIDMap().get(o);
+//	        				extent.removeAll(peekObject.eContents());
+//	        				extent.remove(o);
+//	        				xmlResource.setID(o, id);	
+//	        			//	break;
+//	        			}
+//	        		}
+//	        	}
+//	        long en = System.nanoTime();
+//			time = time + ((long)((en-st)/ 1000000));
 	      }
 	    }
 	    else
@@ -689,7 +723,8 @@ public class SmartSAXXMIHandler extends SAXXMIHandler{
 	            }
 	            else
 	            {
-//	              extent.addUnique(peekObject);
+	            	//comment
+	              //extent.addUnique(peekObject);
 	            }
 
 	            // The new root object is the actual new object since all sign of the document root will now have disappeared.
