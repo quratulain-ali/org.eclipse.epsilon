@@ -159,7 +159,7 @@ operation Collection<Any> testContent () : EolSelfContentType {
 }
 // Added for Eugenia _ 17March2020
 @builtin
-operation Collection<Any> first() : Any {
+operation Collection<Any> first() : EolSelfContentType {
 }
 // Added for Eugenia _ 17March2020
 @builtin
@@ -174,7 +174,7 @@ operation Any isDefined() : Boolean {
 }
 // Added for Eugenia _ 17March2020
 @builtin
-operation Collection<Any> add(item : Any) : Boolean{
+operation Collection<EolSelf> add(item : Any) : Boolean{
 }
 // Added for Eugenia _ 17March2020
 @builtin
