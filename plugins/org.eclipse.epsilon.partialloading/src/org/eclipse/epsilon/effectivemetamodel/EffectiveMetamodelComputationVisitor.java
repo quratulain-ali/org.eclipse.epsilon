@@ -428,12 +428,14 @@ public class EffectiveMetamodelComputationVisitor implements IEvlVisitor {
 					} else {
 						// not already under the EM's allOfKind or allOfType references
 						xminModel.addToAllOfKind(target.getTypeName());
+						loadFeatures(target, xminModel.getFromAllOfKind(target.getName()));
 					}
 
 				} else if (operationCallExpression.getNameExpression().getName().equals("allOfType")) {
 					if (!xminModel.allOfKindContains(target.getTypeName())
 							&& !xminModel.allOfTypeContains(target.getTypeName())) {
 						xminModel.addToAllOfType(target.getTypeName());
+						loadFeatures(target, xminModel.getFromAllOfType(target.getName()));
 					}
 				}
 			}
@@ -598,6 +600,7 @@ public class EffectiveMetamodelComputationVisitor implements IEvlVisitor {
 			} else {
 				// not already under the EM's allOfKind or allOfType references
 				xminModel.addToAllOfKind(target.getTypeName());
+				loadFeatures(target, xminModel.getFromAllOfKind(target.getName()));
 			}
 		}
 		 constraintContext.getTypeExpression().accept(this);	
@@ -661,6 +664,7 @@ public class EffectiveMetamodelComputationVisitor implements IEvlVisitor {
 
 				// not already under the EM's allOfKind or allOfType references
 				xminModel.addToAllOfKind(target.getTypeName());
+				loadFeatures(target, xminModel.getFromAllOfKind(target.getName()));
 			}
 		}
 		// not already under the EM's types, allOfKind or allOfType references
@@ -681,20 +685,23 @@ public class EffectiveMetamodelComputationVisitor implements IEvlVisitor {
 				// add target.getTypeName() under EM's types reference;
 				effectiveType = xminModel.addToTypes(effectiveType.getName());
 			}
-			if (!target.getMetaClass().getAllStructuralFeatures().isEmpty()) {
-				features.addAll(target.getMetaClass().getAllStructuralFeatures());
-			}
+//			if (!target.getMetaClass().getAllStructuralFeatures().isEmpty()) {
+//				features.addAll(target.getMetaClass().getAllStructuralFeatures());
+//			}
+//
+//			for (MetaClass metaclass : target.getMetaClass().getSuperTypes()) {
+//				features.addAll(metaclass.getAllStructuralFeatures());
+//			}
 
-			for (MetaClass metaclass : target.getMetaClass().getSuperTypes()) {
-				features.addAll(metaclass.getAllStructuralFeatures());
-			}
-
+			features.addAll(effectiveType.getTraversalAttributes());
+			features.addAll(effectiveType.getTraversalReferences());
+			
 			for (StructuralFeature sf : features) {
 				if (sf instanceof Attribute) {
 					if(sf.getName().equals(pro.getNameExpression().getName()) && !effectiveType.containsAttribute(sf.getName()))
 						effectiveType.addToAttributes(sf.getName());
-					else
-						effectiveType.addToTraversalAttributes(sf);
+//					else
+//						effectiveType.addToTraversalAttributes(sf);
 				
 				} else if (sf instanceof Reference) {
 					if (sf.getName().equals(pro.getNameExpression().getName()) && !effectiveType.containsReference(sf.getName())) {
@@ -702,10 +709,11 @@ public class EffectiveMetamodelComputationVisitor implements IEvlVisitor {
 						
 						if (!((Reference) sf).isContainment()) {
 							xminModel.addToAllOfKind(sf.getType().getName());
+							loadFeatures(target, xminModel.getFromAllOfKind(sf.getType().getName()));
 						}
 					}
-					else
-							effectiveType.addToTraversalReferences(sf);
+//					else
+//							effectiveType.addToTraversalReferences(sf);
 					}
 			}
 		}
@@ -728,5 +736,25 @@ public class EffectiveMetamodelComputationVisitor implements IEvlVisitor {
 			XMIN += "references"+ type.getReferences() + "-";
 		}
 		return XMIN;
+	}
+	public void loadFeatures(EolModelElementType type, EffectiveType efType) {
+		
+		ArrayList<StructuralFeature> features = new ArrayList<StructuralFeature>();
+		if (!type.getMetaClass().getAllStructuralFeatures().isEmpty()) {
+			features.addAll(type.getMetaClass().getAllStructuralFeatures());
+		}
+
+		for (MetaClass metaclass : type.getMetaClass().getSuperTypes()) {
+			features.addAll(metaclass.getAllStructuralFeatures());
+		}
+		for (StructuralFeature sf : features) {
+			
+			if (sf instanceof Attribute) {
+				efType.addToTraversalAttributes(sf);
+			
+			} else if (sf instanceof Reference) {
+				efType.addToTraversalReferences(sf);
+			}
+		}
 	}
 }
