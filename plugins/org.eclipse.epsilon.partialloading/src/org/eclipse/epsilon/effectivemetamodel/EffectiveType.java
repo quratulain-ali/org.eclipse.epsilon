@@ -2,6 +2,7 @@ package org.eclipse.epsilon.effectivemetamodel;
 
 import java.util.ArrayList;
 
+import org.eclipse.epsilon.eol.compile.m3.StructuralFeature;
 import org.eclipse.epsilon.eol.execute.Return;
 
 
@@ -11,6 +12,8 @@ public class EffectiveType {
 	protected XMIN effectiveMetamodel;
 	protected ArrayList<EffectiveFeature> attributes = new ArrayList<EffectiveFeature>();
 	protected ArrayList<EffectiveFeature> references = new ArrayList<EffectiveFeature>();
+	protected ArrayList<StructuralFeature> traversalAttributes = new ArrayList<StructuralFeature>();
+	protected ArrayList<StructuralFeature> traversalReferences = new ArrayList<StructuralFeature>();
 	protected int usage = 1;
 	
 	public boolean isequals(EffectiveType t) {
@@ -134,6 +137,22 @@ public class EffectiveType {
 		references.add(ref);
 		ref.setEffectiveType(this);
 		return ref;
+	}
+	public void addToTraversalReferences(StructuralFeature ref)
+	{
+		if (!traversalReferences.contains(ref))
+			traversalReferences.add(ref);
+	}
+	public void addToTraversalAttributes(StructuralFeature attr)
+	{
+		if (!traversalAttributes.contains(attr))
+			traversalAttributes.add(attr);
+	}
+	public ArrayList<StructuralFeature> getTraversalAttributes() {
+		return traversalAttributes;
+	}
+	public ArrayList<StructuralFeature> getTraversalReferences() {
+		return traversalReferences;
 	}
 	
 	public EffectiveFeature increaseAttributeUsage(String attribute)

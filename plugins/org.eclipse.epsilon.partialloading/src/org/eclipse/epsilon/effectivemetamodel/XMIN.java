@@ -36,7 +36,6 @@ public class XMIN extends EmfModel{
 	
 	protected ArrayList<EffectiveType> types = new ArrayList<EffectiveType>();
 	
-	
 	public XMIN()
 	{
 	}
@@ -97,6 +96,15 @@ public class XMIN extends EmfModel{
 	
 	/*Add elements to effective meta-model references*/
 	/* In all methods, if the element already exists, it just returned*/
+	
+	public void addAttributeToAll(String modelElement) {
+		for(EffectiveType et: allOfKind)
+			addAttributeToEffectiveType(et,modelElement);
+		for(EffectiveType et: allOfType)
+			addAttributeToEffectiveType(et,modelElement);
+		for(EffectiveType et: types)
+			addAttributeToEffectiveType(et,modelElement);
+	}
 	
 	public EffectiveType addToAllOfKind(String modelElement)
 	{
@@ -168,16 +176,14 @@ public class XMIN extends EmfModel{
 		return types;
 	}
 	
-	
 	/*Methods for adding new feature to effective types (where-ever they are!)*/
-	public EffectiveFeature addAttributeToEffectiveType(String elementName, String attribute)
-	{
-		EffectiveType effectiveType = getFromAllOfKind(elementName);
-		if (effectiveType == null) {
-			effectiveType = getFromAllOfType(elementName);
-			if (effectiveType == null) 
-				effectiveType = getFromTypes(elementName);
-		}
+	public EffectiveFeature addAttributeToEffectiveType(EffectiveType effectiveType, String attribute){
+//		EffectiveType effectiveType = getFromAllOfKind(elementName);
+//		if (effectiveType == null) {
+//			effectiveType = getFromAllOfType(elementName);
+//			if (effectiveType == null) 
+//				effectiveType = getFromTypes(elementName);
+//		}
 		if (effectiveType != null) {
 			EffectiveFeature effectiveFeature = new EffectiveFeature(attribute);
 			for (EffectiveFeature ef : effectiveType.getAttributes())
@@ -278,6 +284,15 @@ public class XMIN extends EmfModel{
 //		return null;
 //	}
 	
+
+	public ArrayList<EffectiveType> getAllOfEffectiveTypes()
+	{
+		ArrayList<EffectiveType> classes = new ArrayList<EffectiveType>();
+		classes.addAll(getAllOfKind());
+		classes.addAll(getAllOfType());
+		classes.addAll(getTypes());
+		return classes;
+	}
 	/*Get elements from allOfType*/
 	public EffectiveType getFromAllOfType(String elementName)
 	{
@@ -364,6 +379,7 @@ public class XMIN extends EmfModel{
 		Resource resource = resourceSet.createResource(modelUri);
 		this.setResource(resource);
 		System.gc();
+					
 		long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 		EffectiveMetamodelReconciler effectiveMetamodelReconciler = new EffectiveMetamodelReconciler();
 		effectiveMetamodelReconciler.addPackages(resourceSet.getPackageRegistry().values());
@@ -399,5 +415,6 @@ public class XMIN extends EmfModel{
 		System.out.println((memory) + " MB");
 		System.out.println("**** Loaded Objects ****");
 		System.out.println(resource.getContents().size());
+		
 	}
 }
